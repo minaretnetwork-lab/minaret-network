@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Mosque {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  address     String?
+  city        String?
+  province    String?
+  country     String   @default("Canada")
+  logoUrl               String?
+  website               String?
+  communityChannelType  String?  @default("WhatsApp")
+  communityChannelName  String?
+  communityChannelLink  String?
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  users         User[]
+  professionals Professional[]
+  categories    Category[]
+  serviceAreas  ServiceArea[]
+  requests      ServiceRequest[]
+
+  @@map("mosques")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  supabaseId    String   @unique
+  email         String   @unique
+  firstName     String?
+  lastName      String?
+  displayName   String?
+  avatarUrl     String?
+  phone         String?
+  role          UserRole @default(MEMBER)
+  mosqueId      String?
+  mosque        Mosque?  @relation(fields: [mosqueId], references: [id])
+  isActive      Boolean  @default(true)
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  professional    Professional?
+  recommendations Recommendation[]
+  serviceRequests ServiceRequest[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  MEMBER
+  PROFESSIONAL
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  icon        String?
+  description String?
+  mosqueId    String?
+  mosque      Mosque?  @relation(fields: [mosqueId], references: [id])
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  professionals Professional[]
+  requests      ServiceRequest[]
+
+  @@unique([slug, mosqueId])
+  @@map("categories")
+}
+
+model ServiceArea {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String
+  city     String?
+  province String?
+  country  String  @default("Canada")
+  mosqueId String?
+  mosque   Mosque? @relation(fields: [mosqueId], references: [id])
+
+  professionals Professional[]
+  requests      ServiceRequest[]
+
+  @@unique([slug, mosqueId])
+  @@map("service_areas")
+}
+
+model Professional {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mosqueId          String?
+  mosque            Mosque?            @relation(fields: [mosqueId], references: [id])
+  categoryId        String
+  category          Category           @relation(fields: [categoryId], references: [id])
+  businessName      String?
+  title             String?
+  bio               String?
+  yearsOfExperience Int?
+  qualifications    String?
+  licenses          String?
+  languages         String[]           @default([])
+  gender            Gender?
+  phone             String?
+  email             String?
+  website           String?
+  whatsapp          String?
+  photoUrl          String?
+  status            ProfessionalStatus @default(PENDING)
+  isVerified        Boolean            @default(false)
+  isFeatured        Boolean            @default(false)
+  profileViews      Int                @default(0)
+  availability      String?
+  rejectionReason   String?
+  submittedAt       DateTime           @default(now())
+  approvedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  serviceAreas    ServiceArea[]
+  badges          VerificationBadge[]
+  recommendations Recommendation[]
+  credentials     Credential[]
+  galleryImages   GalleryImage[]
+  serviceRequests ServiceRequest[]
+
+  @@map("professionals")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  PREFER_NOT_TO_SAY
+}
+
+enum ProfessionalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+model VerificationBadge {
+  id             String       @id @default(cuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  type           BadgeType
+  issuedAt       DateTime     @default(now())
+  expiresAt      DateTime?
+  notes          String?
+
+  @@unique([professionalId, type])
+  @@map("verification_badges")
+}
+
+enum BadgeType {
+  MOSQUE_AFFILIATED
+  HIGHLY_RECOMMENDED
+}
+
+model Credential {
+  id             String       @id @default(cuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  name           String
+  fileUrl        String
+  fileType       String?
+  isVerified     Boolean      @default(false)
+  uploadedAt     DateTime     @default(now())
+
+  @@map("credentials")
+}
+
+model GalleryImage {
+  id             String       @id @default(cuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  url            String
+  caption        String?
+  sortOrder      Int          @default(0)
+  uploadedAt     DateTime     @default(now())
+
+  @@map("gallery_images")
+}
+
+model Recommendation {
+  id             String               @id @default(cuid())
+  professionalId String
+  professional   Professional         @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                 @relation(fields: [userId], references: [id])
+  content           String
+  highlyRecommended Boolean              @default(false)
+  status            RecommendationStatus @default(PENDING)
+  moderatorNote     String?
+  createdAt         DateTime             @default(now())
+  approvedAt        DateTime?
+
+  @@map("recommendations")
+}
+
+enum RecommendationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ServiceRequest {
+  id               String        @id @default(cuid())
+  mosqueId         String
+  mosque           Mosque        @relation(fields: [mosqueId], references: [id])
+  userId           String
+  user             User          @relation(fields: [userId], references: [id])
+  categoryId       String
+  category         Category      @relation(fields: [categoryId], references: [id])
+  serviceAreaId    String?
+  serviceArea      ServiceArea?  @relation(fields: [serviceAreaId], references: [id])
+  description      String
+  preferredContact ContactMethod @default(EMAIL)
+  preferredDate    DateTime?
+  status           RequestStatus @default(OPEN)
+  assignedToId     String?
+  assignedTo       Professional? @relation(fields: [assignedToId], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("service_requests")
+}
+
+enum ContactMethod {
+  EMAIL
+  PHONE
+  WHATSAPP
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+}

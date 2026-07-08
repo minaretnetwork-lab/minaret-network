@@ -1,0 +1,67 @@
+import Link from "next/link";
+
+export function Footer() {
+  return (
+    <footer className="bg-[#0a2e1a] text-white/60 mt-auto">
+      <div className="container mx-auto px-4 lg:px-6 py-14">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+
+          {/* Brand */}
+          <div className="col-span-1 md:col-span-2">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-sm">
+                <span style={{ fontFamily: "var(--font-playfair)" }}>MN</span>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm leading-none" style={{ fontFamily: "var(--font-playfair)" }}>Minaret Network</p>
+                <p className="text-[10px] text-white/40 leading-none mt-1 uppercase tracking-wide">Mosque Professionals</p>
+              </div>
+            </div>
+            <p className="text-sm leading-relaxed max-w-xs text-white/50">
+              Connecting mosque communities with trusted professionals across the GTA.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-white text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-playfair)" }}>Find help</h4>
+            <ul className="space-y-3 text-sm">
+              {[
+                { href: "/professionals", label: "All Professionals" },
+                { href: "/categories", label: "Browse Categories" },
+                { href: "/request", label: "Request a Professional" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-white/50 hover:text-emerald-400 transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-playfair)" }}>Join us</h4>
+            <ul className="space-y-3 text-sm">
+              {[
+                { href: "/professionals/register", label: "Register as Professional" },
+                { href: "/auth/login", label: "Member Login" },
+                { href: "/auth/signup", label: "Create Account" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-white/50 hover:text-emerald-400 transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30">
+          <span>© {new Date().getFullYear()} Minaret Network. All rights reserved.</span>
+          <span>Built for the community, by the community.</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
