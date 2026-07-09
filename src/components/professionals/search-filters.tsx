@@ -115,7 +115,7 @@ export function SearchFilters({ categories, serviceAreas }: SearchFiltersProps) 
           onChange={(e) => updateFilter("verified", e.target.checked ? "1" : "")}
           className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
         />
-        <span className="text-sm text-gray-700 dark:text-gray-300">Verified professionals only</span>
+        <span className="text-sm text-gray-700 dark:text-gray-300">Mosque affiliated only</span>
       </label>
 
       {hasFilters && (

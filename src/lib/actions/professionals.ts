@@ -47,7 +47,7 @@ export async function getProfessionals(
     ...(categorySlug && { category: { slug: categorySlug } }),
     ...(serviceAreaSlug && { serviceAreas: { some: { slug: serviceAreaSlug } } }),
     ...(gender && { gender }),
-    ...(verifiedOnly && { isVerified: true }),
+    ...(verifiedOnly && { badges: { some: { type: "MOSQUE_AFFILIATED" } } }),
     ...(languages && languages.length > 0 && {
       languages: { hasSome: languages },
     }),
