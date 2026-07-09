@@ -181,7 +181,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
       </Button>
 
       <p className="text-xs text-center text-gray-400">
-        Verified professionals in your chosen category and area will be notified of your request.
+        Mosque affiliated professionals in your chosen category and area will be notified of your request.
       </p>
     </form>
   );
