@@ -135,6 +135,7 @@ export default async function ProfessionalsPage({ searchParams }: PageProps) {
           </Suspense>
         </div>
       </div>
+      </div>
     </div>
   );
 }
