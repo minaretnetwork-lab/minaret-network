@@ -9,6 +9,7 @@ export async function submitServiceRequest(data: {
   serviceAreaId?: string;
   description: string;
   preferredContact: "EMAIL" | "PHONE" | "WHATSAPP";
+  contactValue: string;
   preferredDate?: string;
 }) {
   const supabase = await createClient();
@@ -30,6 +31,7 @@ export async function submitServiceRequest(data: {
       serviceAreaId: data.serviceAreaId || null,
       description: data.description,
       preferredContact: data.preferredContact,
+      contactValue: data.contactValue,
       preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
     },
   });

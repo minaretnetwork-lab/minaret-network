@@ -16,7 +16,12 @@ async function getSponsoredLogos() {
 }
 
 export async function SponsoredLogoCarousel() {
-  const sponsors = await getSponsoredLogos();
+  let sponsors: Awaited<ReturnType<typeof getSponsoredLogos>> = [];
+  try {
+    sponsors = await getSponsoredLogos();
+  } catch {
+    return null;
+  }
   if (sponsors.length === 0) return null;
 
   const items = sponsors.length < 6 ? [...sponsors, ...sponsors, ...sponsors] : sponsors;

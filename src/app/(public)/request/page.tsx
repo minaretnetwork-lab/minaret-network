@@ -4,6 +4,7 @@ import { ServiceRequestForm } from "@/components/service-request-form";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { FileText, Users, MessageSquare, CheckCircle2 } from "lucide-react";
+import { getCurrentUser } from "@/lib/actions/auth";
 
 export const metadata = { title: "Raise a Service Request | Minaret Network" };
 
@@ -21,18 +22,25 @@ const HOW_IT_WORKS = [
   {
     icon: <MessageSquare className="h-5 w-5 text-emerald-600" />,
     title: "Receive multiple quotes",
-    desc: "Interested professionals reach out directly. Compare, ask questions, and choose who you trust.",
+    desc: "Interested professionals reach out directly via your preferred contact. Compare, ask questions, and choose who you trust.",
   },
 ];
 
 export default async function RequestPage() {
-  const mosque = await prisma.mosque.findUnique({
-    where: { slug: DEFAULT_MOSQUE_SLUG },
-    include: {
-      categories: { where: { isActive: true }, orderBy: { name: "asc" } },
-      serviceAreas: { orderBy: { name: "asc" } },
-    },
-  });
+  const [user, mosque] = await Promise.all([
+    getCurrentUser(),
+    prisma.mosque.findUnique({
+      where: { slug: DEFAULT_MOSQUE_SLUG },
+      include: {
+        categories: { where: { isActive: true }, orderBy: { name: "asc" } },
+        serviceAreas: { orderBy: { name: "asc" } },
+      },
+    }),
+  ]);
+
+  // Pre-fill contact details from user profile
+  const defaultEmail = user?.email ?? "";
+  const defaultPhone = user?.phone ?? "";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -95,7 +103,7 @@ export default async function RequestPage() {
 
             <p className="text-xs text-gray-400 dark:text-gray-600 leading-relaxed">
               All professionals on Minaret Network are mosque community members, verified by our administration.
-              Your contact details are only shared with professionals you choose to engage.
+              Your contact details are only shared with professionals who respond to your request.
             </p>
           </div>
 
@@ -104,6 +112,8 @@ export default async function RequestPage() {
             <ServiceRequestForm
               categories={mosque?.categories ?? []}
               serviceAreas={mosque?.serviceAreas ?? []}
+              defaultEmail={defaultEmail}
+              defaultPhone={defaultPhone}
             />
           </div>
         </div>
