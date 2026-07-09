@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Shield, ChevronDown } from "lucide-react";
+import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
+import { UserDropdown } from "./user-dropdown";
 
 interface NavbarProps {
   user?: {
@@ -10,12 +11,14 @@ interface NavbarProps {
     displayName?: string | null;
     email: string;
     role: string;
+    isProfessional?: boolean;
   } | null;
 }
 
 export function Navbar({ user }: NavbarProps) {
-  const displayName = user?.displayName ?? user?.firstName ?? user?.email;
+  const displayName = user?.displayName ?? user?.firstName ?? user?.email ?? "User";
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const isProfessional = user?.isProfessional ?? false;
 
   return (
     <>
@@ -67,22 +70,11 @@ export function Navbar({ user }: NavbarProps) {
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-2">
             {user ? (
-              <>
-                <Link href="/dashboard">
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors">
-                    <div className="h-7 w-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold">
-                      {(displayName?.[0] ?? "U").toUpperCase()}
-                    </div>
-                    <span className="max-w-[120px] truncate">{displayName}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-white/40" />
-                  </button>
-                </Link>
-                <form action="/auth/signout" method="post">
-                  <Button variant="outline" size="sm" className="h-9 text-xs border-white/20 text-white hover:bg-white/10 bg-transparent">
-                    Sign out
-                  </Button>
-                </form>
-              </>
+              <UserDropdown
+                displayName={displayName}
+                isAdmin={isAdmin}
+                isProfessional={isProfessional}
+              />
             ) : (
               <>
                 <Link href="/auth/login">
