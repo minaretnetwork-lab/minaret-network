@@ -173,4 +173,4 @@ function AddAdmin() {
   );
 }
 
-export const AdminsClient = { RowActions, AddAdmin };
+export { RowActions as AdminRowActions, AddAdmin };

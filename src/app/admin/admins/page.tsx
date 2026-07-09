@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getAdmins } from "@/lib/actions/admins";
 import { Shield, Crown } from "lucide-react";
-import { AdminsClient } from "./admins-client";
+import { AdminRowActions, AddAdmin } from "./admins-client";
 
 export const metadata = { title: "Manage Admins | Admin" };
 
@@ -75,7 +75,7 @@ export default async function AdminsPage() {
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     {admin.role !== "SUPER_ADMIN" && (
-                      <AdminsClient.RowActions admin={admin} />
+                      <AdminRowActions admin={admin} />
                     )}
                   </td>
                 </tr>
@@ -89,7 +89,7 @@ export default async function AdminsPage() {
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
         <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">Grant Admin Access</h2>
         <p className="text-xs text-gray-400 mb-4">Search for a registered user by name or email and promote them to admin.</p>
-        <AdminsClient.AddAdmin />
+        <AddAdmin />
       </div>
     </div>
   );
