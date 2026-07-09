@@ -29,6 +29,7 @@ interface Props {
   serviceAreas: ServiceArea[];
   defaultEmail?: string;
   defaultPhone?: string;
+  defaultWhatsapp?: string;
 }
 
 const CONTACT_OPTIONS = [
@@ -37,7 +38,7 @@ const CONTACT_OPTIONS = [
   { value: "WHATSAPP", label: "WhatsApp", icon: <MessageCircle className="h-3.5 w-3.5" /> },
 ] as const;
 
-export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = "", defaultPhone = "" }: Props) {
+export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = "", defaultPhone = "", defaultWhatsapp = "" }: Props) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -51,7 +52,8 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
   function handleContactMethodChange(method: "EMAIL" | "PHONE" | "WHATSAPP") {
     setValue("preferredContact", method);
     if (method === "EMAIL") setValue("contactValue", defaultEmail);
-    else if (method === "PHONE" || method === "WHATSAPP") setValue("contactValue", defaultPhone);
+    else if (method === "PHONE") setValue("contactValue", defaultPhone);
+    else if (method === "WHATSAPP") setValue("contactValue", defaultWhatsapp || defaultPhone);
     else setValue("contactValue", "");
   }
 

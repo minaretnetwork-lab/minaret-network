@@ -48,6 +48,39 @@ export async function signOut() {
   redirect("/");
 }
 
+export async function updateUserProfile(data: {
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  whatsapp?: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  // Save to DB
+  await prisma.user.update({
+    where: { supabaseId: user.id },
+    data: {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      displayName: `${data.firstName} ${data.lastName}`,
+      phone: data.phone || null,
+      whatsapp: data.whatsapp || null,
+    },
+  });
+
+  // Keep Supabase metadata in sync
+  await supabase.auth.updateUser({
+    data: {
+      first_name: data.firstName,
+      last_name: data.lastName,
+      full_name: `${data.firstName} ${data.lastName}`,
+      phone: data.phone,
+    },
+  });
+}
+
 export async function getCurrentUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -41,6 +41,7 @@ export default async function RequestPage() {
   // Pre-fill contact details from user profile
   const defaultEmail = user?.email ?? "";
   const defaultPhone = user?.phone ?? "";
+  const defaultWhatsapp = user?.whatsapp ?? "";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -114,6 +115,7 @@ export default async function RequestPage() {
               serviceAreas={mosque?.serviceAreas ?? []}
               defaultEmail={defaultEmail}
               defaultPhone={defaultPhone}
+              defaultWhatsapp={defaultWhatsapp}
             />
           </div>
         </div>
