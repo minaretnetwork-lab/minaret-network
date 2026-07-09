@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Star, CheckCircle2, MessageCircle, ArrowRight } from "lucide-react";
+import { MapPin, Star, CheckCircle2, MessageCircle, ArrowRight, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials, buildWhatsAppUrl } from "@/lib/utils";
 import type { ProfessionalWithRelations } from "@/types";
@@ -10,6 +10,7 @@ interface ProfessionalCardProps {
 
 export function ProfessionalCard({ professional }: ProfessionalCardProps) {
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
+  const isSponsored = (professional as typeof professional & { isSponsored?: boolean }).isSponsored === true;
 
   const name =
     user.displayName ??
@@ -20,7 +21,15 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
   const photoUrl = professional.photoUrl ?? user.avatarUrl;
 
   return (
-    <div className="group relative bg-white dark:bg-white/[0.03] border border-border hover:border-emerald-200 dark:hover:border-emerald-800 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+    <div className={`group relative bg-white dark:bg-white/[0.03] border rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}>
+      {isSponsored && (
+        <div className="absolute top-3 right-3">
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
+            <Sparkles className="h-2.5 w-2.5" />
+            Sponsored
+          </span>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex items-start gap-3.5">

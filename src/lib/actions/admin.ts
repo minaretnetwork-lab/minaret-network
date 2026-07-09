@@ -74,18 +74,18 @@ export async function getAdminStats(mosqueSlug: string) {
 }
 
 export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: string) {
-  return prisma.professional.findMany({
-    where: {
-      ...(status && { status: status as never }),
-    },
+  const professionals = await prisma.professional.findMany({
+    where: { ...(status && { status: status as never }) },
     include: {
       user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true } },
       mosque: { select: { name: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
-      category: { select: { name: true, slug: true } },
+      category: { select: { id: true, name: true, slug: true } },
       badges: true,
       recommendations: { where: { status: "APPROVED" }, select: { id: true } },
       credentials: { select: { id: true, name: true, isVerified: true } },
     },
     orderBy: { submittedAt: "desc" },
   });
+
+  return professionals;
 }

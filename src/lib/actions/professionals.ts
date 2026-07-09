@@ -68,7 +68,7 @@ export async function getProfessionals(
       ? [{ user: { firstName: "asc" } }]
       : sortBy === "newest"
       ? [{ approvedAt: "desc" }]
-      : [{ recommendations: { _count: "desc" } }, { isFeatured: "desc" }];
+      : [{ isSponsored: "desc" }, { recommendations: { _count: "desc" } }, { isFeatured: "desc" }];
 
   return prisma.professional.findMany({
     where,
@@ -80,6 +80,7 @@ export async function getProfessionals(
       serviceAreas: { select: { id: true, name: true, slug: true } },
       badges: { select: { id: true, type: true, issuedAt: true } },
       recommendations: { where: { status: "APPROVED" }, select: { id: true, status: true } },
+      // sponsoredUntil included as scalar field automatically
       galleryImages: { select: { id: true, url: true, caption: true }, take: 6 },
     },
   });

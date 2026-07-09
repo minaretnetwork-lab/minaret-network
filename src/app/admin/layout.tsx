@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, MessageSquare,
-  FileText, Tag, LogOut, Building2
+  FileText, Tag, LogOut, Building2, Sparkles, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +11,8 @@ const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
   { href: "/admin/mosques", label: "Mosques", icon: <Building2 className="h-4 w-4" /> },
   { href: "/admin/professionals", label: "Professionals", icon: <Users className="h-4 w-4" /> },
+  { href: "/admin/sponsored", label: "Sponsored", icon: <Sparkles className="h-4 w-4" /> },
+  { href: "/admin/featured", label: "Featured Biz", icon: <Star className="h-4 w-4" /> },
   { href: "/admin/recommendations", label: "Recommendations", icon: <MessageSquare className="h-4 w-4" /> },
   { href: "/admin/requests", label: "Service Requests", icon: <FileText className="h-4 w-4" /> },
   { href: "/admin/categories", label: "Categories", icon: <Tag className="h-4 w-4" /> },

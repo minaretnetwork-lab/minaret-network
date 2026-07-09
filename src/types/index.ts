@@ -27,7 +27,10 @@ export interface ProfessionalWithRelations {
   status: ProfessionalStatus;
   isVerified: boolean;
   isFeatured: boolean;
+  isSponsored: boolean;
   profileViews: number;
+  searchAppearances: number;
+  contactClicks: number;
   availability: string | null;
   approvedAt: Date | null;
   createdAt: Date;

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
-import { LayoutDashboard, User, FileText, LogOut, Shield } from "lucide-react";
+import { LayoutDashboard, User, FileText, LogOut, Shield, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +16,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { href: "/dashboard/requests", label: "My Requests", icon: <FileText className="h-4 w-4" /> },
     ...(user.role === "PROFESSIONAL" || user.professional ? [
       { href: "/dashboard/professional", label: "Professional Profile", icon: <Shield className="h-4 w-4" /> },
+      { href: "/dashboard/promote", label: "Sponsored Listing", icon: <Sparkles className="h-4 w-4" /> },
+      { href: "/dashboard/featured", label: "Featured Business", icon: <Star className="h-4 w-4" /> },
     ] : []),
     ...(user.role === "ADMIN" || user.role === "SUPER_ADMIN" ? [
       { href: "/admin", label: "Admin Panel", icon: <Shield className="h-4 w-4" /> },

@@ -60,6 +60,40 @@ async function main() {
   }
 
   console.log(`✅ ${SERVICE_AREAS.length} service areas seeded`);
+
+  // Seed default pricing tier
+  const existingDefault = await prisma.sponsoredPricingTier.findFirst({
+    where: { categoryId: null, serviceAreaId: null, isActive: true },
+  });
+  if (!existingDefault) {
+    await prisma.sponsoredPricingTier.create({
+      data: {
+        name: "Default",
+        priceMonthly: 49,
+        maxSlots: 2,
+        categoryId: null,
+        serviceAreaId: null,
+        isActive: true,
+      },
+    });
+    console.log("✅ Default pricing tier created ($49 CAD/month, 2 slots)");
+  } else {
+    console.log("✅ Default pricing tier already exists");
+  }
+
+  // Seed default featured pricing tier
+  const existingFeaturedDefault = await prisma.featuredPricingTier.findFirst({
+    where: { city: null, isActive: true },
+  });
+  if (!existingFeaturedDefault) {
+    await prisma.featuredPricingTier.create({
+      data: { name: "Default", priceMonthly: 99, maxSlots: 6, city: null, isActive: true },
+    });
+    console.log("✅ Default featured pricing tier created ($99 CAD/month, 6 slots)");
+  } else {
+    console.log("✅ Default featured pricing tier already exists");
+  }
+
   console.log("🎉 Seed complete!");
 }
 

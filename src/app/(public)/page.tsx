@@ -10,8 +10,16 @@ import { ProfessionalCard } from "@/components/professionals/professional-card";
 import { getFeaturedProfessionals } from "@/lib/actions/professionals";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
+import { FeaturedSection } from "@/components/featured/featured-section";
 
-export default async function HomePage() {
+interface HomePageProps {
+  searchParams: Promise<{ featured_city?: string }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+  const featuredCity = params.featured_city;
+
   const [featured, mosque] = await Promise.all([
     getFeaturedProfessionals(DEFAULT_MOSQUE_SLUG, 6),
     prisma.mosque.findUnique({
@@ -85,6 +93,30 @@ export default async function HomePage() {
         <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[oklch(0.985_0.004_90)] to-transparent dark:from-[oklch(0.12_0.01_260)]" aria-hidden="true" />
       </section>
 
+      {/* ── Quranic Verse ────────────────────────────────────── */}
+      <section className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 py-16">
+        <div className="container mx-auto px-4 lg:px-6 max-w-2xl text-center">
+          <p
+            className="text-3xl md:text-4xl text-emerald-700 dark:text-emerald-400 leading-loose mb-4 tracking-wide"
+            style={{ fontFamily: "var(--font-playfair)", direction: "rtl" }}
+          >
+            لِتَعَارَفُوا
+          </p>
+          <p
+            className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-loose mb-6"
+            style={{ fontFamily: "var(--font-playfair)", direction: "rtl" }}
+          >
+            يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا
+          </p>
+          <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 italic mb-3 leading-relaxed">
+            &ldquo;O mankind, We created you from a single pair and made you into nations and tribes — so that you may know one another.&rdquo;
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-600 tracking-wide uppercase">
+            Surah Al-Hujurat &mdash; 49:13
+          </p>
+        </div>
+      </section>
+
       {/* ── Categories ───────────────────────────────────────── */}
       <section className="container mx-auto px-4 lg:px-6 py-20">
         <div className="flex items-end justify-between mb-10">
@@ -103,6 +135,9 @@ export default async function HomePage() {
         </div>
         <CategoryGrid />
       </section>
+
+      {/* ── Featured Businesses ──────────────────────────────── */}
+      <FeaturedSection city={featuredCity} />
 
       {/* ── Featured Professionals ───────────────────────────── */}
       {featured.length > 0 && (

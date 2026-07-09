@@ -28,16 +28,42 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
     );
   }
 
+  const sponsored = professionals.filter((p) => (p as never as { isSponsored: boolean }).isSponsored);
+  const organic = professionals.filter((p) => !(p as never as { isSponsored: boolean }).isSponsored);
+
   return (
     <>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
         {professionals.length} professional{professionals.length !== 1 ? "s" : ""} found
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        {professionals.map((p) => (
-          <ProfessionalCard key={p.id} professional={p as never} />
-        ))}
-      </div>
+
+      {sponsored.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-400">Sponsored</span>
+            <div className="flex-1 h-px bg-violet-100 dark:bg-violet-900/30" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            {sponsored.map((p) => (
+              <ProfessionalCard key={p.id} professional={p as never} />
+            ))}
+          </div>
+          {organic.length > 0 && (
+            <div className="flex items-center gap-2 mt-8 mb-3">
+              <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Verified Professionals</span>
+              <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {organic.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {organic.map((p) => (
+            <ProfessionalCard key={p.id} professional={p as never} />
+          ))}
+        </div>
+      )}
     </>
   );
 }

@@ -9,14 +9,14 @@ datasource db {
 }
 
 model Mosque {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  address     String?
-  city        String?
-  province    String?
-  country     String   @default("Canada")
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String   @unique
+  description           String?
+  address               String?
+  city                  String?
+  province              String?
+  country               String   @default("Canada")
   logoUrl               String?
   website               String?
   communityChannelType  String?  @default("WhatsApp")
@@ -79,8 +79,11 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  professionals Professional[]
-  requests      ServiceRequest[]
+  professionals     Professional[]
+  requests          ServiceRequest[]
+  sponsoredListings SponsoredListing[]
+  waitlistEntries   SponsoredWaitlist[]
+  pricingTiers      SponsoredPricingTier[]
 
   @@unique([slug, mosqueId])
   @@map("categories")
@@ -96,8 +99,11 @@ model ServiceArea {
   mosqueId String?
   mosque   Mosque? @relation(fields: [mosqueId], references: [id])
 
-  professionals Professional[]
-  requests      ServiceRequest[]
+  professionals     Professional[]
+  requests          ServiceRequest[]
+  sponsoredListings SponsoredListing[]
+  waitlistEntries   SponsoredWaitlist[]
+  pricingTiers      SponsoredPricingTier[]
 
   @@unique([slug, mosqueId])
   @@map("service_areas")
@@ -127,7 +133,10 @@ model Professional {
   status            ProfessionalStatus @default(PENDING)
   isVerified        Boolean            @default(false)
   isFeatured        Boolean            @default(false)
+  isSponsored       Boolean            @default(false)
   profileViews      Int                @default(0)
+  searchAppearances Int                @default(0)
+  contactClicks     Int                @default(0)
   availability      String?
   rejectionReason   String?
   submittedAt       DateTime           @default(now())
@@ -135,12 +144,16 @@ model Professional {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  serviceAreas    ServiceArea[]
-  badges          VerificationBadge[]
-  recommendations Recommendation[]
-  credentials     Credential[]
-  galleryImages   GalleryImage[]
-  serviceRequests ServiceRequest[]
+  serviceAreas      ServiceArea[]
+  badges            VerificationBadge[]
+  recommendations   Recommendation[]
+  credentials       Credential[]
+  galleryImages     GalleryImage[]
+  serviceRequests   ServiceRequest[]
+  sponsoredListings SponsoredListing[]
+  waitlistEntries   SponsoredWaitlist[]
+  featuredListings  FeaturedListing[]
+  featuredWaitlist  FeaturedWaitlist[]
 
   @@map("professionals")
 }
@@ -202,11 +215,11 @@ model GalleryImage {
 }
 
 model Recommendation {
-  id             String               @id @default(cuid())
-  professionalId String
-  professional   Professional         @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User                 @relation(fields: [userId], references: [id])
+  id                String               @id @default(cuid())
+  professionalId    String
+  professional      Professional         @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User                 @relation(fields: [userId], references: [id])
   content           String
   highlyRecommended Boolean              @default(false)
   status            RecommendationStatus @default(PENDING)
@@ -222,6 +235,130 @@ enum RecommendationStatus {
   APPROVED
   REJECTED
 }
+
+// ── Sponsored Listings ────────────────────────────────────────────────────────
+
+model SponsoredPricingTier {
+  id            String      @id @default(cuid())
+  name          String
+  categoryId    String?
+  category      Category?   @relation(fields: [categoryId], references: [id])
+  serviceAreaId String?
+  serviceArea   ServiceArea? @relation(fields: [serviceAreaId], references: [id])
+  priceMonthly  Decimal     @db.Decimal(10, 2)
+  maxSlots      Int         @default(2)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  listings SponsoredListing[]
+
+  @@map("sponsored_pricing_tiers")
+}
+
+model SponsoredListing {
+  id             String           @id @default(cuid())
+  professionalId String
+  professional   Professional     @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id])
+  serviceAreaId  String
+  serviceArea    ServiceArea      @relation(fields: [serviceAreaId], references: [id])
+  pricingTierId  String?
+  pricingTier    SponsoredPricingTier? @relation(fields: [pricingTierId], references: [id])
+  priceMonthly   Decimal          @db.Decimal(10, 2)
+  status         SponsoredStatus  @default(PENDING)
+  startDate      DateTime?
+  adminNote      String?
+  cancelledAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("sponsored_listings")
+}
+
+enum SponsoredStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  CANCELLED
+}
+
+model SponsoredWaitlist {
+  id             String      @id @default(cuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  categoryId     String
+  category       Category    @relation(fields: [categoryId], references: [id])
+  serviceAreaId  String
+  serviceArea    ServiceArea @relation(fields: [serviceAreaId], references: [id])
+  notifiedAt     DateTime?
+  createdAt      DateTime    @default(now())
+
+  @@unique([professionalId, categoryId, serviceAreaId])
+  @@map("sponsored_waitlist")
+}
+
+// ── Featured Businesses ───────────────────────────────────────────────────────
+
+model FeaturedPricingTier {
+  id           String    @id @default(cuid())
+  name         String
+  city         String?   // null = default for all cities
+  priceMonthly Decimal   @db.Decimal(10, 2)
+  maxSlots     Int       @default(6)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  listings FeaturedListing[]
+
+  @@map("featured_pricing_tiers")
+}
+
+model FeaturedListing {
+  id             String          @id @default(cuid())
+  professionalId String
+  professional   Professional    @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  city           String
+  pricingTierId  String?
+  pricingTier    FeaturedPricingTier? @relation(fields: [pricingTierId], references: [id])
+  priceMonthly   Decimal         @db.Decimal(10, 2)
+  status         FeaturedStatus  @default(PENDING)
+  startDate      DateTime?
+  cancelledAt    DateTime?
+  adminNote      String?
+  impressions    Int             @default(0)
+  cardClicks     Int             @default(0)
+  websiteClicks  Int             @default(0)
+  phoneClicks    Int             @default(0)
+  whatsappClicks Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("featured_listings")
+}
+
+enum FeaturedStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  CANCELLED
+}
+
+model FeaturedWaitlist {
+  id             String       @id @default(cuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  city           String
+  notifiedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@unique([professionalId, city])
+  @@map("featured_waitlist")
+}
+
+// ── Service Requests ──────────────────────────────────────────────────────────
 
 model ServiceRequest {
   id               String        @id @default(cuid())

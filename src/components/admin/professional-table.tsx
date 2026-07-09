@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  approveProfessional, rejectProfessional, suspendProfessional, awardBadge, revokeBadge
-} from "@/lib/actions/admin";
+import { approveProfessional, rejectProfessional, suspendProfessional, awardBadge, revokeBadge } from "@/lib/actions/admin";
 import { CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 
 type Professional = {
   id: string;
   status: string;
   submittedAt: Date;
+  isSponsored: boolean;
   user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string };
   mosque: {
     name: string;
@@ -18,7 +17,7 @@ type Professional = {
     communityChannelName: string | null;
     communityChannelLink: string | null;
   } | null;
-  category: { name: string; slug: string };
+  category: { id: string; name: string; slug: string };
   badges: { type: string }[];
   recommendations: { id: string }[];
   credentials: { id: string; name: string; isVerified: boolean }[];
@@ -162,6 +161,12 @@ export function AdminProfessionalTable({ professionals }: Props) {
                     Highly Recommended
                   </button>
                 </div>
+
+                {p.isSponsored && (
+                  <div className="mt-2">
+                    <span className="text-xs text-violet-700 font-medium">✦ Sponsored listing active</span>
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
