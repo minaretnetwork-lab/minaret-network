@@ -31,11 +31,13 @@ const BENEFITS = [
   { icon: <Star className="h-5 w-5" />, label: "Profile visibility", desc: "See how many community members viewed your profile and clicked to contact you" },
 ];
 
-const STEPS = [
+const SHARED_STEPS = [
   { n: "1", title: "Register your business", desc: "Create a free professional profile. Takes about 5 minutes." },
   { n: "2", title: "Get verified", desc: "An admin reviews your profile, typically within 24 hours." },
-  { n: "3", title: "Go live as Sponsored", desc: "Apply for a sponsored slot. Once approved, your listing appears at the top instantly." },
 ];
+
+const SPONSORED_STEP = { title: "Apply for a Sponsored slot", desc: "Pick your category and service area. Once approved, your listing pins to the top of relevant searches. Only 2 slots per category — first come, first served." };
+const FEATURED_STEP = { title: "Apply for a Featured spot", desc: "Choose your city. Once approved, your business card appears in the Featured section on the homepage. Only 6 businesses per city at any time." };
 
 export default async function AdvertisePage() {
   const { sponsored: price, featured: featuredPrice } = await getPrices();
@@ -48,7 +50,7 @@ export default async function AdvertisePage() {
         <div className="container mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 text-emerald-300 text-sm font-medium mb-6 bg-emerald-800/50 border border-emerald-700 px-4 py-1.5 rounded-full">
             <Sparkles className="h-4 w-4" />
-            Sponsored Listings — Minaret Network
+            Advertise with Us — Minaret Network
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-6" style={{ fontFamily: "var(--font-playfair)" }}>
             Grow Your Business Within a Trusted Community
@@ -218,30 +220,68 @@ export default async function AdvertisePage() {
 
       {/* How it works */}
       <section className="py-16 px-4">
-        <div className="container mx-auto max-w-2xl">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-10" style={{ fontFamily: "var(--font-playfair)" }}>
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2" style={{ fontFamily: "var(--font-playfair)" }}>
             How it works
           </h2>
-          <div className="space-y-6">
-            {STEPS.map((s, i) => (
-              <div key={s.n} className="flex gap-5">
-                <div className="flex flex-col items-center">
-                  <div className="h-10 w-10 flex-shrink-0 rounded-full bg-emerald-600 text-white font-bold text-sm flex items-center justify-center">
-                    {s.n}
-                  </div>
-                  {i < STEPS.length - 1 && <div className="w-px flex-1 bg-gray-200 dark:bg-gray-800 mt-2" />}
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-10">Two steps are the same for both products. Then choose your path.</p>
+
+          {/* Shared steps */}
+          <div className="flex flex-col sm:flex-row gap-0 sm:gap-0 justify-center mb-6">
+            {SHARED_STEPS.map((s, i) => (
+              <div key={s.n} className="flex sm:flex-col items-start sm:items-center gap-4 sm:gap-2 flex-1 relative">
+                {/* connector line between steps */}
+                {i < SHARED_STEPS.length - 1 && (
+                  <div className="hidden sm:block absolute top-5 left-[calc(50%+20px)] right-[calc(-50%+20px)] h-px bg-gray-200 dark:bg-gray-800" />
+                )}
+                <div className="h-10 w-10 flex-shrink-0 rounded-full bg-emerald-600 text-white font-bold text-sm flex items-center justify-center z-10">
+                  {s.n}
                 </div>
-                <div className="pb-6">
-                  <p className="font-semibold text-gray-900 dark:text-white">{s.title}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{s.desc}</p>
+                <div className="sm:text-center sm:px-4 pb-4 sm:pb-0">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">{s.title}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-6 flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/40 rounded-xl">
-            <Clock className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-800 dark:text-amber-300">
-              Profile reviews typically take <strong>24–48 hours</strong>. Sponsored slots are limited to 2 businesses per category and service area — first come, first served.
+
+          {/* Then choose */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest flex-shrink-0">Then choose your path</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            {/* Sponsored path */}
+            <div className="rounded-xl border border-violet-200 dark:border-violet-800/50 bg-violet-50/50 dark:bg-violet-900/10 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-8 w-8 rounded-full bg-violet-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">3</div>
+                <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-700 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800 px-2 py-0.5 rounded-full">
+                  <Sparkles className="h-3 w-3" /> Sponsored Listing
+                </div>
+              </div>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{SPONSORED_STEP.title}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{SPONSORED_STEP.desc}</p>
+            </div>
+
+            {/* Featured path */}
+            <div className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-900/10 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-8 w-8 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">3</div>
+                <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full">
+                  <Star className="h-3 w-3 fill-amber-500" /> Featured Business
+                </div>
+              </div>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{FEATURED_STEP.title}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{FEATURED_STEP.desc}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
+            <Clock className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Profile reviews typically take <strong className="text-gray-700 dark:text-gray-300">24–48 hours</strong>. Both products are reviewed and approved by our admin team before going live.
             </p>
           </div>
         </div>

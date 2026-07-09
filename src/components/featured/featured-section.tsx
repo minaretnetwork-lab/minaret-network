@@ -9,10 +9,11 @@ interface Props {
 }
 
 export async function FeaturedSection({ city }: Props) {
-  const [listings, cities] = await Promise.all([
+  const [rawListings, cities] = await Promise.all([
     getFeaturedBusinessesForHomepage(city),
     getActiveFeaturedCities(),
   ]);
+  const listings = JSON.parse(JSON.stringify(rawListings));
 
   if (listings.length === 0) return null;
 

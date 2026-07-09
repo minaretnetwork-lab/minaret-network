@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
 import { CategoryGrid } from "@/components/home/category-grid";
 import { CommunityCycle } from "@/components/home/community-cycle";
-import { ProfessionalCard } from "@/components/professionals/professional-card";
-import { getFeaturedProfessionals } from "@/lib/actions/professionals";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { FeaturedSection } from "@/components/featured/featured-section";
+import { SponsoredLogoCarousel } from "@/components/home/sponsored-logo-carousel";
 
 interface HomePageProps {
   searchParams: Promise<{ featured_city?: string }>;
@@ -20,13 +19,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const featuredCity = params.featured_city;
 
-  const [featured, mosque] = await Promise.all([
-    getFeaturedProfessionals(DEFAULT_MOSQUE_SLUG, 6),
-    prisma.mosque.findUnique({
-      where: { slug: DEFAULT_MOSQUE_SLUG },
-      select: { serviceAreas: { orderBy: { name: "asc" }, select: { slug: true, name: true } } },
-    }),
-  ]);
+  const mosque = await prisma.mosque.findUnique({
+    where: { slug: DEFAULT_MOSQUE_SLUG },
+    select: { serviceAreas: { orderBy: { name: "asc" }, select: { slug: true, name: true } } },
+  });
   const serviceAreas = mosque?.serviceAreas ?? [];
 
   return (
@@ -93,6 +89,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[oklch(0.985_0.004_90)] to-transparent dark:from-[oklch(0.12_0.01_260)]" aria-hidden="true" />
       </section>
 
+      {/* ── Sponsor Logo Carousel ───────────────────────────── */}
+      <SponsoredLogoCarousel />
+
+      {/* ── Featured Businesses ──────────────────────────────── */}
+      <FeaturedSection city={featuredCity} />
+
       {/* ── Quranic Verse ────────────────────────────────────── */}
       <section className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 py-16">
         <div className="container mx-auto px-4 lg:px-6 max-w-2xl text-center">
@@ -135,46 +137,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
         <CategoryGrid />
       </section>
-
-      {/* ── Featured Businesses ──────────────────────────────── */}
-      <FeaturedSection city={featuredCity} />
-
-      {/* ── Featured Professionals ───────────────────────────── */}
-      {featured.length > 0 && (
-        <section className="bg-gray-50/80 dark:bg-white/[0.02] border-y border-border/50 py-20">
-          <div className="container mx-auto px-4 lg:px-6">
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-2">Highly recommended</p>
-                <h2
-                  className="text-3xl md:text-4xl font-display font-700 text-gray-900 dark:text-white tracking-tight"
-                  style={{ fontFamily: "var(--font-playfair)" }}
-                >
-                  Featured Professionals
-                </h2>
-              </div>
-              <Link href="/professionals" className="hidden sm:flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400">
-                View all <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {featured.map((p: any) => (
-                <ProfessionalCard key={p.id} professional={p} />
-              ))}
-            </div>
-
-            <div className="mt-8 text-center sm:hidden">
-              <Link href="/professionals">
-                <Button variant="outline" className="border-emerald-200 text-emerald-700">
-                  View all professionals
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── How It Works ─────────────────────────────────────── */}
       <section className="container mx-auto px-4 lg:px-6 py-20">

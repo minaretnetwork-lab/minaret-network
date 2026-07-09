@@ -10,7 +10,7 @@ import { submitRecommendation } from "@/lib/actions/recommendations";
 
 const schema = z.object({
   content: z.string().min(20, "Please write at least 20 characters").max(500, "Maximum 500 characters"),
-  highlyRecommended: z.boolean().default(false),
+  highlyRecommended: z.boolean(),
 });
 
 type FormData = z.infer<typeof schema>;

@@ -130,6 +130,7 @@ model Professional {
   website           String?
   whatsapp          String?
   photoUrl          String?
+  logoUrl           String?
   status            ProfessionalStatus @default(PENDING)
   isVerified        Boolean            @default(false)
   isFeatured        Boolean            @default(false)

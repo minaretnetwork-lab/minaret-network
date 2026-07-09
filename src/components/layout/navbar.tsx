@@ -42,8 +42,8 @@ export function Navbar({ user }: NavbarProps) {
             {[
               { href: "/professionals", label: "Find Professionals" },
               { href: "/categories", label: "Categories" },
-              { href: "/request", label: "Request Help" },
-              { href: "/advertise", label: "Advertise" },
+              { href: "/request", label: "Raise a Service Request" },
+              { href: "/advertise", label: "Advertise with Us" },
             ].map((link) => (
               <Link
                 key={link.href}

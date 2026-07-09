@@ -6,29 +6,30 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import type { SearchFilters } from "@/types";
 
-async function uploadProfilePhoto(file: File, userId: string): Promise<string> {
+async function uploadToStorage(bucket: string, path: string, file: File): Promise<string> {
   const admin = createAdminClient();
-
-  // Ensure bucket exists
-  const { error: bucketErr } = await admin.storage.createBucket("professional-photos", {
+  const { error: bucketErr } = await admin.storage.createBucket(bucket, {
     public: true,
-    fileSizeLimit: 5242880, // 5 MB
+    fileSizeLimit: 5242880,
     allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
   });
-  // Ignore "already exists" error
   if (bucketErr && !bucketErr.message.includes("already exists")) throw bucketErr;
-
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${userId}/photo.${ext}`;
-
   const { error: uploadErr } = await admin.storage
-    .from("professional-photos")
+    .from(bucket)
     .upload(path, file, { upsert: true, contentType: file.type });
   if (uploadErr) throw uploadErr;
-
-  const { data } = admin.storage.from("professional-photos").getPublicUrl(path);
-  // Bust cache so updated photo shows immediately
+  const { data } = admin.storage.from(bucket).getPublicUrl(path);
   return `${data.publicUrl}?t=${Date.now()}`;
+}
+
+async function uploadProfilePhoto(file: File, userId: string): Promise<string> {
+  const ext = file.name.split(".").pop() ?? "jpg";
+  return uploadToStorage("professional-photos", `${userId}/photo.${ext}`, file);
+}
+
+async function uploadBusinessLogo(file: File, userId: string): Promise<string> {
+  const ext = file.name.split(".").pop() ?? "png";
+  return uploadToStorage("professional-logos", `${userId}/logo.${ext}`, file);
 }
 
 export async function getProfessionals(
@@ -149,10 +150,11 @@ export async function submitProfessionalApplication(formData: FormData) {
   const serviceAreaIds = formData.getAll("serviceAreaIds") as string[];
 
   const photoFile = formData.get("photo") as File | null;
+  const logoFile = formData.get("logo") as File | null;
   let photoUrl: string | null = null;
-  if (photoFile && photoFile.size > 0) {
-    photoUrl = await uploadProfilePhoto(photoFile, dbUser.id);
-  }
+  let logoUrl: string | null = null;
+  if (photoFile && photoFile.size > 0) photoUrl = await uploadProfilePhoto(photoFile, dbUser.id);
+  if (logoFile && logoFile.size > 0) logoUrl = await uploadBusinessLogo(logoFile, dbUser.id);
 
   const professional = await prisma.professional.upsert({
     where: { userId: dbUser.id },
@@ -160,6 +162,7 @@ export async function submitProfessionalApplication(formData: FormData) {
       mosqueId: mosque?.id ?? null,
       categoryId,
       ...(photoUrl && { photoUrl }),
+      ...(logoUrl && { logoUrl }),
       businessName: formData.get("businessName") as string || null,
       title: formData.get("title") as string || null,
       bio: formData.get("bio") as string || null,
@@ -180,6 +183,7 @@ export async function submitProfessionalApplication(formData: FormData) {
       mosqueId: mosque?.id ?? null,
       categoryId,
       ...(photoUrl && { photoUrl }),
+      ...(logoUrl && { logoUrl }),
       businessName: formData.get("businessName") as string || null,
       title: formData.get("title") as string || null,
       bio: formData.get("bio") as string || null,

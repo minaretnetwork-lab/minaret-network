@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LANGUAGES } from "@/lib/constants";
 import { submitProfessionalApplication } from "@/lib/actions/professionals";
 import { useRouter } from "next/navigation";
-import { Camera, X } from "lucide-react";
+import { Camera, X, Building2 } from "lucide-react";
 
 const schema = z.object({
   mosqueId: z.string().optional(),
@@ -75,15 +75,15 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be under 5 MB.");
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { alert("Image must be under 5 MB."); return; }
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   }
@@ -92,6 +92,20 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     setPhotoFile(null);
     setPhotoPreview(null);
     if (photoInputRef.current) photoInputRef.current.value = "";
+  }
+
+  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert("Logo must be under 5 MB."); return; }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  }
+
+  function removeLogo() {
+    setLogoFile(null);
+    setLogoPreview(null);
+    if (logoInputRef.current) logoInputRef.current.value = "";
   }
 
   const [avDays, setAvDays] = useState<string[]>([]);
@@ -167,6 +181,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         }
       });
       if (photoFile) formData.append("photo", photoFile);
+      if (logoFile) formData.append("logo", logoFile);
       await submitProfessionalApplication(formData);
       setStatus("success");
     } catch (err) {
@@ -235,6 +250,40 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           onChange={handlePhotoChange}
           className="hidden"
         />
+      </div>
+
+      {/* Business logo */}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Business Logo <span className="text-gray-400 font-normal">(optional)</span></p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          If you become a sponsored listing, your logo will appear in a carousel on the homepage. Square logos work best (e.g. 400×400 px).
+        </p>
+        <div className="flex items-center gap-4">
+          <div
+            onClick={() => logoInputRef.current?.click()}
+            className="h-16 w-16 flex-shrink-0 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer overflow-hidden bg-gray-50 dark:bg-gray-800 hover:border-green-400 transition-colors"
+          >
+            {logoPreview ? (
+              <img src={logoPreview} alt="Logo preview" className="h-full w-full object-contain p-1" />
+            ) : (
+              <Building2 className="h-6 w-6 text-gray-400" />
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <button type="button" onClick={() => logoInputRef.current?.click()}
+              className="text-sm text-green-700 dark:text-green-400 font-medium hover:underline text-left">
+              {logoPreview ? "Change logo" : "Upload logo"}
+            </button>
+            {logoPreview && (
+              <button type="button" onClick={removeLogo}
+                className="text-xs text-red-500 hover:underline text-left">
+                Remove
+              </button>
+            )}
+            <p className="text-xs text-gray-400">JPG, PNG or WebP · Max 5 MB</p>
+          </div>
+        </div>
+        <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoChange} className="hidden" />
       </div>
 
       {/* Mosque Affiliation */}

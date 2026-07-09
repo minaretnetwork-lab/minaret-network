@@ -117,9 +117,8 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
   const [toggling, setToggling] = useState<string | null>(null);
 
   async function handleCreate(data: Record<string, string>) {
-    await createMosque(data);
+    await createMosque(data as Parameters<typeof createMosque>[0]);
     setAdding(false);
-    // Page will revalidate via server action
   }
 
   async function handleUpdate(id: string, data: Record<string, string>) {
