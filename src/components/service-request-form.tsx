@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { submitServiceRequest } from "@/lib/actions/service-requests";
 import { Mail, Phone, MessageCircle } from "lucide-react";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const schema = z.object({
   categoryId: z.string().min(1, "Please select a category"),
@@ -42,7 +43,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const { register, handleSubmit, reset, control, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, reset, control, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { preferredContact: "EMAIL", contactValue: defaultEmail },
   });
@@ -84,14 +85,6 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
   }
 
   const selectClass = "mt-1.5 w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";
-
-  const contactPlaceholder = preferredContact === "EMAIL"
-    ? "your@email.com"
-    : preferredContact === "WHATSAPP"
-    ? "+1 416 555 0000 (WhatsApp)"
-    : "+1 416 555 0000";
-
-  const contactType = preferredContact === "EMAIL" ? "email" : "tel";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 space-y-5 shadow-sm">
@@ -149,12 +142,20 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
             </button>
           ))}
         </div>
-        <Input
-          type={contactType}
-          {...register("contactValue")}
-          placeholder={contactPlaceholder}
-          className="mt-1"
-        />
+        {preferredContact === "EMAIL" ? (
+          <Input
+            type="email"
+            {...register("contactValue")}
+            placeholder="your@email.com"
+            className="mt-1"
+          />
+        ) : (
+          <PhoneInput
+            value={watch("contactValue") ?? ""}
+            onChange={(val) => setValue("contactValue", val)}
+            placeholder={preferredContact === "WHATSAPP" ? "416 555 0000 (WhatsApp)" : "416 555 0000"}
+          />
+        )}
         {errors.contactValue && <p className="text-xs text-red-600 mt-1">{errors.contactValue.message}</p>}
         <p className="text-xs text-gray-400">This will only be shared with professionals who respond to your request.</p>
       </div>

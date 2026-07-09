@@ -12,6 +12,7 @@ import { LANGUAGES } from "@/lib/constants";
 import { submitProfessionalApplication } from "@/lib/actions/professionals";
 import { useRouter } from "next/navigation";
 import { Camera, X, Building2 } from "lucide-react";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const schema = z.object({
   mosqueId: z.string().optional(),
@@ -487,7 +488,13 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="phone">Phone</Label>
-            <Input id="phone" type="tel" {...register("phone")} className="mt-1.5" placeholder="+1 416 555 0000" />
+            <div className="mt-1.5">
+              <PhoneInput
+                id="phone"
+                value={watch("phone") ?? ""}
+                onChange={(val) => setValue("phone", val)}
+              />
+            </div>
           </div>
           <div>
             <Label htmlFor="email">Business Email</Label>
@@ -495,7 +502,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           </div>
           <div>
             <Label htmlFor="whatsapp">WhatsApp Number</Label>
-            <Input id="whatsapp" type="tel" {...register("whatsapp")} className="mt-1.5" placeholder="+1 416 555 0000" />
+            <div className="mt-1.5">
+              <PhoneInput
+                value={watch("whatsapp") ?? ""}
+                onChange={(val) => setValue("whatsapp", val)}
+              />
+            </div>
           </div>
           <div>
             <Label htmlFor="website">Website</Label>

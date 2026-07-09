@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, MessageSquare,
-  FileText, Tag, LogOut, Building2, Sparkles, Star
+  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +16,7 @@ const navLinks = [
   { href: "/admin/recommendations", label: "Recommendations", icon: <MessageSquare className="h-4 w-4" /> },
   { href: "/admin/requests", label: "Service Requests", icon: <FileText className="h-4 w-4" /> },
   { href: "/admin/categories", label: "Categories", icon: <Tag className="h-4 w-4" /> },
+  { href: "/admin/revenue", label: "Mosque Revenue", icon: <TrendingUp className="h-4 w-4" /> },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

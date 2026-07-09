@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateUserProfile } from "@/lib/actions/auth";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const schema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -81,18 +82,17 @@ export function ProfileForm({ defaultValues }: Props) {
 
         <div>
           <Label htmlFor="phone">Phone Number</Label>
-          <Input
-            id="phone"
-            type="tel"
-            placeholder="+1 416 555 0000"
-            className="mt-1.5"
-            {...register("phone")}
-            onChange={handlePhoneChange}
-          />
+          <div className="mt-1.5">
+            <PhoneInput
+              id="phone"
+              value={watch("phone") ?? ""}
+              onChange={(val) => { setValue("phone", val); if (whatsappSameAsPhone) setValue("whatsapp", val); }}
+            />
+          </div>
         </div>
 
-        <div className="space-y-3">
-          <Label htmlFor="whatsapp">WhatsApp Number</Label>
+        <div className="space-y-2">
+          <Label>WhatsApp Number</Label>
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -103,15 +103,10 @@ export function ProfileForm({ defaultValues }: Props) {
             <span className="text-sm text-gray-600 dark:text-gray-400">Same as phone number</span>
           </label>
           {!whatsappSameAsPhone && (
-            <Input
-              id="whatsapp"
-              type="tel"
-              placeholder="+1 416 555 0000"
-              {...register("whatsapp")}
+            <PhoneInput
+              value={watch("whatsapp") ?? ""}
+              onChange={(val) => setValue("whatsapp", val)}
             />
-          )}
-          {whatsappSameAsPhone && (
-            <p className="text-xs text-gray-400">WhatsApp will be set to the same number as your phone.</p>
           )}
         </div>
 
