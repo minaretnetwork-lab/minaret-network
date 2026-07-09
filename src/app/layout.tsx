@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
+import { Suspense } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { FlashToast } from "@/components/flash-toast";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -43,6 +46,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        <Toaster position="bottom-right" />
+        <Suspense>
+          <FlashToast />
+        </Suspense>
       </body>
     </html>
   );
