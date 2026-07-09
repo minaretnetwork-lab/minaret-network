@@ -112,7 +112,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
   return (
     <div className="space-y-8">
       {/* Analytics strip */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatBox label="Profile Views" value={professional.profileViews} />
         <StatBox label="Search Appearances" value={professional.searchAppearances} />
         <StatBox label="Contact Clicks" value={professional.contactClicks} />

@@ -20,10 +20,10 @@ export async function FeaturedSection({ city }: Props) {
   const sectionTitle = city ? `Featured Businesses in ${city}` : "Featured Businesses";
 
   return (
-    <section className="bg-amber-50/40 dark:bg-amber-900/5 border-y border-amber-100 dark:border-amber-900/20 py-20">
+    <section className="bg-amber-50/40 dark:bg-amber-900/5 border-y border-amber-100 dark:border-amber-900/20 py-10 sm:py-20">
       <div className="container mx-auto px-4 lg:px-6">
 
-        <div className="flex items-end justify-between mb-10">
+        <div className="flex items-end justify-between mb-6 sm:mb-10">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
@@ -57,7 +57,7 @@ export async function FeaturedSection({ city }: Props) {
         )}
 
         {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {listings.map((l) => (
             <FeaturedBusinessCard key={l.id} listing={l as never} />
           ))}

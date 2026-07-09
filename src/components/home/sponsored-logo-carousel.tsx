@@ -39,8 +39,8 @@ export async function SponsoredLogoCarousel() {
 
       <div className="relative overflow-hidden">
         {/* Fade edges */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 z-10 bg-gradient-to-r from-white dark:from-gray-950 to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-20 z-10 bg-gradient-to-l from-white dark:from-gray-950 to-transparent" />
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 sm:w-20 z-10 bg-gradient-to-r from-white dark:from-gray-950 to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 sm:w-20 z-10 bg-gradient-to-l from-white dark:from-gray-950 to-transparent" />
 
         <div
           className="flex items-center gap-8 w-max"

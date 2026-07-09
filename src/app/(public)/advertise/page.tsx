@@ -46,13 +46,13 @@ export default async function AdvertisePage() {
     <div className="min-h-screen bg-white dark:bg-gray-950">
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-emerald-900 to-emerald-800 text-white py-20 px-4">
+      <section className="bg-gradient-to-b from-emerald-900 to-emerald-800 text-white py-12 md:py-20 px-4">
         <div className="container mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 text-emerald-300 text-sm font-medium mb-6 bg-emerald-800/50 border border-emerald-700 px-4 py-1.5 rounded-full">
             <Sparkles className="h-4 w-4" />
             Advertise with Us — Minaret Network
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-6" style={{ fontFamily: "var(--font-playfair)" }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-6" style={{ fontFamily: "var(--font-playfair)" }}>
             Grow Your Business Within a Trusted Community
           </h1>
           <p className="text-emerald-100 text-lg leading-relaxed max-w-xl mx-auto mb-8">
@@ -144,10 +144,10 @@ export default async function AdvertisePage() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8" style={{ fontFamily: "var(--font-playfair)" }}>
             Simple, flat pricing
           </h2>
-          <div className="grid sm:grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
 
           {/* Featured Business card */}
-          <div className="bg-white dark:bg-gray-900 border-2 border-amber-300 dark:border-amber-700 rounded-2xl p-8 shadow-sm text-center relative">
+          <div className="bg-white dark:bg-gray-900 border-2 border-amber-300 dark:border-amber-700 rounded-2xl p-6 sm:p-8 shadow-sm text-center relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Most Visible</span>
             </div>
@@ -181,7 +181,7 @@ export default async function AdvertisePage() {
           </div>
 
           {/* Sponsored Listing card */}
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm text-center">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8 shadow-sm text-center">
             <div className="inline-flex items-center gap-1.5 text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40 px-3 py-1 rounded-full text-xs font-semibold mb-5">
               <Sparkles className="h-3.5 w-3.5" />
               Sponsored Listing

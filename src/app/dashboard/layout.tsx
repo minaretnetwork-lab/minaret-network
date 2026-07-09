@@ -44,7 +44,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 flex gap-8">
+      {/* Mobile tab bar */}
+      <div className="md:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
+        <nav className="flex px-4 gap-1 min-w-max">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 whitespace-nowrap border-b-2 border-transparent hover:border-green-500 transition-colors"
+            >
+              {link.icon}
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      <div className="container mx-auto px-4 py-6 md:py-8 flex gap-8">
         <aside className="w-52 flex-shrink-0 hidden md:block">
           <nav className="space-y-1">
             {links.map((link) => (

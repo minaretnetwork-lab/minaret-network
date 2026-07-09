@@ -209,7 +209,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const selectClass = "border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full";
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 space-y-6 shadow-sm">
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 sm:p-6 space-y-6 shadow-sm">
 
       {/* Profile photo */}
       <div className="flex flex-col items-center gap-3">
@@ -340,7 +340,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
       <div>
         <Label htmlFor="yearsOfExperience">Years of Experience</Label>
-        <Input id="yearsOfExperience" type="number" min="0" {...register("yearsOfExperience")} className="mt-1.5 w-40" placeholder="e.g. 10" />
+        <Input id="yearsOfExperience" type="number" min="0" {...register("yearsOfExperience")} className="mt-1.5 w-full sm:w-40" placeholder="e.g. 10" />
       </div>
 
       {/* Availability Picker */}
@@ -393,8 +393,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               <select
                 value={avFrom}
                 onChange={(e) => handleFromChange(e.target.value)}
-                className={selectClass}
-                style={{ width: "140px" }}
+                className={`${selectClass} flex-1`}
               >
                 {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
@@ -402,8 +401,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               <select
                 value={avTo}
                 onChange={(e) => handleToChange(e.target.value)}
-                className={selectClass}
-                style={{ width: "140px" }}
+                className={`${selectClass} flex-1`}
               >
                 {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>

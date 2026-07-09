@@ -50,7 +50,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
 
             <h1
-              className="text-5xl md:text-6xl lg:text-[4.5rem] leading-[1.1] mb-6 text-white"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] leading-[1.1] mb-6 text-white"
               style={{ fontFamily: "var(--font-playfair)", fontWeight: 700 }}
             >
               Find professionals from your
@@ -65,7 +65,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <HeroSearch serviceAreas={serviceAreas} />
             </div>
 
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-white/40 mb-5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-white/40 mb-5" style={{ fontFamily: "var(--font-dm-sans)" }}>
               {[
                 "Mosque affiliated",
                 "Community recommendations",
@@ -99,13 +99,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <section className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 py-16">
         <div className="container mx-auto px-4 lg:px-6 max-w-2xl text-center">
           <p
-            className="text-3xl md:text-4xl text-emerald-700 dark:text-emerald-400 leading-loose mb-4 tracking-wide"
+            className="text-2xl md:text-3xl lg:text-4xl text-emerald-700 dark:text-emerald-400 leading-loose mb-4 tracking-wide"
             style={{ fontFamily: "var(--font-playfair)", direction: "rtl" }}
           >
             لِتَعَارَفُوا
           </p>
           <p
-            className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-loose mb-6"
+            className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 leading-loose mb-6"
             style={{ fontFamily: "var(--font-playfair)", direction: "rtl" }}
           >
             يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا

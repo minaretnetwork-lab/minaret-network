@@ -21,7 +21,7 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
   const photoUrl = professional.photoUrl ?? user.avatarUrl;
 
   return (
-    <div className={`group relative bg-white dark:bg-white/[0.03] border rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}>
+    <div className={`group relative bg-white dark:bg-white/[0.03] border rounded-2xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}>
       {isSponsored && (
         <div className="absolute top-3 right-3">
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
@@ -99,7 +99,7 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
 
       {/* Meta footer */}
       <div className="flex items-center justify-between pt-1 mt-auto border-t border-border/60">
-        <div className="flex flex-wrap gap-3 text-xs text-gray-400">
+        <div className="flex flex-wrap gap-2 text-xs text-gray-400">
           {serviceAreas && serviceAreas.length > 0 && (
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3" />

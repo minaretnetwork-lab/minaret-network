@@ -47,7 +47,7 @@ export default async function RequestPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
 
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 py-12 px-4">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 py-8 sm:py-12 px-4">
         <div className="container mx-auto max-w-2xl text-center">
           <div className="inline-flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 px-3 py-1 rounded-full text-xs font-semibold mb-5">
             <FileText className="h-3.5 w-3.5" />
@@ -64,7 +64,7 @@ export default async function RequestPage() {
       </div>
 
       <div className="container mx-auto px-4 py-10 max-w-4xl">
-        <div className="grid lg:grid-cols-5 gap-8">
+        <div className="grid lg:grid-cols-5 gap-4 lg:gap-8">
 
           {/* Left: how it works */}
           <div className="lg:col-span-2 space-y-6">

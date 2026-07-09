@@ -67,7 +67,7 @@ export function ProfileForm({ defaultValues }: Props) {
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 max-w-xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="firstName">First Name *</Label>
             <Input id="firstName" {...register("firstName")} className="mt-1.5" />
