@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, MessageSquare,
-  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp
+  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
     redirect("/dashboard");
   }
+  const isSuperAdmin = user.role === "SUPER_ADMIN";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -57,6 +58,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 {link.label}
               </Link>
             ))}
+            {isSuperAdmin && (
+              <Link
+                href="/admin/admins"
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors font-medium"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Manage Admins
+              </Link>
+            )}
           </nav>
         </aside>
 
