@@ -50,7 +50,7 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
           </div>
           {organic.length > 0 && (
             <div className="flex items-center gap-2 mt-8 mb-3">
-              <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Verified Professionals</span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Mosque Affiliated Professionals</span>
               <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
             </div>
           )}
@@ -102,7 +102,7 @@ export default async function ProfessionalsPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Sidebar — stacks on top on mobile, left column on desktop */}
         <aside className="lg:w-64 flex-shrink-0 space-y-3 lg:space-y-4">
           <SearchBar defaultValue={params.q ?? ""} />
