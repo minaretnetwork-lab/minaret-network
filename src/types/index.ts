@@ -59,6 +59,7 @@ export interface SearchFilters {
   query?: string;
   categorySlug?: string;
   serviceAreaSlug?: string;
+  locationText?: string;
   languages?: string[];
   gender?: Gender;
   verifiedOnly?: boolean;

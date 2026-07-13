@@ -83,6 +83,7 @@ export default async function ProfessionalsPage({ searchParams }: PageProps) {
     query: params.q,
     categorySlug: params.category,
     serviceAreaSlug: params.area,
+    locationText: params.location,
     languages: params.lang ? [params.lang] : undefined,
     verifiedOnly: params.verified === "1",
     sortBy: (params.sort as SearchFiltersType["sortBy"]) ?? undefined,

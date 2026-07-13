@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
 import { CategoryGrid } from "@/components/home/category-grid";
 import { CommunityCycle } from "@/components/home/community-cycle";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
-import { prisma } from "@/lib/prisma";
 import { FeaturedSection } from "@/components/featured/featured-section";
 import { SponsoredLogoCarousel } from "@/components/home/sponsored-logo-carousel";
 
@@ -19,11 +17,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const featuredCity = params.featured_city;
 
-  const mosque = await prisma.mosque.findUnique({
-    where: { slug: DEFAULT_MOSQUE_SLUG },
-    select: { serviceAreas: { orderBy: { name: "asc" }, select: { slug: true, name: true } } },
-  });
-  const serviceAreas = mosque?.serviceAreas ?? [];
 
   return (
     <div className="flex flex-col">
@@ -62,7 +55,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </p>
 
             <div className="flex justify-center mb-8">
-              <HeroSearch serviceAreas={serviceAreas} />
+              <HeroSearch />
             </div>
 
             <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-white/40 mb-5" style={{ fontFamily: "var(--font-dm-sans)" }}>

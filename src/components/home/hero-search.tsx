@@ -2,22 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, MapPin, LocateFixed, Loader2 } from "lucide-react";
+import { Search, MapPin, LocateFixed, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-interface ServiceArea {
-  slug: string;
-  name: string;
-}
-
-interface HeroSearchProps {
-  serviceAreas: ServiceArea[];
-}
-
-export function HeroSearch({ serviceAreas }: HeroSearchProps) {
+export function HeroSearch() {
   const [query, setQuery] = useState("");
-  const [area, setArea] = useState("");
+  const [location, setLocation] = useState("");
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState("");
   const router = useRouter();
@@ -26,7 +17,7 @@ export function HeroSearch({ serviceAreas }: HeroSearchProps) {
     e.preventDefault();
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
-    if (area) params.set("area", area);
+    if (location.trim()) params.set("location", location.trim());
     router.push(`/professionals${params.size ? `?${params}` : ""}`);
   }
 
@@ -37,6 +28,7 @@ export function HeroSearch({ serviceAreas }: HeroSearchProps) {
     }
     setLocating(true);
     setLocateError("");
+    setLocation("");
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -47,36 +39,24 @@ export function HeroSearch({ serviceAreas }: HeroSearchProps) {
           );
           const data = await res.json();
 
-          // Try multiple address fields from most to least specific
-          const candidates: string[] = [
-            data.address?.quarter,
-            data.address?.suburb,
-            data.address?.village,
-            data.address?.town,
-            data.address?.city,
-            data.address?.municipality,
-            data.address?.county,
-          ].filter(Boolean) as string[];
+          // Pick the most specific useful place name
+          const city =
+            data.address?.village ??
+            data.address?.town ??
+            data.address?.suburb ??
+            data.address?.quarter ??
+            data.address?.city ??
+            data.address?.municipality ??
+            data.address?.county ??
+            "";
 
-          // Find the first service area that matches any candidate
-          let matched: ServiceArea | undefined;
-          for (const candidate of candidates) {
-            matched = serviceAreas.find(
-              (a) =>
-                candidate.toLowerCase().includes(a.name.toLowerCase()) ||
-                a.name.toLowerCase().includes(candidate.toLowerCase())
-            );
-            if (matched) break;
-          }
-
-          if (matched) {
-            setArea(matched.slug);
-            setLocateError("");
+          if (city) {
+            setLocation(city);
           } else {
-            setLocateError(`We detected "${candidates[0] ?? "your location"}" — not yet a listed service area. Select manually.`);
+            setLocateError("Couldn't determine your city. Please type it in.");
           }
         } catch {
-          setLocateError("Couldn't look up your location. Please select manually.");
+          setLocateError("Couldn't look up your location. Please type it in.");
         } finally {
           setLocating(false);
         }
@@ -84,9 +64,9 @@ export function HeroSearch({ serviceAreas }: HeroSearchProps) {
       (err) => {
         setLocating(false);
         if (err.code === err.PERMISSION_DENIED) {
-          setLocateError("Location permission denied. Please select manually.");
+          setLocateError("Location permission denied. Please type your city.");
         } else {
-          setLocateError("Couldn't get your location. Please select manually.");
+          setLocateError("Couldn't get your location. Please type your city.");
         }
       },
       { timeout: 8000, enableHighAccuracy: true }
@@ -102,24 +82,30 @@ export function HeroSearch({ serviceAreas }: HeroSearchProps) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by service, category, or mosque"
+            placeholder="Search by service, category, or name"
             className="pl-11 h-12 text-base border-white/30 bg-white/10 text-white placeholder:text-white/40 focus-visible:ring-white focus-visible:border-white backdrop-blur"
           />
         </div>
 
-        {/* Location picker */}
+        {/* Free-text location */}
         <div className="relative sm:w-52">
           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 pointer-events-none z-10" />
-          <select
-            value={area}
-            onChange={(e) => { setArea(e.target.value); setLocateError(""); }}
-            className="w-full h-12 pl-11 pr-4 rounded-lg text-base border border-white/30 bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-white backdrop-blur appearance-none cursor-pointer"
-          >
-            <option value="" className="bg-[#071a0e] text-white">Anywhere in GTA</option>
-            {serviceAreas.map((a) => (
-              <option key={a.slug} value={a.slug} className="bg-[#071a0e] text-white">{a.name}</option>
-            ))}
-          </select>
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => { setLocation(e.target.value); setLocateError(""); }}
+            placeholder="City or area"
+            className="w-full h-12 pl-11 pr-8 rounded-lg text-base border border-white/30 bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white backdrop-blur"
+          />
+          {location && (
+            <button
+              type="button"
+              onClick={() => setLocation("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         <Button
@@ -131,7 +117,7 @@ export function HeroSearch({ serviceAreas }: HeroSearchProps) {
         </Button>
       </form>
 
-      {/* Detect location row */}
+      {/* GPS detect row */}
       <div className="flex items-center gap-2 flex-wrap">
         <button
           type="button"
@@ -143,7 +129,7 @@ export function HeroSearch({ serviceAreas }: HeroSearchProps) {
             ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
             : <LocateFixed className="h-3.5 w-3.5" />
           }
-          {locating ? "Detecting…" : "Use my location"}
+          {locating ? "Detecting your location…" : "Use my location"}
         </button>
         {locateError && (
           <span className="text-xs text-amber-300/80">{locateError}</span>
