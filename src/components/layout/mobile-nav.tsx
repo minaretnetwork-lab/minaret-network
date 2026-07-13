@@ -90,6 +90,11 @@ export function MobileNav({ isAdmin, user }: MobileNavProps) {
                     Sign in
                   </Button>
                 </Link>
+                <Link href="/auth/signup">
+                  <Button variant="outline" size="sm" className="w-full border-white/20 text-white bg-transparent hover:bg-white/10">
+                    Sign up
+                  </Button>
+                </Link>
                 <Link href="/professionals/register">
                   <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white">
                     Join as Professional

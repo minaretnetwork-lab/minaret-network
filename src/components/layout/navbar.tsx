@@ -82,6 +82,11 @@ export function Navbar({ user }: NavbarProps) {
                     Sign in
                   </Button>
                 </Link>
+                <Link href="/auth/signup">
+                  <Button variant="ghost" size="sm" className="h-9 text-sm text-white/70 hover:text-white hover:bg-white/10">
+                    Sign up
+                  </Button>
+                </Link>
                 <Link href="/professionals/register">
                   <Button size="sm" className="h-9 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium">
                     Join as Professional
