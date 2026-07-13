@@ -37,7 +37,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <span className="text-sm font-semibold">Admin Panel</span>
           </div>
           <form action="/auth/signout" method="post">
-            <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 gap-1.5">
+            <Button type="submit" variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 gap-1.5">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:block">Sign Out</span>
             </Button>

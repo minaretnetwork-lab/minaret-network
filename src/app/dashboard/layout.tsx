@@ -35,7 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="flex items-center gap-3 text-sm">
             <span className="text-gray-500 dark:text-gray-400 hidden sm:block">{displayName}</span>
             <form action="/auth/signout" method="post">
-              <Button variant="ghost" size="sm" className="gap-1.5 text-gray-600">
+              <Button type="submit" variant="ghost" size="sm" className="gap-1.5 text-gray-600">
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:block">Sign Out</span>
               </Button>
