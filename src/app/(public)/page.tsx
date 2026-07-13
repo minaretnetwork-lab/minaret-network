@@ -42,7 +42,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#071a0e] via-[#071a0e]/20 to-[#071a0e]/60" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#071a0e]/40 via-transparent to-[#071a0e]/40" aria-hidden="true" />
 
-        <div className="relative w-full container mx-auto px-4 lg:px-6 py-24 md:py-32">
+        <div className="relative w-full container mx-auto px-4 lg:px-6 pt-10 pb-20 md:pt-14 md:pb-28">
           <div className="max-w-3xl mx-auto text-center">
 
             <div className="inline-flex items-center gap-2 bg-white/8 backdrop-blur-sm border border-white/12 rounded-full px-4 py-1.5 text-sm text-emerald-300/90 mb-8">
