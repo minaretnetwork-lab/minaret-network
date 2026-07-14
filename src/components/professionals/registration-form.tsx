@@ -104,6 +104,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const goNextPending = useRef(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [avSchedules, setAvSchedules] = useState<Record<string, DaySchedule>>({});
   const [avEmergency, setAvEmergency] = useState(false);
@@ -612,6 +613,28 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoChange} className="hidden" />
               </div>
 
+              {/* Disclaimer + Terms */}
+              <div className="border border-amber-100 dark:border-amber-900/30 bg-amber-50/60 dark:bg-amber-900/10 rounded-xl p-4 space-y-3">
+                <p className="text-xs text-amber-900 dark:text-amber-300 font-semibold uppercase tracking-wide">Before you submit</p>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1.5 list-disc list-inside">
+                  <li>Minaret Network does <strong>not</strong> verify credentials, licenses, or professional qualifications.</li>
+                  <li>We are not liable for the quality, safety, or outcome of any services provided through this directory.</li>
+                  <li>Your listing may be removed at any time if it violates our community guidelines.</li>
+                  <li>By submitting, you confirm that all information provided is accurate and truthful.</li>
+                </ul>
+                <label className="flex items-start gap-2.5 cursor-pointer select-none pt-1">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-0.5 flex-shrink-0 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    I have read and agree to the above. I understand that Minaret Network is a community directory and not a professional verification service.
+                  </span>
+                </label>
+              </div>
+
               {submitStatus === "error" && (
                 <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
                   {errorMsg}
@@ -636,8 +659,9 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           ) : (
             <Button
               type="submit"
-              disabled={isSubmitting || transitioning}
-              className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm"
+              disabled={isSubmitting || transitioning || !termsAccepted}
+              title={!termsAccepted ? "Please accept the terms above to submit" : undefined}
+              className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm disabled:opacity-50"
             >
               {isSubmitting ? "Submitting…" : "Submit Application"}
             </Button>
