@@ -83,6 +83,7 @@ const STEP_FIELDS: (keyof FormData)[][] = [
 
 export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas }: Props) {
   const [step, setStep] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -143,12 +144,23 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     setLogoFile(file); setLogoPreview(URL.createObjectURL(file));
   }
 
+  function lockAndScroll(changeFn: () => void) {
+    setTransitioning(true);
+    changeFn();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => setTransitioning(false), 700);
+  }
+
   async function goNext() {
+    if (transitioning) return;
     const fields = STEP_FIELDS[step];
     const valid = fields.length === 0 || await trigger(fields);
-    if (valid) { setStep((s) => s + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    if (valid) lockAndScroll(() => setStep((s) => s + 1));
   }
-  function goBack() { setStep((s) => s - 1); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function goBack() {
+    if (transitioning) return;
+    lockAndScroll(() => setStep((s) => s - 1));
+  }
 
   async function onSubmit(data: FormData) {
     try {
@@ -523,20 +535,24 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         </div>
 
         {/* ── Navigation ── */}
-        <div className="flex items-center justify-between mt-4">
+        <div className={`flex items-center justify-between mt-4 transition-opacity duration-200 ${transitioning ? "opacity-40 pointer-events-none" : ""}`}>
           {step > 0 ? (
-            <Button type="button" variant="outline" onClick={goBack} className="gap-1.5">
+            <Button type="button" variant="outline" onClick={goBack} disabled={transitioning} className="gap-1.5">
               <ChevronLeft className="h-4 w-4" /> Back
             </Button>
           ) : <div />}
 
           {step < STEPS.length - 1 ? (
-            <Button type="button" onClick={goNext} className="bg-green-600 hover:bg-green-700 text-white gap-1.5 px-6">
+            <Button type="button" onClick={goNext} disabled={transitioning} className="bg-green-600 hover:bg-green-700 text-white gap-1.5 px-6">
               Next <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" disabled={isSubmitting} className="bg-emerald-700 hover:bg-emerald-800 text-white min-w-[180px] h-11 text-base font-semibold shadow-md">
-              {isSubmitting ? "Submitting…" : "Submit Application ✓"}
+            <Button
+              type="submit"
+              disabled={isSubmitting || transitioning}
+              className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm"
+            >
+              {isSubmitting ? "Submitting…" : "Submit Application"}
             </Button>
           )}
         </div>
