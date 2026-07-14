@@ -223,7 +223,11 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       </div>
 
       {/* ── Step content ── */}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={(e) => {
+        // Never allow submission unless we're explicitly on the last step
+        if (step !== STEPS.length - 1) { e.preventDefault(); return; }
+        handleSubmit(onSubmit)(e);
+      }}>
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm space-y-6">
 
           {/* ─── STEP 1: Profile ─── */}
@@ -527,12 +531,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           ) : <div />}
 
           {step < STEPS.length - 1 ? (
-            <Button type="button" onClick={goNext} className="bg-green-600 hover:bg-green-700 text-white gap-1.5">
+            <Button type="button" onClick={goNext} className="bg-green-600 hover:bg-green-700 text-white gap-1.5 px-6">
               Next <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white min-w-[160px]">
-              {isSubmitting ? "Submitting…" : "Submit Application"}
+            <Button type="submit" disabled={isSubmitting} className="bg-emerald-700 hover:bg-emerald-800 text-white min-w-[180px] h-11 text-base font-semibold shadow-md">
+              {isSubmitting ? "Submitting…" : "Submit Application ✓"}
             </Button>
           )}
         </div>
