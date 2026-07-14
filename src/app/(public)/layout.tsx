@@ -7,7 +7,7 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser().catch(() => null);
 
   return (
     <div className="flex min-h-full flex-col">

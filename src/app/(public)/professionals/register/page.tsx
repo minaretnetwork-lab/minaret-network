@@ -12,17 +12,31 @@ export default async function ProfessionalRegisterPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login?redirectTo=/professionals/register");
 
-  const [mosques, defaultMosque] = await Promise.all([
-    prisma.mosque.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, city: true, communityChannelType: true, communityChannelName: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.mosque.findUnique({
-      where: { slug: DEFAULT_MOSQUE_SLUG },
-      select: { categories: { where: { isActive: true }, orderBy: { name: "asc" } }, serviceAreas: { orderBy: { name: "asc" } } },
-    }),
-  ]);
+  let mosques: { id: string; name: string; city: string | null }[] = [];
+  let categories: { id: string; name: string; icon: string | null }[] = [];
+  let serviceAreas: { id: string; name: string }[] = [];
+
+  try {
+    const [mosqueList, defaultMosque] = await Promise.all([
+      prisma.mosque.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, city: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.mosque.findUnique({
+        where: { slug: DEFAULT_MOSQUE_SLUG },
+        select: {
+          categories: { where: { isActive: true }, select: { id: true, name: true, icon: true }, orderBy: { name: "asc" } },
+          serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
+        },
+      }),
+    ]);
+    mosques = mosqueList;
+    categories = defaultMosque?.categories ?? [];
+    serviceAreas = defaultMosque?.serviceAreas ?? [];
+  } catch (err) {
+    console.error("register page db error:", err);
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-3xl">
@@ -36,8 +50,8 @@ export default async function ProfessionalRegisterPage() {
       </div>
       <ProfessionalRegistrationForm
         mosques={mosques}
-        categories={defaultMosque?.categories ?? []}
-        serviceAreas={defaultMosque?.serviceAreas ?? []}
+        categories={categories}
+        serviceAreas={serviceAreas}
       />
     </div>
   );
