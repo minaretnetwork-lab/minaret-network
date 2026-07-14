@@ -93,6 +93,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const goNextPending = useRef(false);
 
   const [avDays, setAvDays] = useState<string[]>([]);
   const [avFrom, setAvFrom] = useState("9:00 AM");
@@ -152,10 +153,15 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   }
 
   async function goNext() {
-    if (transitioning) return;
-    const fields = STEP_FIELDS[step];
-    const valid = fields.length === 0 || await trigger(fields);
-    if (valid) lockAndScroll(() => setStep((s) => s + 1));
+    if (transitioning || goNextPending.current || step >= STEPS.length - 1) return;
+    goNextPending.current = true;
+    try {
+      const fields = STEP_FIELDS[step];
+      const valid = fields.length === 0 || await trigger(fields);
+      if (valid) lockAndScroll(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)));
+    } finally {
+      goNextPending.current = false;
+    }
   }
   function goBack() {
     if (transitioning) return;
@@ -163,20 +169,20 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   }
 
   async function onSubmit(data: FormData) {
-    try {
-      setSubmitStatus("idle");
-      const fd = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (Array.isArray(value)) value.forEach((v) => fd.append(key, v));
-        else if (value !== undefined && value !== "") fd.append(key, String(value));
-      });
-      if (photoFile) fd.append("photo", photoFile);
-      if (logoFile) fd.append("logo", logoFile);
-      await submitProfessionalApplication(fd);
-      setSubmitStatus("success");
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
+    setSubmitStatus("idle");
+    const fd = new window.FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (Array.isArray(value)) value.forEach((v) => fd.append(key, v));
+      else if (value !== undefined && value !== "") fd.append(key, String(value));
+    });
+    if (photoFile) fd.append("photo", photoFile);
+    if (logoFile) fd.append("logo", logoFile);
+    const result = await submitProfessionalApplication(fd);
+    if (!result.ok) {
+      setErrorMsg(result.error);
       setSubmitStatus("error");
+    } else {
+      setSubmitStatus("success");
     }
   }
 

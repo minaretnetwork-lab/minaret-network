@@ -139,74 +139,84 @@ export async function incrementProfileView(professionalId: string) {
   });
 }
 
-export async function submitProfessionalApplication(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
+export async function submitProfessionalApplication(
+  formData: FormData
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { ok: false, error: "You must be signed in to apply." };
 
-  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
-  if (!dbUser) throw new Error("User not found");
+    const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+    if (!dbUser) return { ok: false, error: "Your account was not found. Please sign out and back in." };
 
-  const rawMosqueId = formData.get("mosqueId") as string | null;
-  const mosqueId = (!rawMosqueId || rawMosqueId === "unlisted") ? null : rawMosqueId;
-  const mosque = mosqueId ? await prisma.mosque.findUnique({ where: { id: mosqueId } }) : null;
-  if (mosqueId && !mosque) throw new Error("Selected mosque not found");
+    const rawMosqueId = formData.get("mosqueId") as string | null;
+    const mosqueId = (!rawMosqueId || rawMosqueId === "unlisted") ? null : rawMosqueId;
+    const mosque = mosqueId ? await prisma.mosque.findUnique({ where: { id: mosqueId } }) : null;
+    if (mosqueId && !mosque) return { ok: false, error: "Selected mosque not found." };
 
-  const categoryId = formData.get("categoryId") as string;
-  const languages = formData.getAll("languages") as string[];
-  const serviceAreaIds = formData.getAll("serviceAreaIds") as string[];
+    const categoryId = formData.get("categoryId") as string;
+    if (!categoryId) return { ok: false, error: "Please select a category." };
 
-  const photoFile = formData.get("photo") as File | null;
-  const logoFile = formData.get("logo") as File | null;
-  let photoUrl: string | null = null;
-  let logoUrl: string | null = null;
-  if (photoFile && photoFile.size > 0) photoUrl = await uploadProfilePhoto(photoFile, dbUser.id);
-  if (logoFile && logoFile.size > 0) logoUrl = await uploadBusinessLogo(logoFile, dbUser.id);
+    const languages = formData.getAll("languages") as string[];
+    const serviceAreaIds = formData.getAll("serviceAreaIds") as string[];
 
-  const professional = await prisma.professional.upsert({
-    where: { userId: dbUser.id },
-    update: {
-      mosqueId: mosque?.id ?? null,
-      categoryId,
-      ...(photoUrl && { photoUrl }),
-      ...(logoUrl && { logoUrl }),
-      businessName: formData.get("businessName") as string || null,
-      title: formData.get("title") as string || null,
-      bio: formData.get("bio") as string || null,
-      yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
-      qualifications: formData.get("qualifications") as string || null,
-      licenses: formData.get("licenses") as string || null,
-      languages,
-      phone: formData.get("phone") as string || null,
-      email: formData.get("email") as string || null,
-      website: formData.get("website") as string || null,
-      whatsapp: formData.get("whatsapp") as string || null,
-      availability: formData.get("availability") as string || null,
-      serviceAreas: { set: serviceAreaIds.map((id) => ({ id })) },
-      status: "PENDING",
-    },
-    create: {
-      userId: dbUser.id,
-      mosqueId: mosque?.id ?? null,
-      categoryId,
-      ...(photoUrl && { photoUrl }),
-      ...(logoUrl && { logoUrl }),
-      businessName: formData.get("businessName") as string || null,
-      title: formData.get("title") as string || null,
-      bio: formData.get("bio") as string || null,
-      yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
-      qualifications: formData.get("qualifications") as string || null,
-      licenses: formData.get("licenses") as string || null,
-      languages,
-      phone: formData.get("phone") as string || null,
-      email: formData.get("email") as string || null,
-      website: formData.get("website") as string || null,
-      whatsapp: formData.get("whatsapp") as string || null,
-      availability: formData.get("availability") as string || null,
-      serviceAreas: { connect: serviceAreaIds.map((id) => ({ id })) },
-    },
-  });
+    const photoFile = formData.get("photo") as File | null;
+    const logoFile = formData.get("logo") as File | null;
+    let photoUrl: string | null = null;
+    let logoUrl: string | null = null;
+    if (photoFile && photoFile.size > 0) photoUrl = await uploadProfilePhoto(photoFile, dbUser.id);
+    if (logoFile && logoFile.size > 0) logoUrl = await uploadBusinessLogo(logoFile, dbUser.id);
 
-  revalidatePath("/dashboard/professional");
-  return professional;
+    await prisma.professional.upsert({
+      where: { userId: dbUser.id },
+      update: {
+        mosqueId: mosque?.id ?? null,
+        categoryId,
+        ...(photoUrl && { photoUrl }),
+        ...(logoUrl && { logoUrl }),
+        businessName: formData.get("businessName") as string || null,
+        title: formData.get("title") as string || null,
+        bio: formData.get("bio") as string || null,
+        yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
+        qualifications: formData.get("qualifications") as string || null,
+        licenses: formData.get("licenses") as string || null,
+        languages,
+        phone: formData.get("phone") as string || null,
+        email: formData.get("email") as string || null,
+        website: formData.get("website") as string || null,
+        whatsapp: formData.get("whatsapp") as string || null,
+        availability: formData.get("availability") as string || null,
+        serviceAreas: { set: serviceAreaIds.map((id) => ({ id })) },
+        status: "PENDING",
+      },
+      create: {
+        userId: dbUser.id,
+        mosqueId: mosque?.id ?? null,
+        categoryId,
+        ...(photoUrl && { photoUrl }),
+        ...(logoUrl && { logoUrl }),
+        businessName: formData.get("businessName") as string || null,
+        title: formData.get("title") as string || null,
+        bio: formData.get("bio") as string || null,
+        yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
+        qualifications: formData.get("qualifications") as string || null,
+        licenses: formData.get("licenses") as string || null,
+        languages,
+        phone: formData.get("phone") as string || null,
+        email: formData.get("email") as string || null,
+        website: formData.get("website") as string || null,
+        whatsapp: formData.get("whatsapp") as string || null,
+        availability: formData.get("availability") as string || null,
+        serviceAreas: { connect: serviceAreaIds.map((id) => ({ id })) },
+      },
+    });
+
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (err) {
+    console.error("submitProfessionalApplication:", err);
+    const message = err instanceof Error ? err.message : "An unexpected error occurred.";
+    return { ok: false, error: message };
+  }
 }
