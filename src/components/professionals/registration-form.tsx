@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -53,16 +53,27 @@ const PRESETS = [
   { label: "7 Days a Week", days: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], from: "9:00 AM", to: "6:00 PM" },
 ];
 
-function buildAvailabilityString(days: string[], from: string, to: string, emergency: boolean) {
-  if (days.length === 0) return "";
-  const sorted = [...days].sort((a, b) => DAYS.indexOf(a) - DAYS.indexOf(b));
-  const key = sorted.join(",");
-  const daysStr =
-    key === "Mon,Tue,Wed,Thu,Fri" ? "Monday–Friday" :
-    key === "Mon,Tue,Wed,Thu,Fri,Sat" ? "Monday–Saturday" :
-    key === "Mon,Tue,Wed,Thu,Fri,Sat,Sun" ? "7 days a week" :
-    sorted.join(", ");
-  return `${daysStr}, ${from}–${to}${emergency ? ". Emergency calls available 24/7." : ""}`;
+type DaySchedule = { from: string; to: string };
+
+function buildAvailabilityString(schedules: Record<string, DaySchedule>, emergency: boolean) {
+  const ordered = DAYS.filter((d) => d in schedules);
+  if (ordered.length === 0) return "";
+  // Group consecutive days that share the same hours
+  const groups: { days: string[]; from: string; to: string }[] = [];
+  for (const day of ordered) {
+    const { from, to } = schedules[day];
+    const last = groups[groups.length - 1];
+    if (last && last.from === from && last.to === to) {
+      last.days.push(day);
+    } else {
+      groups.push({ days: [day], from, to });
+    }
+  }
+  const parts = groups.map(({ days, from, to }) => {
+    const label = days.length === 1 ? days[0] : `${days[0]}–${days[days.length - 1]}`;
+    return `${label}: ${from}–${to}`;
+  });
+  return parts.join(", ") + (emergency ? ". Emergency calls available 24/7." : "");
 }
 
 const STEPS = [
@@ -94,10 +105,19 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const logoInputRef = useRef<HTMLInputElement>(null);
   const goNextPending = useRef(false);
 
-  const [avDays, setAvDays] = useState<string[]>([]);
-  const [avFrom, setAvFrom] = useState("9:00 AM");
-  const [avTo, setAvTo] = useState("5:00 PM");
+  const [avSchedules, setAvSchedules] = useState<Record<string, DaySchedule>>({});
   const [avEmergency, setAvEmergency] = useState(false);
+  // category combobox
+  const [catSearch, setCatSearch] = useState("");
+  const [catOpen, setCatOpen] = useState(false);
+  const catRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) setCatOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const router = useRouter();
 
@@ -109,16 +129,29 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const selectedLanguages = watch("languages") ?? [];
   const selectedAreas = watch("serviceAreaIds") ?? [];
 
-  function syncAvailability(days: string[], from: string, to: string, emergency: boolean) {
-    setValue("availability", buildAvailabilityString(days, from, to, emergency));
+  function syncAvailability(schedules: Record<string, DaySchedule>, emergency: boolean) {
+    setValue("availability", buildAvailabilityString(schedules, emergency));
   }
   function toggleDay(day: string) {
-    const next = avDays.includes(day) ? avDays.filter((d) => d !== day) : [...avDays, day];
-    setAvDays(next); syncAvailability(next, avFrom, avTo, avEmergency);
+    setAvSchedules((prev) => {
+      const next = { ...prev };
+      if (day in next) { delete next[day]; } else { next[day] = { from: "9:00 AM", to: "5:00 PM" }; }
+      syncAvailability(next, avEmergency);
+      return next;
+    });
+  }
+  function updateDayHours(day: string, field: "from" | "to", value: string) {
+    setAvSchedules((prev) => {
+      const next = { ...prev, [day]: { ...prev[day], [field]: value } };
+      syncAvailability(next, avEmergency);
+      return next;
+    });
   }
   function applyPreset(p: typeof PRESETS[number]) {
-    setAvDays(p.days); setAvFrom(p.from); setAvTo(p.to);
-    syncAvailability(p.days, p.from, p.to, avEmergency);
+    const next: Record<string, DaySchedule> = {};
+    p.days.forEach((d) => { next[d] = { from: p.from, to: p.to }; });
+    setAvSchedules(next);
+    syncAvailability(next, avEmergency);
   }
   function toggleLanguage(lang: string) {
     setValue("languages", selectedLanguages.includes(lang)
@@ -292,13 +325,49 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} className="hidden" />
               </div>
 
-              {/* Category */}
+              {/* Category — searchable combobox */}
               <div>
                 <Label>Profession / Category *</Label>
-                <select {...register("categoryId")} className={`mt-1.5 ${selectClass}`}>
-                  <option value="">Select your profession…</option>
-                  {categories.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-                </select>
+                <div ref={catRef} className="relative mt-1.5">
+                  {(() => {
+                    const selectedCat = categories.find((c) => c.id === watch("categoryId"));
+                    const filtered = catSearch
+                      ? categories.filter((c) => c.name.toLowerCase().includes(catSearch.toLowerCase()))
+                      : categories;
+                    return (
+                      <>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={catSearch !== "" ? catSearch : selectedCat ? `${selectedCat.icon ?? ""} ${selectedCat.name}`.trim() : ""}
+                            onChange={(e) => { setCatSearch(e.target.value); setValue("categoryId", ""); setCatOpen(true); }}
+                            onFocus={() => setCatOpen(true)}
+                            placeholder="Search profession…"
+                            autoComplete="off"
+                            className={`${selectClass} pr-8`}
+                          />
+                          {(selectedCat || catSearch) && (
+                            <button type="button" onClick={() => { setCatSearch(""); setValue("categoryId", ""); setCatOpen(false); }}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        {catOpen && filtered.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-y-auto max-h-52">
+                            {filtered.map((c) => (
+                              <button key={c.id} type="button"
+                                onMouseDown={(e) => { e.preventDefault(); setValue("categoryId", c.id); setCatSearch(""); setCatOpen(false); }}
+                                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors ${c.id === watch("categoryId") ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 font-medium" : "text-gray-800 dark:text-gray-200"}`}>
+                                <span>{c.icon}</span><span>{c.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
                 {errors.categoryId && <p className="text-xs text-red-600 mt-1">{errors.categoryId.message}</p>}
               </div>
 
@@ -383,6 +452,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               <div>
                 <Label>Availability</Label>
                 <div className="mt-2 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-4">
+                  {/* Presets */}
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium uppercase tracking-wide">Quick Presets</p>
                     <div className="flex flex-wrap gap-2">
@@ -394,13 +464,14 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                       ))}
                     </div>
                   </div>
+                  {/* Day toggles */}
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium uppercase tracking-wide">Days</p>
                     <div className="flex gap-1.5 flex-wrap">
                       {DAYS.map((day) => (
                         <button key={day} type="button" onClick={() => toggleDay(day)}
                           className={`w-11 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                            avDays.includes(day)
+                            day in avSchedules
                               ? "bg-green-600 text-white border-green-600"
                               : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-green-400"
                           }`}>
@@ -409,32 +480,34 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                       ))}
                     </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium uppercase tracking-wide">Hours</p>
-                    <div className="flex items-center gap-3">
-                      <select value={avFrom} onChange={(e) => { setAvFrom(e.target.value); syncAvailability(avDays, e.target.value, avTo, avEmergency); }} className={`${selectClass} flex-1`}>
-                        {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                      <span className="text-sm text-gray-400 flex-shrink-0">to</span>
-                      <select value={avTo} onChange={(e) => { setAvTo(e.target.value); syncAvailability(avDays, avFrom, e.target.value, avEmergency); }} className={`${selectClass} flex-1`}>
-                        {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                  {/* Per-day hour rows */}
+                  {DAYS.filter((d) => d in avSchedules).length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Hours per day</p>
+                      {DAYS.filter((d) => d in avSchedules).map((day) => (
+                        <div key={day} className="flex items-center gap-2">
+                          <span className="w-9 text-xs font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0">{day}</span>
+                          <select value={avSchedules[day].from}
+                            onChange={(e) => updateDayHours(day, "from", e.target.value)}
+                            className={`${selectClass} flex-1 text-xs py-1.5`}>
+                            {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                          <span className="text-xs text-gray-400 flex-shrink-0">to</span>
+                          <select value={avSchedules[day].to}
+                            onChange={(e) => updateDayHours(day, "to", e.target.value)}
+                            className={`${selectClass} flex-1 text-xs py-1.5`}>
+                            {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  )}
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input type="checkbox" checked={avEmergency}
-                      onChange={(e) => { setAvEmergency(e.target.checked); syncAvailability(avDays, avFrom, avTo, e.target.checked); }}
+                      onChange={(e) => { setAvEmergency(e.target.checked); syncAvailability(avSchedules, e.target.checked); }}
                       className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
                     <span className="text-sm text-gray-600 dark:text-gray-400">Emergency calls available 24/7</span>
                   </label>
-                  {avDays.length > 0 && (
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-400 mb-0.5">Preview</p>
-                      <p className="text-sm text-green-800 dark:text-green-300 font-medium">
-                        {buildAvailabilityString(avDays, avFrom, avTo, avEmergency)}
-                      </p>
-                    </div>
-                  )}
                 </div>
                 <input type="hidden" {...register("availability")} />
               </div>
