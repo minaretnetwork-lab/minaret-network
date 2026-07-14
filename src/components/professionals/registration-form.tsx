@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LANGUAGES } from "@/lib/constants";
-import { submitProfessionalApplication } from "@/lib/actions/professionals";
 import { useRouter } from "next/navigation";
 import { Camera, X, Building2, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -178,9 +177,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       });
       if (photoFile) fd.append("photo", photoFile);
       if (logoFile) fd.append("logo", logoFile);
-      const result = await submitProfessionalApplication(fd);
+      const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
+      const result: { ok: boolean; error?: string } = await res.json();
       if (!result.ok) {
-        setErrorMsg(result.error);
+        setErrorMsg(result.error ?? "Something went wrong. Please try again.");
         setSubmitStatus("error");
       } else {
         setSubmitStatus("success");
