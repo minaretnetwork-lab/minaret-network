@@ -170,19 +170,24 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   async function onSubmit(data: FormData) {
     setSubmitStatus("idle");
-    const fd = new window.FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (Array.isArray(value)) value.forEach((v) => fd.append(key, v));
-      else if (value !== undefined && value !== "") fd.append(key, String(value));
-    });
-    if (photoFile) fd.append("photo", photoFile);
-    if (logoFile) fd.append("logo", logoFile);
-    const result = await submitProfessionalApplication(fd);
-    if (!result.ok) {
-      setErrorMsg(result.error);
+    try {
+      const fd = new window.FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (Array.isArray(value)) value.forEach((v) => fd.append(key, v));
+        else if (value !== undefined && value !== "") fd.append(key, String(value));
+      });
+      if (photoFile) fd.append("photo", photoFile);
+      if (logoFile) fd.append("logo", logoFile);
+      const result = await submitProfessionalApplication(fd);
+      if (!result.ok) {
+        setErrorMsg(result.error);
+        setSubmitStatus("error");
+      } else {
+        setSubmitStatus("success");
+      }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setSubmitStatus("error");
-    } else {
-      setSubmitStatus("success");
     }
   }
 
@@ -242,9 +247,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
       {/* ── Step content ── */}
       <form onSubmit={(e) => {
-        // Never allow submission unless we're explicitly on the last step
-        if (step !== STEPS.length - 1) { e.preventDefault(); return; }
-        handleSubmit(onSubmit)(e);
+        e.preventDefault();
+        if (step !== STEPS.length - 1) return;
+        handleSubmit(onSubmit, () => {
+          setErrorMsg("Some required fields need attention. Please go back and review your application.");
+          setSubmitStatus("error");
+        })(e);
       }}>
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm space-y-6">
 
