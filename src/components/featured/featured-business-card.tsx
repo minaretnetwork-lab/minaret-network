@@ -7,13 +7,14 @@ import { getInitials } from "@/lib/utils";
 import { trackFeaturedCardClick } from "@/lib/actions/featured";
 
 type FeaturedCardData = {
-  id: string;       // listing id
+  id: string;
   city: string;
   professional: {
     id: string;
     businessName: string | null;
     bio: string | null;
     photoUrl: string | null;
+    logoUrl: string | null;
     user: { firstName: string | null; lastName: string | null; displayName: string | null; avatarUrl: string | null };
     category: { name: string; icon: string | null };
     mosque: { name: string } | null;
@@ -29,7 +30,8 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
     || user.displayName
     || [user.firstName, user.lastName].filter(Boolean).join(" ")
     || "Business";
-  const photoUrl = professional.photoUrl ?? user.avatarUrl;
+  // Prefer logo for featured cards (business brand), fall back to profile photo then Google avatar
+  const photoUrl = professional.logoUrl ?? professional.photoUrl ?? user.avatarUrl;
   const isMosqueAffiliated = professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED");
 
   async function handleClick() {

@@ -485,7 +485,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Business Logo <span className="text-gray-400 font-normal">(optional)</span></p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  If you become a sponsored listing, your logo appears in the homepage carousel. Square logos work best (e.g. 400×400 px).
+                  Your logo appears on your Featured Business card and in the Sponsored carousel on the homepage. Square logos work best (e.g. 400×400 px).
                 </p>
                 <div className="flex items-center gap-4">
                   <div onClick={() => logoInputRef.current?.click()}
