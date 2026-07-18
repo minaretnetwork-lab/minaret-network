@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function submitRecommendation(professionalId: string, content: string, highlyRecommended = false) {
+export async function submitRecommendation(professionalId: string, content: string, highlyRecommended = false, rating = 5) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
@@ -18,7 +18,7 @@ export async function submitRecommendation(professionalId: string, content: stri
   if (existing) throw new Error("You have already submitted a recommendation for this professional");
 
   await prisma.recommendation.create({
-    data: { professionalId, userId: dbUser.id, content, highlyRecommended, status: "PENDING" },
+    data: { professionalId, userId: dbUser.id, content, highlyRecommended, rating, status: "PENDING" },
   });
 
   revalidatePath(`/professionals/${professionalId}`);

@@ -223,7 +223,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
           )}
 
           {/* Recommendations */}
-          <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+          <section id="recommendations" className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Star className="h-5 w-5 fill-amber-400 text-amber-400" />

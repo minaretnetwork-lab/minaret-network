@@ -85,7 +85,7 @@ export async function getProfessionals(
       category: { select: { id: true, name: true, slug: true, icon: true } },
       serviceAreas: { select: { id: true, name: true, slug: true } },
       badges: { select: { id: true, type: true, issuedAt: true } },
-      recommendations: { where: { status: "APPROVED" }, select: { id: true, status: true } },
+      recommendations: { where: { status: "APPROVED" }, select: { id: true, status: true, rating: true } },
       // sponsoredUntil included as scalar field automatically
       galleryImages: { select: { id: true, url: true, caption: true }, take: 6 },
     },

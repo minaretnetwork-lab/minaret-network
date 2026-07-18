@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { MapPin, Star, CheckCircle2, MessageCircle, ArrowRight, Sparkles } from "lucide-react";
+import { MapPin, Star, CheckCircle2, MessageCircle, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials, buildWhatsAppUrl } from "@/lib/utils";
 import type { ProfessionalWithRelations } from "@/types";
@@ -8,16 +11,52 @@ interface ProfessionalCardProps {
   professional: ProfessionalWithRelations;
 }
 
+function RatingBreakdown({ recommendations }: { recommendations: { rating: number }[] }) {
+  const total = recommendations.length;
+  const counts = [5, 4, 3, 2, 1].map((star) => ({
+    star,
+    count: recommendations.filter((r) => r.rating === star).length,
+  }));
+
+  return (
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-3 w-44 pointer-events-none">
+      {counts.map(({ star, count }) => {
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return (
+          <div key={star} className="flex items-center gap-1.5 mb-1 last:mb-0">
+            <span className="text-[11px] text-gray-500 w-4 text-right flex-shrink-0">{star}</span>
+            <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-400 rounded-full"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="text-[11px] text-gray-400 w-4 text-right flex-shrink-0">{count}</span>
+          </div>
+        );
+      })}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white dark:border-t-gray-900" />
+    </div>
+  );
+}
+
 export function ProfessionalCard({ professional }: ProfessionalCardProps) {
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
   const isSponsored = (professional as typeof professional & { isSponsored?: boolean }).isSponsored === true;
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   const name =
     user.displayName ??
     [user.firstName, user.lastName].filter(Boolean).join(" ") ??
     user.email;
 
-  const approvedRecs = recommendations.filter((r) => r.status === "APPROVED").length;
+  const approvedRecs = recommendations.filter((r) => r.status === "APPROVED");
+  const recCount = approvedRecs.length;
+  const avgRating = recCount > 0
+    ? Math.round((approvedRecs.reduce((sum, r) => sum + r.rating, 0) / recCount) * 10) / 10
+    : null;
+
   const photoUrl = professional.photoUrl ?? user.avatarUrl;
 
   return (
@@ -41,7 +80,7 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
         </Avatar>
 
         <div className="min-w-0 flex-1 pt-0.5">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-playfair)" }}>
+          <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-lora)" }}>
             {name}
           </h3>
           {professional.businessName && (
@@ -57,6 +96,40 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
               </>
             )}
           </div>
+
+          {/* Star rating row */}
+          {avgRating !== null && (
+            <div className="flex items-center gap-1 mt-1.5">
+              <Link
+                href={`/professionals/${professional.id}#recommendations`}
+                className="flex items-center gap-1 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="text-xs font-semibold text-amber-600">{avgRating.toFixed(1)}</span>
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className={`h-3 w-3 ${s <= Math.round(avgRating) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700"}`}
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-gray-400">({recCount})</span>
+              </Link>
+              <div className="relative">
+                <button
+                  type="button"
+                  onMouseEnter={() => setShowBreakdown(true)}
+                  onMouseLeave={() => setShowBreakdown(false)}
+                  className="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  aria-label="Rating breakdown"
+                >
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                {showBreakdown && <RatingBreakdown recommendations={approvedRecs} />}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -76,7 +149,6 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
                 <span key={badge.id} className="group/badge relative inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50 font-medium cursor-default">
                   <CheckCircle2 className="h-2.5 w-2.5 flex-shrink-0" />
                   {mosque ? `Affiliated · ${mosque.name}` : "Mosque Affiliated"}
-                  {/* Tooltip */}
                   <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg bg-gray-900 text-white text-[11px] leading-relaxed px-3 py-2 opacity-0 group-hover/badge:opacity-100 transition-opacity duration-150 z-20 shadow-lg text-center">
                     This professional is a member of {mosque?.name ?? "a local mosque"}&apos;s community channel (e.g. WhatsApp group). Affiliation is confirmed by a mosque admin — it does not verify professional credentials or quality of work.
                     <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
@@ -105,12 +177,6 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
               <MapPin className="h-3 w-3" />
               {serviceAreas.slice(0, 2).map((a) => a.name).join(", ")}
               {serviceAreas.length > 2 ? ` +${serviceAreas.length - 2}` : ""}
-            </span>
-          )}
-          {approvedRecs > 0 && (
-            <span className="flex items-center gap-1 text-amber-500">
-              <Star className="h-3 w-3 fill-amber-400" />
-              <span className="text-gray-500">{approvedRecs} rec{approvedRecs !== 1 ? "s" : ""}</span>
             </span>
           )}
         </div>

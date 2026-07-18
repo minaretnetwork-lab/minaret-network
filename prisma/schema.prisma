@@ -223,6 +223,7 @@ model Recommendation {
   userId            String
   user              User                 @relation(fields: [userId], references: [id])
   content           String
+  rating            Int                  @default(5)
   highlyRecommended Boolean              @default(false)
   status            RecommendationStatus @default(PENDING)
   moderatorNote     String?

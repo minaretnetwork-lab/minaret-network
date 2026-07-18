@@ -51,7 +51,7 @@ export interface ProfessionalWithRelations {
   };
   serviceAreas: { id: string; name: string; slug: string }[];
   badges: { id: string; type: BadgeType; issuedAt: Date }[];
-  recommendations: { id: string; status: RecommendationStatus }[];
+  recommendations: { id: string; status: RecommendationStatus; rating: number }[];
   galleryImages: { id: string; url: string; caption: string | null }[];
 }
 
