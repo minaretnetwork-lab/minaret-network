@@ -103,7 +103,7 @@ export default async function ProfessionalsPage({ searchParams }: PageProps) {
 
       <div className="container mx-auto px-4 lg:px-6 py-10">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1" style={{ fontFamily: "var(--font-lora)" }}>
           Find Professionals
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm">

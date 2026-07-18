@@ -60,13 +60,11 @@ export async function getProfessionals(
     }),
     ...(query && {
       OR: [
+        { category: { name: { contains: query, mode: "insensitive" } } },
         { user: { firstName: { contains: query, mode: "insensitive" } } },
         { user: { lastName: { contains: query, mode: "insensitive" } } },
         { user: { displayName: { contains: query, mode: "insensitive" } } },
         { businessName: { contains: query, mode: "insensitive" } },
-        { title: { contains: query, mode: "insensitive" } },
-        { bio: { contains: query, mode: "insensitive" } },
-        { category: { name: { contains: query, mode: "insensitive" } } },
       ],
     }),
   };
