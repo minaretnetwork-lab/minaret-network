@@ -33,7 +33,7 @@ export async function FeaturedSection({ city }: Props) {
             </div>
             <h2
               className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white"
-              style={{ fontFamily: "var(--font-playfair)" }}
+              style={{ fontFamily: "var(--font-lora)" }}
             >
               {sectionTitle}
             </h2>
@@ -57,8 +57,15 @@ export async function FeaturedSection({ city }: Props) {
         )}
 
         {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-          {listings.map((l) => (
+        <div className={listings.length === 1
+          ? "flex justify-center"
+          : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5"
+        }>
+          {listings.length === 1 ? (
+            <div className="w-full max-w-[500px]">
+              <FeaturedBusinessCard listing={listings[0] as never} />
+            </div>
+          ) : listings.map((l) => (
             <FeaturedBusinessCard key={l.id} listing={l as never} />
           ))}
         </div>
