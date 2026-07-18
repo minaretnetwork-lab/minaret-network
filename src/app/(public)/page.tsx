@@ -44,13 +44,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
             <h1
               className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] leading-[1.1] mb-6 text-white"
-              style={{ fontFamily: "var(--font-playfair)", fontWeight: 700 }}
+              style={{ fontFamily: "var(--font-lora)", fontWeight: 700 }}
             >
               Find professionals from your
               <span className="block text-emerald-400 italic"> mosque community.</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-white/55 max-w-xl mx-auto mb-10 leading-relaxed font-light" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <p className="text-lg md:text-xl text-white/55 max-w-xl mx-auto mb-10 leading-relaxed font-light" style={{ fontFamily: "var(--font-inter)" }}>
               Minaret Network connects you with doctors, realtors, IT professionals, plumbers, HVAC techs, notaries, handymen, and more — skilled trades and professionals, all affiliated with masjids across the GTA.
             </p>
 
@@ -58,7 +58,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <HeroSearch />
             </div>
 
-            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-white/40 mb-5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-white/40 mb-5" style={{ fontFamily: "var(--font-inter)" }}>
               {[
                 "Mosque affiliated",
                 "Community recommendations",
@@ -72,14 +72,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               ))}
             </div>
 
-            <p className="text-xs text-white/30 max-w-md mx-auto leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <p className="text-xs text-white/30 max-w-md mx-auto leading-relaxed" style={{ fontFamily: "var(--font-inter)" }}>
               Mosque affiliation is confirmed by admins. We recommend doing your own due diligence before hiring.
             </p>
           </div>
         </div>
 
-        {/* Bottom fade into page bg */}
-        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[oklch(0.985_0.004_90)] to-transparent dark:from-[oklch(0.12_0.01_260)]" aria-hidden="true" />
       </section>
 
       {/* ── Sponsor Logo Carousel ───────────────────────────── */}
@@ -93,13 +91,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="container mx-auto px-4 lg:px-6 max-w-2xl text-center">
           <p
             className="text-2xl md:text-3xl lg:text-4xl text-emerald-700 dark:text-emerald-400 leading-loose mb-4 tracking-wide"
-            style={{ fontFamily: "var(--font-playfair)", direction: "rtl" }}
+            style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
           >
             لِتَعَارَفُوا
           </p>
           <p
             className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 leading-loose mb-6"
-            style={{ fontFamily: "var(--font-playfair)", direction: "rtl" }}
+            style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
           >
             يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا
           </p>
@@ -119,7 +117,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-2">Browse by profession</p>
             <h2
               className="text-3xl md:text-4xl font-display font-700 text-gray-900 dark:text-white tracking-tight"
-              style={{ fontFamily: "var(--font-playfair)" }}
+              style={{ fontFamily: "var(--font-lora)" }}
             >
               What do you need help with?
             </h2>
@@ -137,7 +135,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-2">Simple process</p>
           <h2
             className="text-3xl md:text-4xl font-display font-700 text-gray-900 dark:text-white tracking-tight"
-            style={{ fontFamily: "var(--font-playfair)" }}
+            style={{ fontFamily: "var(--font-lora)" }}
           >
             How it works
           </h2>
@@ -176,7 +174,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   {item.step}
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2" style={{ fontFamily: "var(--font-playfair)" }}>{item.title}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2" style={{ fontFamily: "var(--font-lora)" }}>{item.title}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[220px]">{item.description}</p>
             </div>
           ))}
@@ -199,7 +197,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="relative container mx-auto px-4 lg:px-6">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2">Built on trust</p>
-            <h2 className="text-3xl md:text-4xl font-display font-700 tracking-tight" style={{ fontFamily: "var(--font-playfair)" }}>
+            <h2 className="text-3xl md:text-4xl font-display font-700 tracking-tight" style={{ fontFamily: "var(--font-lora)" }}>
               Why the community trusts us
             </h2>
           </div>
@@ -226,7 +224,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white/8 border border-white/10 text-emerald-400 mb-5 mx-auto">
                   {item.icon}
                 </div>
-                <h3 className="font-semibold text-white mb-2" style={{ fontFamily: "var(--font-playfair)" }}>{item.title}</h3>
+                <h3 className="font-semibold text-white mb-2" style={{ fontFamily: "var(--font-lora)" }}>{item.title}</h3>
                 <p className="text-sm text-white/50 leading-relaxed">{item.desc}</p>
               </div>
             ))}
@@ -243,7 +241,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">For professionals</p>
           <h2
             className="text-3xl md:text-4xl font-display font-700 text-gray-900 dark:text-white tracking-tight mb-4"
-            style={{ fontFamily: "var(--font-playfair)" }}
+            style={{ fontFamily: "var(--font-lora)" }}
           >
             Are you a professional?
           </h2>
