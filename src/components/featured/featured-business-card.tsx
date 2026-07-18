@@ -66,7 +66,7 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-playfair)" }}>
+          <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-lora)" }}>
             {name}
           </h3>
           <div className="flex items-center gap-1.5 mt-1">
@@ -82,8 +82,9 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
 
       {/* Description */}
       {professional.bio && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4">
-          {professional.bio}
+        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+          {professional.bio.split(/\s+/).slice(0, 15).join(" ")}
+          {professional.bio.split(/\s+/).length > 15 ? "…" : ""}
         </p>
       )}
 
