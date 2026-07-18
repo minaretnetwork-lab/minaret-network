@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { submitServiceRequest } from "@/lib/actions/service-requests";
-import { Mail, Phone, MessageCircle } from "lucide-react";
+import { Mail, Phone, MessageCircle, CheckCircle2 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 
 const schema = z.object({
@@ -72,7 +72,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
   if (status === "success") {
     return (
       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-8 text-center">
-        <div className="text-4xl mb-3">✅</div>
+        <div className="mb-3 flex justify-center"><CheckCircle2 className="h-12 w-12 text-green-500" /></div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Request Submitted!</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Your request has been received. Professionals in that category will be notified and will reach out to you directly.

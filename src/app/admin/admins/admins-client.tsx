@@ -4,7 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import { promoteToAdmin, demoteAdmin, toggleAdminActive, searchUsers } from "@/lib/actions/admins";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, ShieldOff, PowerOff, Power, Loader2 } from "lucide-react";
+import { Search, UserPlus, ShieldOff, PowerOff, Power, Loader2, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface AdminUser {
@@ -135,7 +135,7 @@ function AddAdmin() {
 
       {success && (
         <p className="text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2">
-          ✓ {success}
+          <Check className="inline h-3.5 w-3.5 mr-1" />{success}
         </p>
       )}
 

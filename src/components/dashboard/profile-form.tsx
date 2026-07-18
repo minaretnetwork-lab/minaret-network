@@ -112,7 +112,7 @@ export function ProfileForm({ defaultValues }: Props) {
 
         {status === "success" && (
           <p className="text-sm text-green-700 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2">
-            ✅ Profile updated successfully
+            ✓ Profile updated successfully
           </p>
         )}
         {status === "error" && (

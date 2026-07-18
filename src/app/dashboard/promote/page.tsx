@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getMySponsorship } from "@/lib/actions/sponsored";
 import { PromoteBusiness } from "@/components/dashboard/promote-business";
+import { Megaphone } from "lucide-react";
 
 export const metadata = { title: "Promote Your Business" };
 
@@ -15,7 +16,7 @@ export default async function PromotePage() {
   if (!data?.professional) {
     return (
       <div className="text-center py-16 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
-        <div className="text-4xl mb-4">📢</div>
+        <div className="mb-4 flex justify-center"><Megaphone className="h-12 w-12 text-gray-300" /></div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           No professional profile found
         </h2>

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { submitRecommendation } from "@/lib/actions/recommendations";
@@ -58,8 +58,8 @@ export function RecommendationForm({ professionalId, isLoggedIn }: Props) {
 
   if (status === "success") {
     return (
-      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm text-green-800 dark:text-green-300">
-        ✅ Thank you! Your recommendation has been submitted and is pending admin approval.
+      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
+        <CheckCircle2 className="h-4 w-4 flex-shrink-0" /> Thank you! Your recommendation has been submitted and is pending admin approval.
       </div>
     );
   }

@@ -1,3 +1,5 @@
+import { Handshake, Briefcase, Building2 } from "lucide-react";
+
 export function CommunityCycle() {
   return (
     <section className="py-12 md:py-24 bg-[#f7f8f5] dark:bg-gray-950">
@@ -7,7 +9,7 @@ export function CommunityCycle() {
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">The bigger picture</p>
           <h2
             className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
-            style={{ fontFamily: "var(--font-playfair)" }}
+            style={{ fontFamily: "var(--font-lora)" }}
           >
             The Community Circle
           </h2>
@@ -19,12 +21,12 @@ export function CommunityCycle() {
         {/* Mobile fallback — simple list */}
         <div className="sm:hidden max-w-xs mx-auto space-y-4 mb-6">
           {[
-            { label: "You", sub: "Find trusted help", emoji: "🤝" },
-            { label: "Professional", sub: "Earns within the ummah", emoji: "💼" },
-            { label: "Masjid", sub: "Community strengthens", emoji: "🕌" },
+            { label: "You", sub: "Find trusted help", icon: <Handshake className="h-6 w-6 text-emerald-600" /> },
+            { label: "Professional", sub: "Earns within the ummah", icon: <Briefcase className="h-6 w-6 text-emerald-600" /> },
+            { label: "Masjid", sub: "Community strengthens", icon: <Building2 className="h-6 w-6 text-emerald-600" /> },
           ].map((node, i) => (
             <div key={node.label} className="flex items-center gap-4 bg-white dark:bg-gray-900 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-4">
-              <div className="h-12 w-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-2xl flex-shrink-0">{node.emoji}</div>
+              <div className="h-12 w-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">{node.icon}</div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white text-sm" style={{ fontFamily: "Georgia,serif" }}>{node.label}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{node.sub}</p>

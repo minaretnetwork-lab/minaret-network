@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle, Sparkles, MapPin, Star, ArrowRight, Clock, Shield, TrendingUp } from "lucide-react";
+import { CheckCircle, Sparkles, MapPin, Star, ArrowRight, Clock, Shield, TrendingUp, Wrench } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -89,7 +89,7 @@ export default async function AdvertisePage() {
                   <p className="font-semibold text-gray-900 text-[15px]">Ahmed Plumbing & Heating</p>
                   <p className="text-xs text-gray-400 mt-0.5">Ahmed Al-Rashid</p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-xs">🔧</span>
+                    <Wrench className="h-3 w-3 text-emerald-700" />
                     <span className="text-xs font-medium text-emerald-700">Plumber</span>
                     <span className="text-gray-200">·</span>
                     <span className="text-xs text-gray-400">12y exp</span>

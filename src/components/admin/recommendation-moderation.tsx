@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { approveRecommendation, rejectRecommendation } from "@/lib/actions/recommendations";
 import { formatDate } from "@/lib/utils";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Star } from "lucide-react";
 
 type Recommendation = {
   id: string;
@@ -65,7 +65,7 @@ export function RecommendationModerationList({ recommendations, type }: Props) {
                   </span>
                   {rec.highlyRecommended && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
-                      ★ Highly Recommended
+                      <Star className="h-2.5 w-2.5 fill-current" /> Highly Recommended
                     </span>
                   )}
                 </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MapPin, Star, CheckCircle2, MessageCircle, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials, buildWhatsAppUrl } from "@/lib/utils";
@@ -87,7 +88,7 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{professional.businessName}</p>
           )}
           <div className="flex items-center gap-1.5 mt-1.5">
-            <span className="text-xs">{category.icon}</span>
+            <CategoryIcon slug={category.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
             <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{category.name}</span>
             {professional.yearsOfExperience && (
               <>

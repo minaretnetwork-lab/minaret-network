@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { formatDate } from "@/lib/utils";
-import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User } from "lucide-react";
 import type { BadgeType } from "@/types";
 
 export const metadata = { title: "My Professional Listing" };
@@ -63,7 +63,7 @@ export default async function ProfessionalDashboardPage() {
   if (!professional) {
     return (
       <div className="text-center py-16 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
-        <div className="text-4xl mb-4">👤</div>
+        <div className="mb-4 flex justify-center"><User className="h-12 w-12 text-gray-300" /></div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           You're not registered as a professional
         </h2>

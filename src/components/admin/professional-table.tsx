@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { approveProfessional, rejectProfessional, suspendProfessional, awardBadge, revokeBadge } from "@/lib/actions/admin";
-import { CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, ExternalLink, Check, Plus, Sparkles } from "lucide-react";
 
 type Professional = {
   id: string;
@@ -145,7 +145,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
                         : "bg-gray-50 text-gray-500 border-gray-200 hover:border-green-300 hover:text-green-600"
                     }`}
                   >
-                    {hasMosqueAffiliated ? "✓ " : "+ "}
+                    {hasMosqueAffiliated ? <Check className="inline h-3 w-3 mr-1" /> : <Plus className="inline h-3 w-3 mr-1" />}
                     {p.mosque ? `Affiliated with ${p.mosque.name}` : "No mosque listed"}
                   </button>
                   <button
@@ -157,14 +157,14 @@ export function AdminProfessionalTable({ professionals }: Props) {
                         : "bg-gray-50 text-gray-500 border-gray-200 hover:border-amber-300 hover:text-amber-600"
                     }`}
                   >
-                    {hasHighlyRecommended ? "✓ " : "+ "}
+                    {hasHighlyRecommended ? <Check className="inline h-3 w-3 mr-1" /> : <Plus className="inline h-3 w-3 mr-1" />}
                     Highly Recommended
                   </button>
                 </div>
 
                 {p.isSponsored && (
                   <div className="mt-2">
-                    <span className="text-xs text-violet-700 font-medium">✦ Sponsored listing active</span>
+                    <span className="text-xs text-violet-700 font-medium flex items-center gap-1"><Sparkles className="h-3 w-3" /> Sponsored listing active</span>
                   </div>
                 )}
               </div>

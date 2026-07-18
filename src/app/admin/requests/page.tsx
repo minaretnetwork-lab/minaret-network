@@ -2,6 +2,7 @@ import { getAllServiceRequests } from "@/lib/actions/service-requests";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { MapPin, Clock } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 export const metadata = { title: "Service Requests" };
 
@@ -33,7 +34,7 @@ export default async function AdminRequestsPage() {
               <div key={req.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">{req.category.icon ?? "📋"}</span>
+                    <div className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><CategoryIcon slug={req.category.slug} className="h-5 w-5" /></div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold text-gray-900 dark:text-white">{req.category.name}</h3>

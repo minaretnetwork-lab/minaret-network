@@ -51,7 +51,7 @@ export async function getMyServiceRequests() {
   return prisma.serviceRequest.findMany({
     where: { userId: dbUser.id },
     include: {
-      category: { select: { name: true, icon: true } },
+      category: { select: { name: true, slug: true, icon: true } },
       serviceArea: { select: { name: true } },
       assignedTo: {
         include: {
@@ -71,7 +71,7 @@ export async function getAllServiceRequests(mosqueSlug: string) {
     where: { mosqueId: mosque.id },
     include: {
       user: { select: { firstName: true, lastName: true, displayName: true, email: true } },
-      category: { select: { name: true, icon: true } },
+      category: { select: { name: true, slug: true, icon: true } },
       serviceArea: { select: { name: true } },
       assignedTo: {
         include: {

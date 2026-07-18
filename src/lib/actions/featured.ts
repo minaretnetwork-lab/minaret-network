@@ -31,7 +31,7 @@ export async function getFeaturedBusinessesForHomepage(city?: string) {
       professional: {
         include: {
           user: { select: { firstName: true, lastName: true, displayName: true, avatarUrl: true } },
-          category: { select: { id: true, name: true, icon: true } },
+          category: { select: { id: true, name: true, slug: true, icon: true } },
           mosque: { select: { id: true, name: true } },
           badges: { select: { id: true, type: true } },
         },
@@ -82,7 +82,7 @@ export async function getMyFeaturedListings() {
     include: {
       professional: {
         include: {
-          category: { select: { id: true, name: true, icon: true } },
+          category: { select: { id: true, name: true, slug: true, icon: true } },
           serviceAreas: { select: { id: true, name: true } },
           mosque: { select: { city: true } },
         },
@@ -227,7 +227,7 @@ const featuredInclude = {
   professional: {
     include: {
       user: { select: { firstName: true, lastName: true, displayName: true, email: true } },
-      category: { select: { name: true, icon: true } },
+      category: { select: { name: true, slug: true, icon: true } },
     },
   },
   pricingTier: true,

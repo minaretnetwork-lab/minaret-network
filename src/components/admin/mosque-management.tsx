@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createMosque, updateMosque, toggleMosqueActive } from "@/lib/actions/mosques";
-import { Building2, ExternalLink, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { Building2, ExternalLink, ChevronDown, ChevronUp, Plus, AlertTriangle } from "lucide-react";
 
 type Mosque = {
   id: string;
@@ -196,7 +196,7 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
                     </a>
                   )}
                   {!mosque.communityChannelName && !mosque.communityChannelLink && (
-                    <span className="text-xs text-amber-600">⚠ No community channel set — add one so admins can verify affiliations</span>
+                    <span className="text-xs text-amber-600 flex items-center gap-1"><AlertTriangle className="h-3 w-3 flex-shrink-0" /> No community channel set — add one so admins can verify affiliations</span>
                   )}
                 </div>
               </div>

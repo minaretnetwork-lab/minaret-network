@@ -4,6 +4,7 @@ import { getMyFeaturedListings, getActiveFeaturedCities } from "@/lib/actions/fe
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { FeaturedBusinessDashboard } from "@/components/dashboard/featured-business-dashboard";
+import { Star } from "lucide-react";
 
 export const metadata = { title: "Featured Business" };
 
@@ -27,7 +28,7 @@ export default async function FeaturedDashboardPage() {
   if (!data?.professional) {
     return (
       <div className="text-center py-16 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
-        <div className="text-4xl mb-4">⭐</div>
+        <div className="mb-4 flex justify-center"><Star className="h-12 w-12 text-gray-300" /></div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No professional profile found</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">Register as a professional to access Featured Business.</p>
       </div>

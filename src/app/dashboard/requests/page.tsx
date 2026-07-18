@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getMyServiceRequests } from "@/lib/actions/service-requests";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
-import { Clock, MapPin, Phone, Mail, MessageCircle, UserCheck, Plus } from "lucide-react";
+import { Clock, MapPin, Phone, Mail, MessageCircle, UserCheck, Plus, ClipboardList } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 export const metadata = { title: "My Requests" };
 
@@ -53,7 +54,7 @@ export default async function MyRequestsPage() {
 
       {requests.length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
-          <div className="text-4xl mb-4">📋</div>
+          <div className="mb-4 flex justify-center"><ClipboardList className="h-12 w-12 text-gray-300" /></div>
           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">No requests yet</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
             Need a plumber, realtor, or handyman? Submit a request and get matched.
@@ -75,7 +76,7 @@ export default async function MyRequestsPage() {
               <div key={req.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0">
-                    <span className="text-2xl flex-shrink-0">{req.category.icon ?? "📋"}</span>
+                    <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><CategoryIcon slug={req.category.slug} className="h-5 w-5" /></div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold text-gray-900 dark:text-white">{req.category.name}</h3>
