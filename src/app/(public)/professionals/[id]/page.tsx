@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
+import { getCurrentUser } from "@/lib/actions/auth";
 import { getInitials, buildWhatsAppUrl, formatDate } from "@/lib/utils";
 import type { BadgeType } from "@/types";
 
@@ -21,7 +22,10 @@ interface Props {
 
 export default async function ProfessionalProfilePage({ params }: Props) {
   const { id } = await params;
-  const professional = await getProfessionalById(id);
+  const [professional, currentUser] = await Promise.all([
+    getProfessionalById(id),
+    getCurrentUser().catch(() => null),
+  ]);
 
   if (!professional || professional.status !== "APPROVED") {
     notFound();
@@ -261,7 +265,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               Submit a Recommendation
             </h3>
-            <RecommendationForm professionalId={professional.id} />
+            <RecommendationForm professionalId={professional.id} isLoggedIn={!!currentUser} />
           </section>
         </div>
       </div>

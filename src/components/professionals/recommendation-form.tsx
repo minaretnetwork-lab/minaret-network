@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { submitRecommendation } from "@/lib/actions/recommendations";
@@ -15,7 +16,12 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export function RecommendationForm({ professionalId }: { professionalId: string }) {
+interface Props {
+  professionalId: string;
+  isLoggedIn: boolean;
+}
+
+export function RecommendationForm({ professionalId, isLoggedIn }: Props) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -42,6 +48,21 @@ export function RecommendationForm({ professionalId }: { professionalId: string 
     return (
       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm text-green-800 dark:text-green-300">
         ✅ Thank you! Your recommendation has been submitted and is pending admin approval.
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-900/10 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Have you worked with this professional? <span className="font-medium text-gray-800 dark:text-gray-200">Sign in to leave a recommendation.</span>
+        </p>
+        <Link href={`/auth/login?redirectTo=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "")}`}>
+          <Button size="sm" className="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white">
+            Sign in to recommend
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -73,9 +94,7 @@ export function RecommendationForm({ professionalId }: { professionalId: string 
         <p className="text-xs text-red-600">{errorMsg}</p>
       )}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-400">
-          Requires sign-in. Reviewed by admin before publishing.
-        </p>
+        <p className="text-xs text-gray-400">Reviewed by admin before publishing.</p>
         <Button
           type="submit"
           disabled={isSubmitting}
