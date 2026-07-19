@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   Globe, Phone, Mail, MapPin, Clock, Award, MessageCircle,
-  ChevronLeft, Calendar, Languages, Star
+  ChevronLeft, Calendar, Languages, Star, Lock
 } from "lucide-react";
+import { ContactGateModal } from "@/components/ui/contact-gate-modal";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -87,16 +88,30 @@ export default async function ProfessionalProfilePage({ params }: Props) {
 
             <div className="mt-5 space-y-2">
               {professional.phone && (
-                <a href={`tel:${professional.phone}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
-                  <Phone className="h-4 w-4 flex-shrink-0" />
-                  {professional.phone}
-                </a>
+                currentUser ? (
+                  <a href={`tel:${professional.phone}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
+                    <Phone className="h-4 w-4 flex-shrink-0" />
+                    {professional.phone}
+                  </a>
+                ) : (
+                  <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
+                    <Lock className="h-4 w-4 flex-shrink-0" />
+                    Sign in to see phone
+                  </a>
+                )
               )}
               {professional.email && (
-                <a href={`mailto:${professional.email}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center break-all">
-                  <Mail className="h-4 w-4 flex-shrink-0" />
-                  {professional.email}
-                </a>
+                currentUser ? (
+                  <a href={`mailto:${professional.email}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center break-all">
+                    <Mail className="h-4 w-4 flex-shrink-0" />
+                    {professional.email}
+                  </a>
+                ) : (
+                  <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
+                    <Lock className="h-4 w-4 flex-shrink-0" />
+                    Sign in to see email
+                  </a>
+                )
               )}
               {professional.website && (
                 <a href={professional.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
@@ -107,17 +122,32 @@ export default async function ProfessionalProfilePage({ params }: Props) {
             </div>
 
             {professional.whatsapp && (
-              <a
-                href={buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 flex"
-              >
-                <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  WhatsApp
-                </Button>
-              </a>
+              currentUser ? (
+                <a
+                  href={buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 flex"
+                >
+                  <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </Button>
+                </a>
+              ) : (
+                <div className="mt-4">
+                  <ContactGateModal
+                    professionalId={professional.id}
+                    professionalName={name}
+                    trigger={
+                      <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
+                        <MessageCircle className="h-4 w-4" />
+                        Chat on WhatsApp
+                      </Button>
+                    }
+                  />
+                </div>
+              )
             )}
           </div>
 

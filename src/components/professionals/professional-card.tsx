@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MapPin, Star, CheckCircle2, MessageCircle, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { ContactGateModal } from "@/components/ui/contact-gate-modal";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials, buildWhatsAppUrl } from "@/lib/utils";
@@ -10,6 +11,7 @@ import type { ProfessionalWithRelations } from "@/types";
 
 interface ProfessionalCardProps {
   professional: ProfessionalWithRelations;
+  isLoggedIn?: boolean;
 }
 
 function RatingBreakdown({ recommendations }: { recommendations: { rating: number }[] }) {
@@ -42,7 +44,7 @@ function RatingBreakdown({ recommendations }: { recommendations: { rating: numbe
   );
 }
 
-export function ProfessionalCard({ professional }: ProfessionalCardProps) {
+export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
   const isSponsored = (professional as typeof professional & { isSponsored?: boolean }).isSponsored === true;
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -184,15 +186,30 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
 
         <div className="flex items-center gap-1.5">
           {professional.whatsapp && (
-            <a
-              href={buildWhatsAppUrl(professional.whatsapp)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
-              title="WhatsApp"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-            </a>
+            isLoggedIn ? (
+              <a
+                href={buildWhatsAppUrl(professional.whatsapp)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
+                title="WhatsApp"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+              </a>
+            ) : (
+              <ContactGateModal
+                professionalId={professional.id}
+                professionalName={name}
+                trigger={
+                  <div
+                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
+                    title="Chat on WhatsApp"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                  </div>
+                }
+              />
+            )
           )}
           <Link
             href={`/professionals/${professional.id}`}

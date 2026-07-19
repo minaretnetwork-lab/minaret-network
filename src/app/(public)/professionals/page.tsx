@@ -5,6 +5,7 @@ import { SearchBar } from "@/components/professionals/search-bar";
 import { SearchFilters } from "@/components/professionals/search-filters";
 import { ProfessionalCard } from "@/components/professionals/professional-card";
 import { getProfessionals } from "@/lib/actions/professionals";
+import { getCurrentUser } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import type { SearchFilters as SearchFiltersType } from "@/types";
@@ -14,7 +15,11 @@ interface PageProps {
 }
 
 async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
-  const professionals = await getProfessionals(DEFAULT_MOSQUE_SLUG, filters);
+  const [professionals, currentUser] = await Promise.all([
+    getProfessionals(DEFAULT_MOSQUE_SLUG, filters),
+    getCurrentUser().catch(() => null),
+  ]);
+  const isLoggedIn = !!currentUser;
 
   if (professionals.length === 0) {
     return (
@@ -45,7 +50,7 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {sponsored.map((p) => (
-              <ProfessionalCard key={p.id} professional={p as never} />
+              <ProfessionalCard key={p.id} professional={p as never} isLoggedIn={isLoggedIn} />
             ))}
           </div>
           {organic.length > 0 && (
@@ -60,7 +65,7 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
       {organic.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
           {organic.map((p) => (
-            <ProfessionalCard key={p.id} professional={p as never} />
+            <ProfessionalCard key={p.id} professional={p as never} isLoggedIn={isLoggedIn} />
           ))}
         </div>
       )}
