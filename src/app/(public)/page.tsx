@@ -87,16 +87,16 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           {/* Right — illustration panel */}
-          <div className="hidden lg:block lg:w-[44%] xl:w-[46%] relative overflow-hidden bg-[#071a0e]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/mosque2.jpg"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover object-top"
-              aria-hidden="true"
-            />
-            {/* Subtle left-edge fade so it blends into the white left column */}
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white/20 to-transparent" aria-hidden="true" />
+          <div className="hidden md:flex md:w-[42%] xl:w-[44%] items-center justify-center p-8 lg:p-12">
+            <div className="relative w-full max-w-[360px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/mosque6.jpg"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover object-center"
+                aria-hidden="true"
+              />
+            </div>
           </div>
 
         </div>
