@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LANGUAGES } from "@/lib/constants";
 import { useRouter } from "next/navigation";
-import { Camera, X, Building2, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { Camera, X, Building2, ChevronRight, ChevronLeft, Check, Lightbulb } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { submitCategorySuggestion } from "@/lib/actions/category-suggestions";
 
 const schema = z.object({
   mosqueId: z.string().optional(),
@@ -370,12 +371,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   })()}
                 </div>
                 {errors.categoryId && <p className="text-xs text-red-600 mt-1">{errors.categoryId.message}</p>}
-                {(() => { const sel = categories.find((c) => c.id === watch("categoryId")); return sel?.slug === "other" ? (
-                  <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 mt-2">
-                    Great — use the <strong>Job Title</strong> field below to describe your specific profession (e.g. Solar Panel Installer, Sign Language Interpreter).
-                  </p>
-                ) : null; })()}
               </div>
+              <CategorySuggestionPanel categories={categories} selectedCategoryId={watch("categoryId")} />
 
               {/* Title + Business name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -678,6 +675,87 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           Your application will be reviewed by our admin team before going live.
         </p>
       </form>
+    </div>
+  );
+}
+
+function CategorySuggestionPanel({ categories, selectedCategoryId }: { categories: { id: string; slug?: string }[]; selectedCategoryId: string }) {
+  const selectedCat = categories.find((c) => c.id === selectedCategoryId);
+  const isOther = selectedCat && (selectedCat as { slug?: string }).slug === "other";
+
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  if (!isOther && !open) return (
+    <button type="button" onClick={() => setOpen(true)} className="flex items-center gap-1.5 text-xs text-emerald-600 hover:text-emerald-700 mt-1">
+      <Lightbulb className="h-3.5 w-3.5" /> Can&apos;t find your category? Suggest one
+    </button>
+  );
+
+  if (done) return (
+    <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 mt-1">
+      <Check className="h-4 w-4 flex-shrink-0" />
+      Category suggestion submitted! Admin will review it. Continue registering with <strong>Other</strong> for now — you can update your category once it&apos;s approved.
+    </div>
+  );
+
+  async function handleSuggest() {
+    if (!name.trim()) return;
+    setSubmitting(true);
+    try {
+      await submitCategorySuggestion(name.trim(), icon.trim() || undefined);
+      setDone(true);
+    } catch {
+      // silent — non-blocking
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="mt-2 border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/60 dark:bg-emerald-900/10 rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+          <Lightbulb className="h-4 w-4" /> Suggest a new category
+        </p>
+        {!isOther && (
+          <button type="button" onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        Admin will review your suggestion. Once approved it will appear for all professionals and members. In the meantime, select <strong>Other</strong> to complete your registration.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={icon}
+          onChange={(e) => setIcon(e.target.value)}
+          placeholder="Emoji"
+          className="w-16 border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-2 bg-white dark:bg-gray-900 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          maxLength={4}
+        />
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Category name (e.g. Solar Panel Installer)"
+          className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
+      </div>
+      <Button
+        type="button"
+        size="sm"
+        disabled={!name.trim() || submitting}
+        onClick={handleSuggest}
+        className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-40"
+      >
+        {submitting ? "Submitting…" : "Submit suggestion"}
+      </Button>
     </div>
   );
 }

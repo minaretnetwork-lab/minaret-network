@@ -16,6 +16,7 @@ const navLinks = [
   { href: "/admin/recommendations", label: "Recommendations", icon: <MessageSquare className="h-4 w-4" /> },
   { href: "/admin/requests", label: "Service Requests", icon: <FileText className="h-4 w-4" /> },
   { href: "/admin/categories", label: "Categories", icon: <Tag className="h-4 w-4" /> },
+  { href: "/admin/category-suggestions", label: "Category Requests", icon: <Tag className="h-4 w-4" /> },
   { href: "/admin/revenue", label: "Mosque Revenue", icon: <TrendingUp className="h-4 w-4" /> },
 ];
 

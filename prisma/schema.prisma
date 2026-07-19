@@ -26,11 +26,12 @@ model Mosque {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  users         User[]
-  professionals Professional[]
-  categories    Category[]
-  serviceAreas  ServiceArea[]
-  requests      ServiceRequest[]
+  users                User[]
+  professionals        Professional[]
+  categories           Category[]
+  serviceAreas         ServiceArea[]
+  requests             ServiceRequest[]
+  categorySuggestions  CategorySuggestion[]
 
   @@map("mosques")
 }
@@ -53,9 +54,10 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  professional    Professional?
-  recommendations Recommendation[]
-  serviceRequests ServiceRequest[]
+  professional         Professional?
+  recommendations      Recommendation[]
+  serviceRequests      ServiceRequest[]
+  categorySuggestions  CategorySuggestion[]
 
   @@map("users")
 }
@@ -397,4 +399,22 @@ enum RequestStatus {
   IN_PROGRESS
   CLOSED
   CANCELLED
+}
+
+// ── Category Suggestions ──────────────────────────────────────────────────────
+
+model CategorySuggestion {
+  id            String    @id @default(cuid())
+  name          String
+  icon          String?
+  mosqueId      String
+  mosque        Mosque    @relation(fields: [mosqueId], references: [id])
+  requestedById String
+  requestedBy   User      @relation(fields: [requestedById], references: [id])
+  status        String    @default("PENDING")
+  adminNote     String?
+  createdAt     DateTime  @default(now())
+  reviewedAt    DateTime?
+
+  @@map("category_suggestions")
 }
