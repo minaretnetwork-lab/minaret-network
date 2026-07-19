@@ -212,7 +212,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
                   onChange={(e) => set("serviceAreaId", e.target.value)}
                   className="w-full appearance-none border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-9"
                 >
-                  <option value="">Any area / I'm flexible</option>
+                  <option value="">Any area</option>
                   {serviceAreas.map((a) => (
                     <option key={a.id} value={a.id}>{a.name}</option>
                   ))}
@@ -234,7 +234,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
             </div>
           </div>
 
-          <StepButtons onBack={() => setStep(1)} onNext={() => setStep(3)} skipLabel="Skip" />
+          <StepButtons onBack={() => setStep(1)} onNext={() => setStep(3)} />
         </div>
       )}
 
@@ -345,11 +345,10 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
   );
 }
 
-function StepButtons({ onBack, onNext, nextDisabled, skipLabel }: {
+function StepButtons({ onBack, onNext, nextDisabled }: {
   onBack: () => void;
   onNext: () => void;
   nextDisabled?: boolean;
-  skipLabel?: string;
 }) {
   return (
     <div className="flex gap-3 mt-6">
@@ -361,8 +360,7 @@ function StepButtons({ onBack, onNext, nextDisabled, skipLabel }: {
         disabled={nextDisabled}
         className="flex-1 bg-[#14532d] hover:bg-[#166534] text-white gap-1.5 disabled:opacity-40"
       >
-        {skipLabel && nextDisabled === undefined ? skipLabel : "Continue"}
-        <ArrowRight className="h-4 w-4" />
+        Continue <ArrowRight className="h-4 w-4" />
       </Button>
     </div>
   );
