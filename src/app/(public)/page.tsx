@@ -92,7 +92,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <img
               src="/mosque2.jpg"
               alt=""
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full object-cover object-top"
               aria-hidden="true"
             />
             {/* Subtle left-edge fade so it blends into the white left column */}
