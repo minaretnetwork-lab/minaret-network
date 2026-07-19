@@ -4,31 +4,31 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const COUNTRY_CODES = [
-  { code: "+1", flag: "🇨🇦", name: "Canada" },
-  { code: "+1", flag: "🇺🇸", name: "USA" },
-  { code: "+92", flag: "🇵🇰", name: "Pakistan" },
-  { code: "+91", flag: "🇮🇳", name: "India" },
+  { code: "+1",   flag: "🇨🇦", name: "Canada" },
+  { code: "+1",   flag: "🇺🇸", name: "USA" },
+  { code: "+92",  flag: "🇵🇰", name: "Pakistan" },
+  { code: "+91",  flag: "🇮🇳", name: "India" },
   { code: "+880", flag: "🇧🇩", name: "Bangladesh" },
-  { code: "+20", flag: "🇪🇬", name: "Egypt" },
+  { code: "+20",  flag: "🇪🇬", name: "Egypt" },
   { code: "+966", flag: "🇸🇦", name: "Saudi Arabia" },
   { code: "+971", flag: "🇦🇪", name: "UAE" },
   { code: "+974", flag: "🇶🇦", name: "Qatar" },
   { code: "+965", flag: "🇰🇼", name: "Kuwait" },
-  { code: "+44", flag: "🇬🇧", name: "UK" },
+  { code: "+44",  flag: "🇬🇧", name: "UK" },
   { code: "+252", flag: "🇸🇴", name: "Somalia" },
   { code: "+234", flag: "🇳🇬", name: "Nigeria" },
   { code: "+213", flag: "🇩🇿", name: "Algeria" },
   { code: "+212", flag: "🇲🇦", name: "Morocco" },
   { code: "+216", flag: "🇹🇳", name: "Tunisia" },
-  { code: "+90", flag: "🇹🇷", name: "Turkey" },
-  { code: "+98", flag: "🇮🇷", name: "Iran" },
+  { code: "+90",  flag: "🇹🇷", name: "Turkey" },
+  { code: "+98",  flag: "🇮🇷", name: "Iran" },
   { code: "+964", flag: "🇮🇶", name: "Iraq" },
   { code: "+963", flag: "🇸🇾", name: "Syria" },
   { code: "+961", flag: "🇱🇧", name: "Lebanon" },
   { code: "+962", flag: "🇯🇴", name: "Jordan" },
   { code: "+249", flag: "🇸🇩", name: "Sudan" },
-  { code: "+60", flag: "🇲🇾", name: "Malaysia" },
-  { code: "+62", flag: "🇮🇩", name: "Indonesia" },
+  { code: "+60",  flag: "🇲🇾", name: "Malaysia" },
+  { code: "+62",  flag: "🇮🇩", name: "Indonesia" },
 ];
 
 interface PhoneInputProps {
@@ -39,56 +39,48 @@ interface PhoneInputProps {
   id?: string;
 }
 
-function parsePhone(full: string): { countryCode: string; number: string } {
+function parsePhone(full: string): { idx: number; number: string } {
   for (const c of [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length)) {
     if (full.startsWith(c.code + " ") || full.startsWith(c.code)) {
-      return { countryCode: c.code, number: full.slice(c.code.length).trim() };
+      const idx = COUNTRY_CODES.findIndex((x) => x.code === c.code && x.name === c.name);
+      return { idx: idx >= 0 ? idx : 0, number: full.slice(c.code.length).trim() };
     }
   }
-  return { countryCode: "+1", number: full };
+  return { idx: 0, number: full };
 }
 
 export function PhoneInput({ value = "", onChange, placeholder = "416 555 0000", className, id }: PhoneInputProps) {
   const parsed = parsePhone(value);
-  const [countryCode, setCountryCode] = useState(parsed.countryCode);
+  const [selectedIdx, setSelectedIdx] = useState(parsed.idx);
   const [number, setNumber] = useState(parsed.number);
 
-  function handleCodeChange(code: string) {
-    setCountryCode(code);
-    onChange?.(`${code} ${number}`.trim());
+  const country = COUNTRY_CODES[selectedIdx];
+
+  function handleIdxChange(idx: number) {
+    setSelectedIdx(idx);
+    onChange?.(`${COUNTRY_CODES[idx].code} ${number}`.trim());
   }
 
   function handleNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
     const n = e.target.value;
     setNumber(n);
-    onChange?.(`${countryCode} ${n}`.trim());
+    onChange?.(`${country.code} ${n}`.trim());
   }
-
-  const selectedCountry = COUNTRY_CODES.find((c) => c.code === countryCode) ?? COUNTRY_CODES[0];
 
   return (
     <div className={cn("flex gap-2", className)}>
-      <div className="relative flex-shrink-0">
-        <select
-          value={countryCode}
-          onChange={(e) => handleCodeChange(e.target.value)}
-          className="appearance-none w-24 border border-gray-300 dark:border-gray-700 rounded-lg pl-2 pr-6 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-          aria-label="Country code"
-        >
-          {COUNTRY_CODES.map((c, i) => (
-            <option key={`${c.code}-${i}`} value={c.code}>
-              {c.flag} {c.code} — {c.name}
-            </option>
-          ))}
-        </select>
-        {/* Overlay showing just flag + code when closed */}
-        <div className="pointer-events-none absolute inset-0 flex items-center pl-2 text-sm text-gray-800 dark:text-gray-200">
-          {selectedCountry.flag} {countryCode}
-        </div>
-        <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400">
-          <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
-        </div>
-      </div>
+      <select
+        value={selectedIdx}
+        onChange={(e) => handleIdxChange(Number(e.target.value))}
+        className="flex-shrink-0 w-28 border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+        aria-label="Country code"
+      >
+        {COUNTRY_CODES.map((c, i) => (
+          <option key={i} value={i}>
+            {c.flag} {c.code}
+          </option>
+        ))}
+      </select>
       <input
         id={id}
         type="tel"
