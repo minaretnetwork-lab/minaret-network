@@ -37,8 +37,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </Link>
             <span className="text-sm font-semibold">Admin Panel</span>
             <span className="text-white/30 text-xs">|</span>
+            <Link href="/dashboard" className="text-xs text-white/60 hover:text-white transition-colors">
+              My Dashboard
+            </Link>
+            <span className="text-white/30 text-xs">|</span>
             <Link href="/" className="text-xs text-white/60 hover:text-white transition-colors">
-              ← Back to site
+              Back to site
             </Link>
           </div>
           <form action="/auth/signout" method="post">
