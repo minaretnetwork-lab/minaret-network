@@ -86,19 +86,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
           </div>
 
-          {/* Right — dark green panel with mosque photo */}
+          {/* Right — illustration panel */}
           <div className="hidden lg:block lg:w-[44%] xl:w-[46%] relative overflow-hidden bg-[#071a0e]">
             <Image
-              src="/mosque.jpg"
+              src="/mosque2.jpg"
               alt=""
               fill
               className="object-cover object-center"
               priority
               aria-hidden="true"
             />
-            {/* Overlays — mirrors the original hero treatment */}
-            <div className="absolute inset-0 bg-[#071a0e]/75" aria-hidden="true" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#071a0e] via-[#071a0e]/20 to-[#071a0e]/50" aria-hidden="true" />
+            {/* Subtle left-edge fade so it blends into the white left column */}
+            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white/20 to-transparent" aria-hidden="true" />
           </div>
 
         </div>
