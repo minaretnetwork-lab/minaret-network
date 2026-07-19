@@ -18,7 +18,7 @@ export function Footer() {
               </div>
             </div>
             <p className="text-sm leading-relaxed max-w-xs text-white/50">
-              Connecting mosque communities with trusted professionals across the GTA.
+              Connecting mosque communities with affiliated professionals across the GTA.
             </p>
           </div>
 

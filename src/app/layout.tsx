@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   description:
     "Find professionals from your mosque community across the GTA.",
-  keywords: ["professionals", "mosque", "community", "trusted", "Minaret Network", "GTA"],
+  keywords: ["professionals", "mosque", "community", "affiliated", "Minaret Network", "GTA"],
 };
 
 export default function RootLayout({

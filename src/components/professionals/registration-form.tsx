@@ -401,7 +401,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               <div>
                 <Label htmlFor="bio">Bio / About *</Label>
                 <Textarea id="bio" {...register("bio")} className="mt-1.5 resize-none" rows={5}
-                  placeholder="Describe your experience, expertise, and what makes you a trusted professional in the community…" />
+                  placeholder="Describe your experience, expertise, and why you're a good fit for this community…" />
                 {errors.bio && <p className="text-xs text-red-600 mt-1">{errors.bio.message}</p>}
                 <p className="text-xs text-gray-400 mt-1">Minimum 50 characters · {watch("bio")?.length ?? 0}/1000</p>
               </div>

@@ -33,7 +33,7 @@ export async function SponsoredLogoCarousel() {
     <div className="border-b border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-950 py-5 overflow-hidden">
       <div className="container mx-auto px-4 mb-3">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 text-center">
-          Trusted by community businesses
+          Featured community businesses
         </p>
       </div>
 

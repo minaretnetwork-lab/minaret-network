@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export const metadata = {
   title: "Advertise | Minaret Network",
-  description: "Grow your business by reaching trusted mosque community members across the GTA.",
+  description: "Grow your business by reaching mosque community members across the GTA.",
 };
 
 async function getPrices() {
@@ -26,7 +26,7 @@ async function getPrices() {
 
 const BENEFITS = [
   { icon: <TrendingUp className="h-5 w-5" />, label: "Priority placement", desc: "Appear above all organic results for your category and service area" },
-  { icon: <Shield className="h-5 w-5" />, label: "Built-in trust", desc: "Community members already trust Minaret Network — your listing inherits that credibility" },
+  { icon: <Shield className="h-5 w-5" />, label: "Community credibility", desc: "Community members know listings are mosque-affiliated — your profile carries that context" },
   { icon: <MapPin className="h-5 w-5" />, label: "Hyper-local reach", desc: "Shown only to people searching in your service area, not wasted impressions" },
   { icon: <Star className="h-5 w-5" />, label: "Profile visibility", desc: "See how many community members viewed your profile and clicked to contact you" },
 ];
@@ -53,10 +53,10 @@ export default async function AdvertisePage() {
             Advertise with Us — Minaret Network
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-6" style={{ fontFamily: "var(--font-playfair)" }}>
-            Grow Your Business Within a Trusted Community
+            Grow Your Business Within the Mosque Community
           </h1>
           <p className="text-emerald-100 text-lg leading-relaxed max-w-xl mx-auto mb-8">
-            Reach mosque members across the GTA who are actively looking for trusted professionals — plumbers, realtors, lawyers, handymen, and more.
+            Reach mosque members across the GTA who are actively looking for community-affiliated professionals — plumbers, realtors, lawyers, handymen, and more.
           </p>
           <Link
             href="/professionals/register"

@@ -21,7 +21,7 @@ export function CommunityCycle() {
         {/* Mobile fallback — simple list */}
         <div className="sm:hidden max-w-xs mx-auto space-y-4 mb-6">
           {[
-            { label: "You", sub: "Find trusted help", icon: <Handshake className="h-6 w-6 text-emerald-600" /> },
+            { label: "You", sub: "Find community help", icon: <Handshake className="h-6 w-6 text-emerald-600" /> },
             { label: "Professional", sub: "Earns within the ummah", icon: <Briefcase className="h-6 w-6 text-emerald-600" /> },
             { label: "Masjid", sub: "Community strengthens", icon: <Building2 className="h-6 w-6 text-emerald-600" /> },
           ].map((node, i) => (
@@ -72,7 +72,7 @@ export function CommunityCycle() {
               <path d="M-15 10 Q-15 -2 0 -2 Q15 -2 15 10 Z" />
             </g>
             <text x="350" y="158" textAnchor="middle" fontSize="15" fontWeight="700" fill="#064e3b" fontFamily="Georgia,serif">You</text>
-            <text x="350" y="175" textAnchor="middle" fontSize="11" fill="#6b7280">Find trusted help</text>
+            <text x="350" y="175" textAnchor="middle" fontSize="11" fill="#6b7280">Find community help</text>
 
             {/* ── NODE: Professional (502, 353) ────────────────────── */}
             <circle cx="502" cy="353" r="52" fill="#ecfdf5" stroke="#6ee7b7" strokeWidth="2" />

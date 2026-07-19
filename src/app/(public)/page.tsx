@@ -272,7 +272,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             Are you a professional?
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-            Join our network and connect with mosque members looking for trusted professionals like you. Verification ensures your credibility stands out.
+            Join our network and connect with mosque members looking for community-affiliated professionals like you.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/professionals/register">
