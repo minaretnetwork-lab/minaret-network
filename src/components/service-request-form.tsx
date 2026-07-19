@@ -1,12 +1,76 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown } from "lucide-react";
+import {
+  Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown,
+  Stethoscope, SmilePlus, Pill, Activity, Bone, Eye, Brain,
+  Scale, Globe, FileText, Calculator, TrendingUp, Shield, Landmark, Home,
+  HardHat, Hammer, Zap, Wrench, Wind, Building2, Paintbrush, Layers, Leaf,
+  Snowflake, ClipboardCheck, Truck, Bug, Plug, Sparkles, Settings,
+  BookOpen, Car, Dumbbell, Monitor, Code2, Palette, Camera, Video,
+  Scissors, UtensilsCrossed, PawPrint, Briefcase, Plane, Baby, Star,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { submitServiceRequest } from "@/lib/actions/service-requests";
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  "doctor": Stethoscope,
+  "dentist": SmilePlus,
+  "pharmacist": Pill,
+  "physiotherapist": Activity,
+  "chiropractor": Bone,
+  "optometrist": Eye,
+  "counsellor": Brain,
+  "lawyer": Scale,
+  "immigration-consultant": Globe,
+  "notary-public": FileText,
+  "accountant": Calculator,
+  "financial-advisor": TrendingUp,
+  "insurance-broker": Shield,
+  "mortgage-broker": Landmark,
+  "realtor": Home,
+  "contractor": HardHat,
+  "handyman": Hammer,
+  "electrician": Zap,
+  "plumber": Wrench,
+  "hvac": Wind,
+  "roofer": Building2,
+  "painter": Paintbrush,
+  "flooring": Layers,
+  "landscaper": Leaf,
+  "snow-removal": Snowflake,
+  "home-inspector": ClipboardCheck,
+  "moving-services": Truck,
+  "pest-control": Bug,
+  "appliance-repair": Plug,
+  "cleaning-services": Sparkles,
+  "mechanic": Settings,
+  "tutor": BookOpen,
+  "driving-instructor": Car,
+  "personal-trainer": Dumbbell,
+  "it-consultant": Monitor,
+  "web-developer": Code2,
+  "graphic-designer": Palette,
+  "photographer": Camera,
+  "videographer": Video,
+  "tailor-alterations": Scissors,
+  "barber-hair-stylist": Scissors,
+  "event-wedding-planner": Calendar,
+  "restaurant-catering": UtensilsCrossed,
+  "pet-sitter": PawPrint,
+  "business-consultant": Briefcase,
+  "travel-agent": Plane,
+  "childcare": Baby,
+};
+
+function CategoryIcon({ slug, className }: { slug?: string; className?: string }) {
+  const Icon = (slug && CATEGORY_ICONS[slug]) || Star;
+  return <Icon className={className} />;
+}
 
 interface Category { id: string; name: string; icon?: string | null; slug?: string }
 interface ServiceArea { id: string; name: string }
@@ -155,7 +219,9 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
                     : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                 }`}
               >
-                <span className="text-2xl">{c.icon}</span>
+                <div className="h-8 w-8 flex items-center justify-center">
+                  <CategoryIcon slug={c.slug} className="h-6 w-6" />
+                </div>
                 <span className="text-center leading-tight">{c.name}</span>
               </button>
             ))}
