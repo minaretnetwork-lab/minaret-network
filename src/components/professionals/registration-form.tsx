@@ -370,13 +370,19 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   })()}
                 </div>
                 {errors.categoryId && <p className="text-xs text-red-600 mt-1">{errors.categoryId.message}</p>}
+                {(() => { const sel = categories.find((c) => c.id === watch("categoryId")); return sel?.slug === "other" ? (
+                  <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 mt-2">
+                    Great — use the <strong>Job Title</strong> field below to describe your specific profession (e.g. Solar Panel Installer, Sign Language Interpreter).
+                  </p>
+                ) : null; })()}
               </div>
 
               {/* Title + Business name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="title">Job Title *</Label>
-                  <Input id="title" {...register("title")} className="mt-1.5" placeholder="e.g. Licensed Electrician" />
+                  <Input id="title" {...register("title")} className="mt-1.5"
+                    placeholder={(() => { const sel = categories.find((c) => c.id === watch("categoryId")); return sel?.slug === "other" ? "Describe your profession…" : "e.g. Licensed Electrician"; })()} />
                   {errors.title && <p className="text-xs text-red-600 mt-1">{errors.title.message}</p>}
                 </div>
                 <div>
