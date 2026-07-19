@@ -10,10 +10,10 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-sm">
-                <span style={{ fontFamily: "var(--font-playfair)" }}>MN</span>
+                <span style={{ fontFamily: "var(--font-lora)" }}>MN</span>
               </div>
               <div>
-                <p className="font-semibold text-white text-sm leading-none" style={{ fontFamily: "var(--font-playfair)" }}>Minaret Network</p>
+                <p className="font-semibold text-white text-sm leading-none" style={{ fontFamily: "var(--font-lora)" }}>Minaret Network</p>
                 <p className="text-[10px] text-white/40 leading-none mt-1 uppercase tracking-wide">Mosque Professionals</p>
               </div>
             </div>
@@ -23,7 +23,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-playfair)" }}>Find help</h4>
+            <h4 className="text-white text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-lora)" }}>Find help</h4>
             <ul className="space-y-3 text-sm">
               {[
                 { href: "/professionals", label: "All Professionals" },
@@ -40,10 +40,11 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-playfair)" }}>Join us</h4>
+            <h4 className="text-white text-sm font-semibold mb-4" style={{ fontFamily: "var(--font-lora)" }}>Join us</h4>
             <ul className="space-y-3 text-sm">
               {[
                 { href: "/professionals/register", label: "Register as Professional" },
+                { href: "/advertise", label: "Advertise with Us" },
                 { href: "/auth/login", label: "Member Login" },
                 { href: "/auth/signup", label: "Create Account" },
               ].map((link) => (

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 type Suggestion = { label: string; type: "category" | "professional"; slug?: string };
 
-export function HeroSearch() {
+export function HeroSearch({ light = false }: { light?: boolean }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [sugOpen, setSugOpen] = useState(false);
@@ -28,7 +28,6 @@ export function HeroSearch() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const locDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (
@@ -96,19 +95,17 @@ export function HeroSearch() {
     if (e.key === "Escape") { setLocSugOpen(false); setActiveLocSug(-1); }
   }
 
+  const pendingSuggestion = useRef<Suggestion | null>(null);
+
   function selectSuggestion(s: Suggestion) {
-    // Strip leading emoji/icon from label for the input value
     const cleanLabel = s.label.replace(/^\S+\s/, s.type === "category" && s.label.match(/^\S\s/) ? "" : s.label);
     setQuery(cleanLabel);
     setSugOpen(false);
-    const params = new URLSearchParams();
-    if (location.trim()) params.set("location", location.trim());
-    if (s.type === "category" && s.slug) {
-      params.set("category", s.slug);
-    } else {
-      params.set("q", cleanLabel);
+    pendingSuggestion.current = s;
+    // Move focus to location if empty so the user fills it in next
+    if (!location.trim()) {
+      locationRef.current?.focus();
     }
-    router.push(`/professionals?${params.toString()}`);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -122,10 +119,21 @@ export function HeroSearch() {
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     setSugOpen(false);
+    if (!location.trim()) {
+      setLocateError("Please enter your city or use the location button.");
+      locationRef.current?.focus();
+      return;
+    }
     const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
-    if (location.trim()) params.set("location", location.trim());
-    router.push(`/professionals${params.size ? `?${params}` : ""}`);
+    const pending = pendingSuggestion.current;
+    if (pending && pending.type === "category" && pending.slug) {
+      params.set("category", pending.slug);
+    } else if (query.trim()) {
+      params.set("q", query.trim());
+    }
+    params.set("location", location.trim());
+    pendingSuggestion.current = null;
+    router.push(`/professionals?${params.toString()}`);
   }
 
   async function detectLocation() {
@@ -174,13 +182,24 @@ export function HeroSearch() {
     );
   }
 
+  // Styling helpers based on light/dark mode
+  const inputBase = light
+    ? "w-full h-12 pl-11 pr-4 rounded-xl text-base border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 shadow-sm"
+    : "w-full h-12 pl-11 pr-4 rounded-lg text-base border border-white/30 bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white backdrop-blur";
+
+  const iconClass = light ? "text-gray-400" : "text-white/40";
+  const gpsClass = light ? "text-gray-400 hover:text-gray-600" : "text-white/40 hover:text-white/80";
+  const errorClass = light ? "text-amber-600" : "text-amber-300/80";
+  const hintClass = light ? "text-gray-400" : "text-white/35";
+  const hintHighlight = light ? "text-gray-500" : "text-white/50";
+
   return (
     <div className="w-full max-w-2xl">
       <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
 
-        {/* ── Keyword with autocomplete ── */}
+        {/* Keyword with autocomplete */}
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 pointer-events-none z-10" />
+          <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 ${iconClass} pointer-events-none z-10`} />
           <input
             ref={queryRef}
             type="text"
@@ -190,10 +209,9 @@ export function HeroSearch() {
             onFocus={() => suggestions.length > 0 && setSugOpen(true)}
             placeholder="Service, category, or name"
             autoComplete="off"
-            className="w-full h-12 pl-11 pr-4 rounded-lg text-base border border-white/30 bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white backdrop-blur"
+            className={inputBase}
           />
 
-          {/* Suggestions dropdown */}
           {sugOpen && suggestions.length > 0 && (
             <div
               ref={dropdownRef}
@@ -220,9 +238,9 @@ export function HeroSearch() {
           )}
         </div>
 
-        {/* ── Location with GPS icon + autocomplete ── */}
+        {/* Location with GPS icon + autocomplete */}
         <div className="relative sm:w-52">
-          <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 pointer-events-none z-10" />
+          <MapPin className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 ${iconClass} pointer-events-none z-10`} />
           <input
             ref={locationRef}
             type="text"
@@ -232,19 +250,20 @@ export function HeroSearch() {
             onFocus={() => locationSugs.length > 0 && setLocSugOpen(true)}
             placeholder="City or area"
             autoComplete="off"
-            className="w-full h-12 pl-11 pr-9 rounded-lg text-base border border-white/30 bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white backdrop-blur"
+            className={light
+              ? "w-full h-12 pl-11 pr-9 rounded-xl text-base border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 shadow-sm"
+              : "w-full h-12 pl-11 pr-9 rounded-lg text-base border border-white/30 bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white backdrop-blur"}
           />
           <button
             type="button"
             onClick={location ? () => { setLocation(""); setLocateError(""); setLocationSugs([]); setLocSugOpen(false); } : detectLocation}
             disabled={locating}
             title={location ? "Clear" : "Use my location"}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors disabled:opacity-40"
+            className={`absolute right-2.5 top-1/2 -translate-y-1/2 ${gpsClass} transition-colors disabled:opacity-40`}
           >
             {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : location ? <X className="h-4 w-4" /> : <LocateFixed className="h-4 w-4" />}
           </button>
 
-          {/* Location suggestions dropdown */}
           {locSugOpen && locationSugs.length > 0 && (
             <div
               ref={locDropdownRef}
@@ -272,20 +291,21 @@ export function HeroSearch() {
         <Button
           type="submit"
           size="lg"
-          className="h-12 bg-white text-emerald-900 hover:bg-emerald-50 font-semibold px-8 flex-shrink-0"
+          className={light
+            ? "h-12 bg-[#166534] hover:bg-[#14532d] text-white font-semibold px-8 flex-shrink-0 rounded-xl"
+            : "h-12 bg-white text-emerald-900 hover:bg-emerald-50 font-semibold px-8 flex-shrink-0"}
         >
-          Find
+          Search
         </Button>
       </form>
 
-      {/* Location error / GPS hint */}
       <div className="mt-1.5 min-h-[1.25rem]">
         {locateError ? (
-          <p className="text-xs text-amber-300/80">{locateError}</p>
+          <p className={`text-xs ${errorClass}`}>{locateError}</p>
         ) : !location ? (
-          <p className="text-xs text-white/35">
+          <p className={`text-xs ${hintClass}`}>
             <LocateFixed className="inline h-3 w-3 mr-1 -mt-0.5" />
-            Tap the <span className="text-white/50">crosshair</span> in the location box to auto-detect
+            Tap the <span className={hintHighlight}>crosshair</span> in the location box to auto-detect
           </p>
         ) : null}
       </div>

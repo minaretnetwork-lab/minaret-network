@@ -1,10 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Search, Phone, Handshake, Star, Users, ArrowRight, CheckCircle2 } from "lucide-react";
+import {
+  Search, Phone, Handshake, Star, Users,
+  Stethoscope, Hammer, Scale, DollarSign, Home,
+  Monitor, GraduationCap, LayoutGrid, Building2, ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
-import { CategoryGrid } from "@/components/home/category-grid";
 import { CommunityCycle } from "@/components/home/community-cycle";
 import { FeaturedSection } from "@/components/featured/featured-section";
 import { SponsoredLogoCarousel } from "@/components/home/sponsored-logo-carousel";
@@ -13,71 +16,123 @@ interface HomePageProps {
   searchParams: Promise<{ featured_city?: string }>;
 }
 
+const BROAD_CATEGORIES = [
+  { label: "Health", icon: Stethoscope, href: "/professionals?category=doctor" },
+  { label: "Trades", icon: Hammer, href: "/professionals?category=electrician" },
+  { label: "Legal", icon: Scale, href: "/professionals?category=lawyer" },
+  { label: "Finance", icon: DollarSign, href: "/professionals?category=accountant" },
+  { label: "Real estate", icon: Home, href: "/professionals?category=realtor" },
+  { label: "Tech", icon: Monitor, href: "/professionals?category=it-consultant" },
+  { label: "Education", icon: GraduationCap, href: "/professionals?category=tutor" },
+] as const;
+
+const POPULAR_TAGS = [
+  { label: "Plumber", href: "/professionals?category=plumber" },
+  { label: "Family doctor", href: "/professionals?category=doctor" },
+  { label: "Tax preparer", href: "/professionals?category=tax-preparer" },
+  { label: "Realtor", href: "/professionals?category=realtor" },
+];
+
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const featuredCity = params.featured_city;
-
 
   return (
     <div className="flex flex-col">
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#071a0e] text-white min-h-[600px] flex items-center">
-
-        {/* Mosque photo — very subtle */}
-        <div
-          className="absolute inset-0 bg-center bg-cover"
-          style={{ backgroundImage: "url('/mosque.jpg')" }}
-          aria-hidden="true"
-        />
-        {/* Layered overlays: darken photo, add green tint, vignette */}
-        <div className="absolute inset-0 bg-[#071a0e]/80" aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071a0e] via-[#071a0e]/20 to-[#071a0e]/60" aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071a0e]/40 via-transparent to-[#071a0e]/40" aria-hidden="true" />
-
-        <div className="relative w-full container mx-auto px-4 lg:px-6 pt-10 pb-20 md:pt-14 md:pb-28">
+      <section className="bg-white">
+        <div className="container mx-auto px-4 lg:px-6 pt-14 pb-10 md:pt-20 md:pb-14">
           <div className="max-w-3xl mx-auto text-center">
 
-            <div className="inline-flex items-center gap-2 bg-white/8 backdrop-blur-sm border border-white/12 rounded-full px-4 py-1.5 text-sm text-emerald-300/90 mb-8">
-              A GTA Masjid Professional Directory
+            {/* Tag */}
+            <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-4 py-1.5 text-sm text-emerald-700 font-medium mb-7">
+              GTA Masjid Professional Directory
             </div>
 
+            {/* H1 */}
             <h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] leading-[1.1] mb-6 text-white"
-              style={{ fontFamily: "var(--font-lora)", fontWeight: 700 }}
+              className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-[1.1] mb-4"
+              style={{ fontFamily: "var(--font-lora)" }}
             >
-              Find professionals from your
-              <span className="block text-emerald-400 italic"> mosque community.</span>
+              What do you need<br className="hidden sm:block" /> help with?
             </h1>
 
-            <p className="text-lg md:text-xl text-white/55 max-w-xl mx-auto mb-10 leading-relaxed font-light" style={{ fontFamily: "var(--font-inter)" }}>
-              Minaret Network connects you with doctors, realtors, IT professionals, plumbers, HVAC techs, notaries, handymen, and more — skilled trades and professionals, all affiliated with masjids across the GTA.
+            <p className="text-lg text-gray-500 max-w-xl mx-auto mb-8 leading-relaxed" style={{ fontFamily: "var(--font-inter)" }}>
+              Trusted professionals from GTA masjid communities, verified by admins.
             </p>
 
-            <div className="flex justify-center mb-8">
-              <HeroSearch />
+            {/* Search */}
+            <div className="flex justify-center mb-5">
+              <HeroSearch light />
             </div>
 
-            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-white/40 mb-5" style={{ fontFamily: "var(--font-inter)" }}>
-              {[
-                "Mosque affiliated",
-                "Community recommendations",
-                "25+ categories",
-                "Direct WhatsApp contact",
-              ].map((t) => (
-                <span key={t} className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500/80 flex-shrink-0" />
-                  {t}
+            {/* Popular tags */}
+            <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-sm mb-10">
+              <span className="text-gray-400 font-medium mr-1">Popular:</span>
+              {POPULAR_TAGS.map((tag, i) => (
+                <span key={tag.href} className="flex items-center gap-1">
+                  <Link
+                    href={tag.href}
+                    className="text-gray-600 hover:text-emerald-700 hover:underline underline-offset-2 transition-colors"
+                  >
+                    {tag.label}
+                  </Link>
+                  {i < POPULAR_TAGS.length - 1 && (
+                    <span className="text-gray-300 select-none">·</span>
+                  )}
                 </span>
               ))}
             </div>
 
-            <p className="text-xs text-white/30 max-w-md mx-auto leading-relaxed" style={{ fontFamily: "var(--font-inter)" }}>
-              Mosque affiliation is confirmed by admins. We recommend doing your own due diligence before hiring.
-            </p>
+            {/* Broad category tiles */}
+            <div className="grid grid-cols-4 gap-2.5 max-w-2xl mx-auto">
+              {BROAD_CATEGORIES.map(({ label, icon: Icon, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="group flex flex-col items-center gap-2.5 p-3 sm:p-4 rounded-2xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/60 transition-all duration-200"
+                >
+                  <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                    <Icon className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-medium text-gray-600 group-hover:text-emerald-700 leading-tight text-center transition-colors">
+                    {label}
+                  </span>
+                </Link>
+              ))}
+              {/* All 25+ */}
+              <Link
+                href="/categories"
+                className="group flex flex-col items-center gap-2.5 p-3 sm:p-4 rounded-2xl border border-dashed border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/60 transition-all duration-200"
+              >
+                <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <LayoutGrid className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                </div>
+                <span className="text-[11px] sm:text-xs font-medium text-gray-400 group-hover:text-emerald-700 leading-tight text-center transition-colors">
+                  All 25+
+                </span>
+              </Link>
+            </div>
+
           </div>
         </div>
 
+        {/* Trust bar */}
+        <div className="border-t border-gray-100 bg-gray-50/70 py-4">
+          <div className="container mx-auto px-4 lg:px-6 flex flex-wrap justify-center gap-6 sm:gap-12">
+            {[
+              { icon: Building2, label: "Mosque affiliated" },
+              { icon: Star, label: "Community recommended" },
+              { icon: ShieldCheck, label: "Admin approved" },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 text-sm text-gray-500">
+                <Icon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── Sponsor Logo Carousel ───────────────────────────── */}
@@ -110,31 +165,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
       </section>
 
-      {/* ── Categories ───────────────────────────────────────── */}
-      <section className="container mx-auto px-4 lg:px-6 py-20">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-2">Browse by profession</p>
-            <h2
-              className="text-3xl md:text-4xl font-display font-700 text-gray-900 dark:text-white tracking-tight"
-              style={{ fontFamily: "var(--font-lora)" }}
-            >
-              What do you need help with?
-            </h2>
-          </div>
-          <Link href="/categories" className="hidden sm:flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400">
-            All categories <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-        <CategoryGrid />
-      </section>
-
       {/* ── How It Works ─────────────────────────────────────── */}
       <section className="container mx-auto px-4 lg:px-6 py-20">
         <div className="text-center mb-14">
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-2">Simple process</p>
           <h2
-            className="text-3xl md:text-4xl font-display font-700 text-gray-900 dark:text-white tracking-tight"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight"
             style={{ fontFamily: "var(--font-lora)" }}
           >
             How it works
@@ -142,7 +178,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto relative">
-          {/* Connector line */}
           <div className="hidden md:block absolute top-10 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px bg-gradient-to-r from-emerald-200 via-emerald-300 to-emerald-200" aria-hidden="true" />
 
           {[
@@ -170,7 +205,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 <div className="h-20 w-20 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm flex items-center justify-center">
                   {item.icon}
                 </div>
-                <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-emerald-600 text-white text-xs font-bold font-display flex items-center justify-center shadow-sm">
+                <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shadow-sm">
                   {item.step}
                 </div>
               </div>
@@ -197,7 +232,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="relative container mx-auto px-4 lg:px-6">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2">Built on trust</p>
-            <h2 className="text-3xl md:text-4xl font-display font-700 tracking-tight" style={{ fontFamily: "var(--font-lora)" }}>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-lora)" }}>
               Why the community trusts us
             </h2>
           </div>
@@ -240,7 +275,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="max-w-xl mx-auto">
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">For professionals</p>
           <h2
-            className="text-3xl md:text-4xl font-display font-700 text-gray-900 dark:text-white tracking-tight mb-4"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-4"
             style={{ fontFamily: "var(--font-lora)" }}
           >
             Are you a professional?
