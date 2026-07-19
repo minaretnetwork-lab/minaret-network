@@ -68,18 +68,27 @@ export function PhoneInput({ value = "", onChange, placeholder = "416 555 0000",
 
   return (
     <div className={cn("flex gap-2", className)}>
-      <select
-        value={countryCode}
-        onChange={(e) => handleCodeChange(e.target.value)}
-        className="flex-shrink-0 w-32 border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        aria-label="Country code"
-      >
-        {COUNTRY_CODES.map((c, i) => (
-          <option key={`${c.code}-${i}`} value={c.code}>
-            {c.flag} {c.code} {c.name}
-          </option>
-        ))}
-      </select>
+      <div className="relative flex-shrink-0">
+        <select
+          value={countryCode}
+          onChange={(e) => handleCodeChange(e.target.value)}
+          className="appearance-none w-24 border border-gray-300 dark:border-gray-700 rounded-lg pl-2 pr-6 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+          aria-label="Country code"
+        >
+          {COUNTRY_CODES.map((c, i) => (
+            <option key={`${c.code}-${i}`} value={c.code}>
+              {c.flag} {c.code} — {c.name}
+            </option>
+          ))}
+        </select>
+        {/* Overlay showing just flag + code when closed */}
+        <div className="pointer-events-none absolute inset-0 flex items-center pl-2 text-sm text-gray-800 dark:text-gray-200">
+          {selectedCountry.flag} {countryCode}
+        </div>
+        <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400">
+          <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
+        </div>
+      </div>
       <input
         id={id}
         type="tel"
