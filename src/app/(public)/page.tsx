@@ -89,7 +89,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           {/* Right — illustration panel */}
           <div className="hidden lg:block lg:w-[44%] xl:w-[46%] relative overflow-hidden bg-[#071a0e]">
             <Image
-              src="/mosque2.jpg"
+              src="/mosque4.jpg"
               alt=""
               fill
               className="object-cover object-[center_top]"
