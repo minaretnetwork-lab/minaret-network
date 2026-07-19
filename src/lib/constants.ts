@@ -15,7 +15,6 @@ export const CATEGORIES = [
   { name: "Immigration Consultant", slug: "immigration-consultant", icon: "🌍" },
   { name: "Notary Public", slug: "notary-public", icon: "📜" },
   { name: "Accountant", slug: "accountant", icon: "📊" },
-  { name: "Tax Preparer", slug: "tax-preparer", icon: "🧾" },
   { name: "Financial Advisor", slug: "financial-advisor", icon: "💼" },
   { name: "Insurance Broker", slug: "insurance-broker", icon: "🛡️" },
   { name: "Mortgage Broker", slug: "mortgage-broker", icon: "🏦" },
