@@ -73,7 +73,7 @@ export default async function MyRequestsPage() {
               : null;
 
             return (
-              <div key={req.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+              <Link key={req.id} href={`/dashboard/requests/${req.id}`} className="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-emerald-200 hover:shadow-sm transition-all">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><CategoryIcon slug={req.category.slug} className="h-5 w-5" /></div>
@@ -121,7 +121,7 @@ export default async function MyRequestsPage() {
                     {ui.label}
                   </span>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

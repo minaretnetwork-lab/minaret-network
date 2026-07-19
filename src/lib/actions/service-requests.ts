@@ -63,6 +63,28 @@ export async function getMyServiceRequests() {
   });
 }
 
+export async function getServiceRequestById(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser) return null;
+
+  return prisma.serviceRequest.findFirst({
+    where: { id, userId: dbUser.id },
+    include: {
+      category: { select: { name: true, slug: true, icon: true } },
+      serviceArea: { select: { name: true } },
+      assignedTo: {
+        include: {
+          user: { select: { firstName: true, lastName: true, displayName: true, avatarUrl: true } },
+        },
+      },
+    },
+  });
+}
+
 export async function getAllServiceRequests(mosqueSlug: string) {
   const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
   if (!mosque) return [];
