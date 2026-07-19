@@ -47,14 +47,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
           {/* Left — search content */}
           <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-14 xl:px-20 pt-8 pb-10 lg:pt-10 lg:pb-12">
-            <div className="max-w-lg">
+            <div className="w-full">
 
               <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-4 py-1.5 text-sm text-emerald-700 font-medium mb-6">
                 GTA Masjid Professional Directory
               </div>
 
               <h1
-                className="text-4xl sm:text-5xl font-bold text-gray-900 leading-[1.1] mb-4"
+                className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-[1.05] mb-4"
                 style={{ fontFamily: "var(--font-lora)" }}
               >
                 Find professionals from your mosque community.
@@ -86,18 +86,19 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
           </div>
 
-          {/* Right — mosque photo */}
-          <div className="hidden lg:block lg:w-[44%] xl:w-[46%] relative overflow-hidden">
+          {/* Right — dark green panel with mosque photo */}
+          <div className="hidden lg:block lg:w-[44%] xl:w-[46%] relative overflow-hidden bg-[#071a0e]">
             <Image
               src="/mosque.jpg"
-              alt="Mosque"
+              alt=""
               fill
               className="object-cover object-center"
               priority
               aria-hidden="true"
             />
-            {/* Subtle left-edge fade so photo blends into white left column */}
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent" />
+            {/* Overlays — mirrors the original hero treatment */}
+            <div className="absolute inset-0 bg-[#071a0e]/75" aria-hidden="true" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#071a0e] via-[#071a0e]/20 to-[#071a0e]/50" aria-hidden="true" />
           </div>
 
         </div>
