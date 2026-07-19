@@ -273,6 +273,13 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                           {getInitials(recName)}
                         </div>
                         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{recName}</span>
+                        {rec.rating && (
+                          <div className="flex items-center gap-0.5">
+                            {[1,2,3,4,5].map((s) => (
+                              <Star key={s} className={`h-3.5 w-3.5 ${s <= rec.rating ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700"}`} />
+                            ))}
+                          </div>
+                        )}
                         {(rec as typeof rec & { highlyRecommended?: boolean }).highlyRecommended && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
                             <Star className="h-2.5 w-2.5 fill-current mr-0.5" /> Highly Recommended
