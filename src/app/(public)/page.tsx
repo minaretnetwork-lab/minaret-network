@@ -99,7 +99,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="relative w-full max-w-[360px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/mosque6.jpg"
+                src="/mosque7.jpg"
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover object-center"
                 aria-hidden="true"
