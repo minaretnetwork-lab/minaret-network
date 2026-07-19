@@ -88,13 +88,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
           {/* Right — illustration panel */}
           <div className="hidden lg:block lg:w-[44%] xl:w-[46%] relative overflow-hidden bg-[#071a0e]">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/mosque4.jpg"
               alt=""
-              fill
-              sizes="(max-width: 1024px) 0px, 46vw"
-              className="object-cover object-center"
-              priority
+              className="absolute inset-0 w-full h-full object-cover object-center"
               aria-hidden="true"
             />
             {/* Subtle left-edge fade so it blends into the white left column */}
