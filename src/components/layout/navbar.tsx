@@ -82,7 +82,7 @@ export function Navbar({ user }: NavbarProps) {
                   </Button>
                 </Link>
                 <Link href="/professionals/register">
-                  <Button size="sm" variant="outline" className="h-9 border-white/30 text-white hover:border-white/60 hover:bg-white/10 text-sm font-medium">
+                  <Button size="sm" variant="outline" className="h-9 bg-transparent border-white/30 text-white hover:border-white/60 hover:bg-white/10 text-sm font-medium">
                     Join as a professional
                   </Button>
                 </Link>
