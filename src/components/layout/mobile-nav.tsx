@@ -17,7 +17,7 @@ export function MobileNav({ isAdmin, user }: MobileNavProps) {
   const displayName = user?.displayName ?? user?.firstName ?? user?.email;
 
   return (
-    <details className="md:hidden group">
+    <details className="lg:hidden group">
       <summary
         className="flex items-center justify-center h-10 w-10 rounded-lg text-white/80 hover:text-white hover:bg-white/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
         style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent", listStyle: "none" }}

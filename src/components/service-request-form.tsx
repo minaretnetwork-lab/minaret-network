@@ -312,7 +312,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
           </h2>
           <p className="text-sm text-gray-400 mb-6">Only shared with professionals who respond to your request.</p>
 
-          <div className="grid grid-cols-3 gap-2.5 mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
             {CONTACT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}

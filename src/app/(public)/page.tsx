@@ -62,7 +62,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
 
               <h1
-                className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-[1.05] mb-4"
+                className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-[1.05] mb-4"
                 style={{ fontFamily: "var(--font-lora)" }}
               >
                 Find professionals from your mosque community.
@@ -179,13 +179,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </h2>
         </div>
 
-        <div className="flex items-center justify-center gap-4 max-w-lg mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto">
           {[
             { icon: <Search className="h-6 w-6 text-emerald-600" />, title: "Search" },
             { icon: <Phone  className="h-6 w-6 text-emerald-600" />, title: "Contact" },
             { icon: <Handshake className="h-6 w-6 text-emerald-600" />, title: "Hire" },
           ].map((item, i, arr) => (
-            <div key={item.title} className="flex items-center gap-4">
+            <div key={item.title} className="flex sm:flex-row flex-col items-center gap-4">
               <div className="flex flex-col items-center gap-2">
                 <div className="h-16 w-16 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm flex items-center justify-center">
                   {item.icon}
@@ -193,7 +193,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 <span className="text-sm font-semibold text-gray-700 dark:text-gray-300" style={{ fontFamily: "var(--font-lora)" }}>{item.title}</span>
               </div>
               {i < arr.length - 1 && (
-                <ArrowRight className="h-5 w-5 text-emerald-300 flex-shrink-0 mb-5" />
+                <>
+                  <ArrowRight className="hidden sm:block h-5 w-5 text-emerald-300 flex-shrink-0 mb-5" />
+                  <ArrowRight className="block sm:hidden h-5 w-5 text-emerald-300 flex-shrink-0 rotate-90" />
+                </>
               )}
             </div>
           ))}
