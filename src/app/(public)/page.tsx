@@ -56,7 +56,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-[1.1] mb-4"
                 style={{ fontFamily: "var(--font-lora)" }}
               >
-                Find trusted professionals from your mosque community.
+                Find professionals from your mosque community.
               </h1>
 
               <p className="text-lg text-gray-500 mb-7 leading-relaxed" style={{ fontFamily: "var(--font-inter)" }}>
