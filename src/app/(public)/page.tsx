@@ -99,11 +99,32 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="relative w-full max-w-[360px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/mosque7.jpg"
+                src="/mosque8.jpg"
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover object-center"
                 aria-hidden="true"
               />
+              {/* Verse overlay — top of image */}
+              <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 via-black/60 to-transparent px-5 pt-5 pb-10">
+                <p
+                  className="text-white text-base leading-loose text-right mb-2"
+                  style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
+                >
+                  لِتَعَارَفُوا
+                </p>
+                <p
+                  className="text-white/80 text-[11px] leading-relaxed text-right mb-3"
+                  style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
+                >
+                  يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا
+                </p>
+                <p className="text-white/60 text-[10px] italic text-left leading-relaxed">
+                  &ldquo;O mankind, We created you from a single pair and made you into nations and tribes — so that you may know one another.&rdquo;
+                </p>
+                <p className="text-white/40 text-[9px] uppercase tracking-widest text-left mt-1">
+                  Surah Al-Hujurat — 49:13
+                </p>
+              </div>
             </div>
           </div>
 
