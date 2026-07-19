@@ -31,7 +31,7 @@ export function MobileNav({ isAdmin, user }: MobileNavProps) {
           {[
             { href: "/professionals", label: "Find Professionals" },
             { href: "/categories", label: "Categories" },
-            { href: "/request", label: "Request help" },
+            { href: "/request", label: "Service Request" },
           ].map((link) => (
             <Link
               key={link.href}
