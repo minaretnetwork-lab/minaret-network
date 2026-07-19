@@ -197,14 +197,14 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
       {step === 2 && (
         <div className="px-6 pb-8 pt-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            Where and when?
+            Where is the job?
           </h2>
-          <p className="text-sm text-gray-400 mb-6">Both fields are optional — skip if you're flexible.</p>
+          <p className="text-sm text-gray-400 mb-6">This helps professionals know if they serve your area.</p>
 
           <div className="space-y-5">
             <div>
               <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <MapPin className="h-4 w-4 text-gray-400" /> Your area
+                <MapPin className="h-4 w-4 text-gray-400" /> Your area <span className="text-red-500 ml-0.5">*</span>
               </label>
               <div className="relative">
                 <select
@@ -212,7 +212,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
                   onChange={(e) => set("serviceAreaId", e.target.value)}
                   className="w-full appearance-none border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-9"
                 >
-                  <option value="">Any area</option>
+                  <option value="">Select your area…</option>
                   {serviceAreas.map((a) => (
                     <option key={a.id} value={a.id}>{a.name}</option>
                   ))}
@@ -234,7 +234,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
             </div>
           </div>
 
-          <StepButtons onBack={() => setStep(1)} onNext={() => setStep(3)} />
+          <StepButtons onBack={() => setStep(1)} onNext={() => setStep(3)} nextDisabled={!form.serviceAreaId} />
         </div>
       )}
 
@@ -305,7 +305,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
             <ReviewRow label="Description" value={form.description} onEdit={() => setStep(1)} multiline />
             <ReviewRow
               label="Location"
-              value={form.serviceAreaId ? (serviceAreas.find(a => a.id === form.serviceAreaId)?.name ?? "—") : "Any area"}
+              value={serviceAreas.find(a => a.id === form.serviceAreaId)?.name ?? "—"}
               onEdit={() => setStep(2)}
             />
             {form.preferredDate && (
