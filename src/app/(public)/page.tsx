@@ -203,25 +203,23 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto relative">
-          <div className="hidden md:block absolute top-10 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px bg-gradient-to-r from-emerald-200 via-emerald-300 to-emerald-200" aria-hidden="true" />
+        <div className="flex items-center justify-center gap-4 max-w-lg mx-auto">
           {[
-            { icon: <Search className="h-6 w-6 text-emerald-600" />, step: "1", title: "Search", description: "Browse by profession or service area. Filter by language, location, and more." },
-            { icon: <Phone  className="h-6 w-6 text-emerald-600" />, step: "2", title: "Contact", description: "View their full profile, read community recommendations, then reach out directly." },
-            { icon: <Handshake className="h-6 w-6 text-emerald-600" />, step: "3", title: "Hire", description: "Work with confidence. Leave a recommendation to help the community." },
-          ].map((item) => (
-            <div key={item.step} className="flex flex-col items-center text-center">
-              <div className="relative mb-6">
-                <div className="h-20 w-20 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm flex items-center justify-center">
+            { icon: <Search className="h-6 w-6 text-emerald-600" />, title: "Search" },
+            { icon: <Phone  className="h-6 w-6 text-emerald-600" />, title: "Contact" },
+            { icon: <Handshake className="h-6 w-6 text-emerald-600" />, title: "Hire" },
+          ].map((item, i, arr) => (
+            <>
+              <div key={item.title} className="flex flex-col items-center gap-2">
+                <div className="h-16 w-16 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm flex items-center justify-center">
                   {item.icon}
                 </div>
-                <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shadow-sm">
-                  {item.step}
-                </div>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300" style={{ fontFamily: "var(--font-lora)" }}>{item.title}</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2" style={{ fontFamily: "var(--font-lora)" }}>{item.title}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[220px]">{item.description}</p>
-            </div>
+              {i < arr.length - 1 && (
+                <ArrowRight key={`arrow-${i}`} className="h-5 w-5 text-emerald-300 flex-shrink-0 mb-5" />
+              )}
+            </>
           ))}
         </div>
       </section>
