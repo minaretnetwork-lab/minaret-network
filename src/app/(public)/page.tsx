@@ -92,7 +92,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               src="/mosque4.jpg"
               alt=""
               fill
-              className="object-cover object-[center_top]"
+              sizes="(max-width: 1024px) 0px, 46vw"
+              className="object-cover object-center"
               priority
               aria-hidden="true"
             />
