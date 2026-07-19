@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search, Phone, Handshake, Star, Users,
   Stethoscope, Hammer, Scale, DollarSign, Home,
@@ -42,10 +43,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="bg-white overflow-hidden">
-        <div className="flex min-h-[580px] lg:min-h-[640px]">
+        <div className="flex min-h-[460px] lg:min-h-[520px]">
 
           {/* Left — search content */}
-          <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-14 xl:px-20 py-14">
+          <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-14 xl:px-20 pt-8 pb-10 lg:pt-10 lg:pb-12">
             <div className="max-w-lg">
 
               <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-4 py-1.5 text-sm text-emerald-700 font-medium mb-6">
@@ -85,109 +86,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
           </div>
 
-          {/* Right — forest green mosque illustration */}
-          <div className="hidden lg:flex lg:w-[44%] xl:w-[46%] bg-[#1a4731] relative overflow-hidden items-end justify-center">
-            <svg
-              viewBox="0 0 480 560"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-full object-cover"
+          {/* Right — mosque photo */}
+          <div className="hidden lg:block lg:w-[44%] xl:w-[46%] relative overflow-hidden">
+            <Image
+              src="/mosque.jpg"
+              alt="Mosque"
+              fill
+              className="object-cover object-center"
+              priority
               aria-hidden="true"
-            >
-              <defs>
-                <pattern id="dotgrid" width="22" height="22" patternUnits="userSpaceOnUse">
-                  <circle cx="2" cy="2" r="1" fill="white" fillOpacity="0.09" />
-                </pattern>
-              </defs>
-
-              {/* Background dot grid */}
-              <rect width="480" height="560" fill="url(#dotgrid)" />
-
-              {/* Stars */}
-              <circle cx="55"  cy="55"  r="2"   fill="white" fillOpacity="0.65" />
-              <circle cx="130" cy="28"  r="1.5" fill="white" fillOpacity="0.45" />
-              <circle cx="200" cy="60"  r="1"   fill="white" fillOpacity="0.4"  />
-              <circle cx="305" cy="38"  r="2"   fill="white" fillOpacity="0.55" />
-              <circle cx="445" cy="55"  r="1.5" fill="white" fillOpacity="0.45" />
-              <circle cx="460" cy="105" r="1"   fill="white" fillOpacity="0.35" />
-              <circle cx="42"  cy="140" r="1.5" fill="white" fillOpacity="0.35" />
-
-              {/* Crescent moon — upper right */}
-              <circle cx="372" cy="90"  r="52" fill="white" fillOpacity="0.88" />
-              <circle cx="396" cy="75"  r="44" fill="#1a4731" />
-
-              {/* ── Left minaret ── */}
-              {/* Shaft */}
-              <rect x="75"  y="148" width="36" height="352" rx="3" fill="white" fillOpacity="0.82" />
-              {/* Balcony */}
-              <rect x="60"  y="285" width="66" height="10"  rx="2" fill="white" fillOpacity="0.88" />
-              {/* Second decorative band */}
-              <rect x="68"  y="200" width="50" height="6"   rx="1" fill="white" fillOpacity="0.5"  />
-              {/* Pointed cap */}
-              <polygon points="93,100 68,152 118,152" fill="white" fillOpacity="0.88" />
-              {/* Cap base ring */}
-              <rect x="67"  y="149" width="52" height="8"   rx="2" fill="white" fillOpacity="0.6"  />
-              {/* Crescent atop left minaret */}
-              <circle cx="93"  cy="90"  r="11" fill="white" fillOpacity="0.88" />
-              <circle cx="97"  cy="86"  r="9"  fill="#1a4731" />
-
-              {/* ── Right minaret (slightly smaller / further back) ── */}
-              <rect x="369" y="168" width="32" height="332" rx="3" fill="white" fillOpacity="0.72" />
-              <rect x="356" y="302" width="58" height="9"   rx="2" fill="white" fillOpacity="0.78" />
-              <rect x="362" y="220" width="46" height="5"   rx="1" fill="white" fillOpacity="0.45" />
-              <polygon points="385,124 362,172 408,172" fill="white" fillOpacity="0.78" />
-              <rect x="360" y="169" width="50" height="7"   rx="2" fill="white" fillOpacity="0.52" />
-              <circle cx="385" cy="114" r="9"  fill="white" fillOpacity="0.78" />
-              <circle cx="389" cy="111" r="7.5" fill="#1a4731" />
-
-              {/* ── Central mosque body ── */}
-              {/* Left wing */}
-              <rect x="107" y="385" width="70" height="115" rx="2" fill="white" fillOpacity="0.78" />
-              <path d="M107,385 Q142,352 177,385" fill="white" fillOpacity="0.78" />
-              {/* Left wing arch window */}
-              <path d="M122,382 Q142,362 162,382 L162,405 L122,405 Z" fill="#1a4731" fillOpacity="0.45" />
-
-              {/* Right wing */}
-              <rect x="303" y="398" width="68" height="102" rx="2" fill="white" fillOpacity="0.72" />
-              <path d="M303,398 Q337,368 371,398" fill="white" fillOpacity="0.72" />
-              {/* Right wing arch window */}
-              <path d="M318,394 Q337,376 356,394 L356,415 L318,415 Z" fill="#1a4731" fillOpacity="0.4" />
-
-              {/* Main body */}
-              <rect x="173" y="342" width="134" height="158" rx="2" fill="white" fillOpacity="0.9" />
-
-              {/* Main door arch */}
-              <path d="M208,500 Q240,466 272,500 L272,500 L208,500 Z" fill="#1a4731" fillOpacity="0.5" />
-
-              {/* Drum */}
-              <rect x="193" y="298" width="94" height="48" rx="2" fill="white" fillOpacity="0.9" />
-
-              {/* Dome — onion / persian shape */}
-              <path
-                d="M193,298 C191,258 212,205 240,184 C268,205 289,258 287,298 Z"
-                fill="white" fillOpacity="0.92"
-              />
-              {/* Dome inner shading */}
-              <path
-                d="M210,298 C208,268 222,228 240,212 C258,228 272,268 270,298 Z"
-                fill="white" fillOpacity="0.08"
-              />
-
-              {/* Dome finial */}
-              <rect x="236" y="164" width="8" height="24" rx="2" fill="white" fillOpacity="0.9" />
-
-              {/* Crescent on dome */}
-              <circle cx="240" cy="155" r="11" fill="white" fillOpacity="0.9" />
-              <circle cx="244" cy="151" r="9"  fill="#1a4731" />
-
-              {/* Side arched pillars / colonnade (decorative) */}
-              <rect x="135" y="430" width="18" height="70"  rx="2" fill="white" fillOpacity="0.5" />
-              <rect x="160" y="430" width="18" height="70"  rx="2" fill="white" fillOpacity="0.5" />
-              <rect x="302" y="430" width="18" height="70"  rx="2" fill="white" fillOpacity="0.45" />
-              <rect x="327" y="430" width="18" height="70"  rx="2" fill="white" fillOpacity="0.45" />
-
-              {/* Ground glow */}
-              <rect x="0" y="490" width="480" height="70" fill="white" fillOpacity="0.1" />
-            </svg>
+            />
+            {/* Subtle left-edge fade so photo blends into white left column */}
+            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent" />
           </div>
 
         </div>
