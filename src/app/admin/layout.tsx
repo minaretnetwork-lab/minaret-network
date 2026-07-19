@@ -35,6 +35,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white font-bold text-xs">MN</div>
             </Link>
             <span className="text-sm font-semibold">Admin Panel</span>
+            <span className="text-white/30 text-xs">|</span>
+            <Link href="/" className="text-xs text-white/60 hover:text-white transition-colors">
+              ← Back to site
+            </Link>
           </div>
           <form action="/auth/signout" method="post">
             <Button type="submit" variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 gap-1.5">
