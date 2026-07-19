@@ -92,7 +92,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               src="/mosque2.jpg"
               alt=""
               fill
-              className="object-cover object-center"
+              className="object-cover object-[center_top]"
               priority
               aria-hidden="true"
             />
@@ -103,15 +103,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
 
         {/* Trust bar — full width below the two columns */}
-        <div className="border-t border-gray-100 bg-gray-50/70 py-4">
+        <div className="bg-[#14532d] py-4">
           <div className="container mx-auto px-4 lg:px-6 flex flex-wrap justify-center gap-6 sm:gap-12">
             {[
               { icon: Building2,   label: "Mosque affiliated" },
               { icon: Star,        label: "Community recommended" },
               { icon: ShieldCheck, label: "Admin approved" },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-sm text-gray-500">
-                <Icon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+              <div key={label} className="flex items-center gap-2 text-sm text-white/90">
+                <Icon className="h-4 w-4 text-white flex-shrink-0" />
                 {label}
               </div>
             ))}
