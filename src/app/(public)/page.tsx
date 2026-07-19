@@ -30,7 +30,7 @@ const BROAD_CATEGORIES = [
 const POPULAR_TAGS = [
   { label: "Plumber", href: "/professionals?category=plumber" },
   { label: "Family doctor", href: "/professionals?category=doctor" },
-  { label: "Tax preparer", href: "/professionals?category=tax-preparer" },
+  { label: "Accountant", href: "/professionals?category=accountant" },
   { label: "Realtor", href: "/professionals?category=realtor" },
 ];
 
