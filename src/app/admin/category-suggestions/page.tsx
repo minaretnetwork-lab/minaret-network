@@ -41,9 +41,9 @@ export default async function CategorySuggestionsPage() {
           </p>
           <div className="space-y-3">
             {pending.map((s) => {
-              const requesterName = s.requestedBy.displayName ??
-                [s.requestedBy.firstName, s.requestedBy.lastName].filter(Boolean).join(" ") ||
-                s.requestedBy.email;
+              const requesterName = (s.requestedBy.displayName ??
+                ([s.requestedBy.firstName, s.requestedBy.lastName].filter(Boolean).join(" ") ||
+                s.requestedBy.email));
               return (
                 <div key={s.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
@@ -84,9 +84,9 @@ export default async function CategorySuggestionsPage() {
           <div className="space-y-2">
             {reviewed.map((s) => {
               const ui = STATUS_STYLES[s.status] ?? STATUS_STYLES.PENDING;
-              const requesterName = s.requestedBy.displayName ??
-                [s.requestedBy.firstName, s.requestedBy.lastName].filter(Boolean).join(" ") ||
-                s.requestedBy.email;
+              const requesterName = (s.requestedBy.displayName ??
+                ([s.requestedBy.firstName, s.requestedBy.lastName].filter(Boolean).join(" ") ||
+                s.requestedBy.email));
               return (
                 <div key={s.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">

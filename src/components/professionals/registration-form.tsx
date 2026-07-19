@@ -34,7 +34,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface Category { id: string; name: string; icon?: string | null }
+interface Category { id: string; name: string; slug: string; icon?: string | null }
 interface ServiceArea { id: string; name: string }
 interface Mosque { id: string; name: string; city?: string | null }
 interface Props { mosques: Mosque[]; categories: Category[]; serviceAreas: ServiceArea[] }
@@ -679,9 +679,9 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   );
 }
 
-function CategorySuggestionPanel({ categories, selectedCategoryId }: { categories: { id: string; slug?: string }[]; selectedCategoryId: string }) {
+function CategorySuggestionPanel({ categories, selectedCategoryId }: { categories: Category[]; selectedCategoryId: string }) {
   const selectedCat = categories.find((c) => c.id === selectedCategoryId);
-  const isOther = selectedCat && (selectedCat as { slug?: string }).slug === "other";
+  const isOther = selectedCat?.slug === "other";
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");

@@ -13,7 +13,7 @@ export default async function ProfessionalRegisterPage() {
   if (!user) redirect("/auth/login?redirectTo=/professionals/register");
 
   let mosques: { id: string; name: string; city: string | null }[] = [];
-  let categories: { id: string; name: string; icon: string | null }[] = [];
+  let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];
   let serviceAreas: { id: string; name: string }[] = [];
 
   try {
@@ -26,7 +26,7 @@ export default async function ProfessionalRegisterPage() {
       prisma.mosque.findUnique({
         where: { slug: DEFAULT_MOSQUE_SLUG },
         select: {
-          categories: { where: { isActive: true }, select: { id: true, name: true, icon: true }, orderBy: { name: "asc" } },
+          categories: { where: { isActive: true }, select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
           serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
         },
       }),

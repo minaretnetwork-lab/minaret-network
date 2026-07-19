@@ -209,17 +209,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             { icon: <Phone  className="h-6 w-6 text-emerald-600" />, title: "Contact" },
             { icon: <Handshake className="h-6 w-6 text-emerald-600" />, title: "Hire" },
           ].map((item, i, arr) => (
-            <>
-              <div key={item.title} className="flex flex-col items-center gap-2">
+            <div key={item.title} className="flex items-center gap-4">
+              <div className="flex flex-col items-center gap-2">
                 <div className="h-16 w-16 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm flex items-center justify-center">
                   {item.icon}
                 </div>
                 <span className="text-sm font-semibold text-gray-700 dark:text-gray-300" style={{ fontFamily: "var(--font-lora)" }}>{item.title}</span>
               </div>
               {i < arr.length - 1 && (
-                <ArrowRight key={`arrow-${i}`} className="h-5 w-5 text-emerald-300 flex-shrink-0 mb-5" />
+                <ArrowRight className="h-5 w-5 text-emerald-300 flex-shrink-0 mb-5" />
               )}
-            </>
+            </div>
           ))}
         </div>
       </section>
