@@ -1,31 +1,22 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import Image from "next/image";
 import {
   Search, Phone, Handshake, Star, Users,
-  Stethoscope, Hammer, Scale, DollarSign, Home,
-  Monitor, GraduationCap, LayoutGrid, Building2, ShieldCheck, ArrowRight,
+  Building2, ShieldCheck, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
+import { CategorySearch } from "@/components/home/category-search";
 import { CommunityCycle } from "@/components/home/community-cycle";
 import { FeaturedSection } from "@/components/featured/featured-section";
 import { SponsoredLogoCarousel } from "@/components/home/sponsored-logo-carousel";
+import { prisma } from "@/lib/prisma";
+import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
 interface HomePageProps {
   searchParams: Promise<{ featured_city?: string }>;
 }
-
-const BROAD_CATEGORIES = [
-  { label: "Health", icon: Stethoscope, href: "/professionals?category=doctor" },
-  { label: "Trades", icon: Hammer, href: "/professionals?category=electrician" },
-  { label: "Legal", icon: Scale, href: "/professionals?category=lawyer" },
-  { label: "Finance", icon: DollarSign, href: "/professionals?category=accountant" },
-  { label: "Real estate", icon: Home, href: "/professionals?category=realtor" },
-  { label: "Tech", icon: Monitor, href: "/professionals?category=it-consultant" },
-  { label: "Education", icon: GraduationCap, href: "/professionals?category=tutor" },
-] as const;
 
 const POPULAR_TAGS = [
   { label: "Plumber", href: "/professionals?category=plumber" },
@@ -37,6 +28,23 @@ const POPULAR_TAGS = [
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const featuredCity = params.featured_city;
+
+  let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];
+  try {
+    const mosque = await prisma.mosque.findUnique({
+      where: { slug: DEFAULT_MOSQUE_SLUG },
+      select: {
+        categories: {
+          where: { isActive: true },
+          select: { id: true, name: true, slug: true, icon: true },
+          orderBy: { name: "asc" },
+        },
+      },
+    });
+    categories = mosque?.categories ?? [];
+  } catch {
+    // fall through with empty list
+  }
 
   return (
     <div className="flex flex-col">
@@ -120,44 +128,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       {/* ── Browse by Category ────────────────────────────────── */}
       <section className="container mx-auto px-4 lg:px-6 py-14">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession</p>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-lora)" }}>
-              What do you need help with?
-            </h2>
-          </div>
-          <Link href="/categories" className="hidden sm:flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800 dark:text-emerald-400">
-            All categories <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
-          {BROAD_CATEGORIES.map(({ label, icon: Icon, href }) => (
-            <Link
-              key={label}
-              href={href}
-              className="group flex flex-col items-center gap-2.5 p-3 sm:p-4 rounded-2xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/60 transition-all duration-200"
-            >
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-                <Icon className="h-5 w-5 text-emerald-600" />
-              </div>
-              <span className="text-[11px] sm:text-xs font-medium text-gray-600 group-hover:text-emerald-700 leading-tight text-center transition-colors">
-                {label}
-              </span>
-            </Link>
-          ))}
-          <Link
-            href="/categories"
-            className="group flex flex-col items-center gap-2.5 p-3 sm:p-4 rounded-2xl border border-dashed border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/60 transition-all duration-200"
-          >
-            <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-              <LayoutGrid className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-medium text-gray-400 group-hover:text-emerald-700 leading-tight text-center transition-colors">
-              All 25+
-            </span>
-          </Link>
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5" style={{ fontFamily: "var(--font-lora)" }}>
+            What do you need help with?
+          </h2>
+          <CategorySearch categories={categories} />
         </div>
       </section>
 
