@@ -104,23 +104,23 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               aria-hidden="true"
             />
             {/* Verse overlay — top of image */}
-            <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 via-black/50 to-transparent px-6 pt-6 pb-14 text-center">
+            <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/85 via-black/60 to-transparent px-6 pt-7 pb-16 text-center">
               <p
-                className="text-white text-2xl leading-loose mb-2"
+                className="text-white text-4xl leading-loose mb-3"
                 style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
               >
                 لِتَعَارَفُوا
               </p>
               <p
-                className="text-white/80 text-sm leading-loose mb-3"
+                className="text-white/85 text-base leading-loose mb-4"
                 style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
               >
                 يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا
               </p>
-              <p className="text-white/60 text-[11px] italic leading-relaxed">
+              <p className="text-white/65 text-sm italic leading-relaxed">
                 &ldquo;O mankind, We created you from a single pair and made you into nations and tribes — so that you may know one another.&rdquo;
               </p>
-              <p className="text-white/40 text-[10px] uppercase tracking-widest mt-1.5">
+              <p className="text-white/45 text-xs uppercase tracking-widest mt-2">
                 Surah Al-Hujurat — 49:13
               </p>
             </div>
