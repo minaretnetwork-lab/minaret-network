@@ -43,6 +43,7 @@ export function RecommendationForm({ professionalId, isLoggedIn }: Props) {
   });
 
   const rating = watch("rating");
+  const content = watch("content") ?? "";
 
   async function onSubmit(data: FormData) {
     try {
@@ -122,7 +123,19 @@ export function RecommendationForm({ professionalId, isLoggedIn }: Props) {
         rows={4}
         className="resize-none"
       />
-      {errors.content && <p className="text-xs text-red-600">{errors.content.message}</p>}
+      <div className="flex items-center justify-between -mt-2">
+        {content.length < 20 ? (
+          <p className="text-xs text-gray-400">
+            Please write at least <span className="font-medium text-gray-600 dark:text-gray-300">{20 - content.length}</span> more character{20 - content.length !== 1 ? "s" : ""}
+          </p>
+        ) : (
+          <p className="text-xs text-gray-400" />
+        )}
+        <p className={`text-xs ${content.length > 480 ? "text-amber-600" : "text-gray-400"}`}>
+          {content.length}/500
+        </p>
+      </div>
+      {errors.content && <p className="text-xs text-red-600 -mt-2">{errors.content.message}</p>}
 
       <label className="flex items-center gap-2.5 cursor-pointer select-none group">
         <input
