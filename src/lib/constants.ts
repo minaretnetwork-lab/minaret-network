@@ -57,7 +57,6 @@ export const CATEGORIES = [
   { name: "Business Consultant", slug: "business-consultant", icon: "📈" },
   { name: "Travel Agent", slug: "travel-agent", icon: "✈️" },
   { name: "Childcare", slug: "childcare", icon: "👶" },
-  { name: "Other", slug: "other", icon: "⭐" },
 ] as const;
 
 export const LANGUAGES = [
