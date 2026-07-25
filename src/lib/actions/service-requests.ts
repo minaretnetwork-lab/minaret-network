@@ -12,32 +12,37 @@ export async function submitServiceRequest(data: {
   contactValue: string;
   preferredDate?: string;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
 
-  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
-  if (!dbUser) throw new Error("User not found");
+    const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+    if (!dbUser) throw new Error("User not found");
 
-  const mosqueSlug = process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
-  const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
-  if (!mosque) throw new Error("Mosque not found");
+    const mosqueSlug = process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
+    const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
+    if (!mosque) throw new Error("Mosque not found");
 
-  const request = await prisma.serviceRequest.create({
-    data: {
-      mosqueId: mosque.id,
-      userId: dbUser.id,
-      categoryId: data.categoryId,
-      serviceAreaId: data.serviceAreaId || null,
-      description: data.description,
-      preferredContact: data.preferredContact,
-      contactValue: data.contactValue,
-      preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
-    },
-  });
+    const request = await prisma.serviceRequest.create({
+      data: {
+        mosqueId: mosque.id,
+        userId: dbUser.id,
+        categoryId: data.categoryId,
+        serviceAreaId: data.serviceAreaId || null,
+        description: data.description,
+        preferredContact: data.preferredContact,
+        contactValue: data.contactValue,
+        preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
+      },
+    });
 
-  revalidatePath("/dashboard/requests");
-  return request;
+    revalidatePath("/dashboard/requests");
+    return request;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Failed to submit request";
+    throw new Error(message);
+  }
 }
 
 export async function getMyServiceRequests() {
