@@ -98,7 +98,10 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
   const pendingSuggestion = useRef<Suggestion | null>(null);
 
   function selectSuggestion(s: Suggestion) {
-    const cleanLabel = s.label.replace(/^\S+\s/, s.type === "category" && s.label.match(/^\S\s/) ? "" : s.label);
+    // Strip leading emoji from category labels (e.g. "🔧 Plumber" → "Plumber")
+    const cleanLabel = s.type === "category" && s.label.match(/^\S\s/)
+      ? s.label.replace(/^\S+\s/, "")
+      : s.label;
     setQuery(cleanLabel);
     setSugOpen(false);
     pendingSuggestion.current = s;
