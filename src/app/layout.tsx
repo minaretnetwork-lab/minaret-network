@@ -3,6 +3,7 @@ import { Lora, Inter } from "next/font/google";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { FlashToast } from "@/components/flash-toast";
+import { IdleTimeout } from "@/components/idle-timeout";
 import "./globals.css";
 
 const lora = Lora({
@@ -46,6 +47,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        <IdleTimeout />
         <Toaster position="bottom-right" />
         <Suspense>
           <FlashToast />
