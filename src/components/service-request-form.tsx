@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown,
+  Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2,
   Stethoscope, SmilePlus, Pill, Activity, Bone, Eye, Brain,
   Scale, Globe, FileText, Calculator, TrendingUp, Shield, Landmark, Home,
   HardHat, Hammer, Zap, Wrench, Wind, Building2, Paintbrush, Layers, Leaf,
@@ -77,9 +77,9 @@ interface ServiceArea { id: string; name: string }
 interface Props {
   categories: Category[];
   serviceAreas: ServiceArea[];
+  defaultName?: string;
   defaultEmail?: string;
   defaultPhone?: string;
-  defaultWhatsapp?: string;
 }
 
 type ContactMethod = "EMAIL" | "PHONE" | "WHATSAPP";
@@ -91,7 +91,9 @@ interface FormState {
   serviceAreaId: string;
   description: string;
   preferredContact: ContactMethod;
-  contactValue: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
   preferredDate: string;
 }
 
@@ -103,34 +105,60 @@ const CONTACT_OPTIONS = [
   { value: "WHATSAPP" as ContactMethod, label: "WhatsApp", icon: <MessageCircle className="h-5 w-5" /> },
 ];
 
-export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = "", defaultPhone = "", defaultWhatsapp = "" }: Props) {
+export function ServiceRequestForm({ categories, serviceAreas, defaultName = "", defaultEmail = "", defaultPhone = "" }: Props) {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [form, setForm] = useState<FormState>({
+  const emptyForm: FormState = {
     categoryId: "",
     categoryName: "",
     categoryIcon: "",
     serviceAreaId: "",
     description: "",
     preferredContact: "EMAIL",
-    contactValue: defaultEmail,
+    contactName: defaultName,
+    contactEmail: defaultEmail,
+    contactPhone: defaultPhone,
     preferredDate: "",
-  });
+  };
+  const [form, setForm] = useState<FormState>(emptyForm);
+
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState("");
+
+  async function detectArea() {
+    if (!("geolocation" in navigator)) { setLocateError("Not supported by your browser."); return; }
+    setLocating(true);
+    setLocateError("");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=en`);
+          const data = await res.json();
+          const city = data.address?.city ?? data.address?.town ?? data.address?.village ?? data.address?.suburb ?? data.address?.municipality ?? "";
+          if (!city) { setLocateError("Couldn't detect your city."); return; }
+          const lower = city.toLowerCase();
+          const match = serviceAreas.find((a) => a.name.toLowerCase().includes(lower) || lower.includes(a.name.toLowerCase()));
+          if (match) { set("serviceAreaId", match.id); setLocateError(""); }
+          else setLocateError(`"${city}" not found in service areas.`);
+        } catch { setLocateError("Location lookup failed."); }
+        finally { setLocating(false); }
+      },
+      (err) => {
+        setLocating(false);
+        setLocateError(err.code === err.PERMISSION_DENIED ? "Permission denied." : "Failed. Select manually.");
+      },
+      { timeout: 8000, enableHighAccuracy: true }
+    );
+  }
 
   const totalSteps = STEPS.length;
   const progress = ((step) / (totalSteps - 1)) * 100;
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
-  }
-
-  function contactDefault(method: ContactMethod) {
-    if (method === "EMAIL") return defaultEmail;
-    if (method === "PHONE") return defaultPhone;
-    if (method === "WHATSAPP") return defaultWhatsapp || defaultPhone;
-    return "";
   }
 
   async function handleSubmit() {
@@ -142,7 +170,9 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
         serviceAreaId: form.serviceAreaId || undefined,
         description: form.description,
         preferredContact: form.preferredContact,
-        contactValue: form.contactValue,
+        contactName: form.contactName,
+        contactEmail: form.contactEmail,
+        contactPhone: form.contactPhone,
         preferredDate: form.preferredDate || undefined,
       });
       setSubmitted(true);
@@ -165,7 +195,7 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
           Mosque-affiliated {form.categoryName} professionals have been notified. Expect to hear back via {form.preferredContact.charAt(0) + form.preferredContact.slice(1).toLowerCase()}.
         </p>
         <Button
-          onClick={() => { setSubmitted(false); setStep(0); setForm({ categoryId: "", categoryName: "", categoryIcon: "", serviceAreaId: "", description: "", preferredContact: "EMAIL", contactValue: defaultEmail, preferredDate: "" }); }}
+          onClick={() => { setSubmitted(false); setStep(0); setForm(emptyForm); }}
           variant="outline"
           className="border-gray-200"
         >
@@ -269,9 +299,21 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
 
           <div className="space-y-5">
             <div>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <MapPin className="h-4 w-4 text-gray-400" /> Your area <span className="text-red-500 ml-0.5">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <MapPin className="h-4 w-4 text-gray-400" /> Your area <span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={detectArea}
+                  disabled={locating}
+                  className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-800 disabled:opacity-50 transition-colors"
+                >
+                  {locating ? <Loader2 className="h-3 w-3 animate-spin" /> : <LocateFixed className="h-3 w-3" />}
+                  Use my location
+                </button>
+              </div>
+              {locateError && <p className="text-xs text-amber-600 mb-1.5">{locateError}</p>}
               <div className="relative">
                 <select
                   value={form.serviceAreaId}
@@ -312,15 +354,50 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
           </h2>
           <p className="text-sm text-gray-400 mb-6">Only shared with professionals who respond to your request.</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
+          <div className="space-y-4 mb-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Your name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                value={form.contactName}
+                onChange={(e) => set("contactName", e.target.value)}
+                placeholder="Full name"
+                className="text-base"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Email address <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="email"
+                value={form.contactEmail}
+                onChange={(e) => set("contactEmail", e.target.value)}
+                placeholder="your@email.com"
+                className="text-base"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Phone number <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <PhoneInput
+                value={form.contactPhone}
+                onChange={(v) => set("contactPhone", v)}
+                placeholder="416 555 0000"
+              />
+            </div>
+          </div>
+
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2.5">Preferred contact method</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             {CONTACT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => {
-                  set("preferredContact", opt.value);
-                  set("contactValue", contactDefault(opt.value));
-                }}
+                onClick={() => set("preferredContact", opt.value)}
                 className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 text-sm font-medium transition-all duration-150 ${
                   form.preferredContact === opt.value
                     ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700"
@@ -333,27 +410,10 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
             ))}
           </div>
 
-          {form.preferredContact === "EMAIL" ? (
-            <Input
-              autoFocus
-              type="email"
-              value={form.contactValue}
-              onChange={(e) => set("contactValue", e.target.value)}
-              placeholder="your@email.com"
-              className="text-base"
-            />
-          ) : (
-            <PhoneInput
-              value={form.contactValue}
-              onChange={(v) => set("contactValue", v)}
-              placeholder={form.preferredContact === "WHATSAPP" ? "416 555 0000 (WhatsApp)" : "416 555 0000"}
-            />
-          )}
-
           <StepButtons
             onBack={() => setStep(2)}
             onNext={() => setStep(4)}
-            nextDisabled={!form.contactValue.trim()}
+            nextDisabled={!form.contactName.trim() || !form.contactEmail.trim()}
           />
         </div>
       )}
@@ -381,9 +441,12 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultEmail = ""
                 onEdit={() => setStep(2)}
               />
             )}
+            <ReviewRow label="Name" value={form.contactName} onEdit={() => setStep(3)} />
+            <ReviewRow label="Email" value={form.contactEmail} onEdit={() => setStep(3)} />
+            {form.contactPhone && <ReviewRow label="Phone" value={form.contactPhone} onEdit={() => setStep(3)} />}
             <ReviewRow
-              label="Contact via"
-              value={`${form.preferredContact.charAt(0) + form.preferredContact.slice(1).toLowerCase().replace("app", "App")} — ${form.contactValue}`}
+              label="Preferred contact"
+              value={{ EMAIL: "Email", PHONE: "Phone call", WHATSAPP: "WhatsApp" }[form.preferredContact]}
               onEdit={() => setStep(3)}
             />
           </div>

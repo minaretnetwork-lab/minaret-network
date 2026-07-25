@@ -378,6 +378,9 @@ model ServiceRequest {
   description      String
   preferredContact ContactMethod @default(EMAIL)
   contactValue     String?
+  contactName      String?
+  contactEmail     String?
+  contactPhone     String?
   preferredDate    DateTime?
   status           RequestStatus @default(OPEN)
   assignedToId     String?

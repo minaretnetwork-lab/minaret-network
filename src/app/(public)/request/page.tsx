@@ -34,9 +34,9 @@ export default async function RequestPage() {
         <ServiceRequestForm
           categories={mosque?.categories ?? []}
           serviceAreas={mosque?.serviceAreas ?? []}
+          defaultName={user?.displayName ?? [user?.firstName, user?.lastName].filter(Boolean).join(" ") ?? ""}
           defaultEmail={user?.email ?? ""}
           defaultPhone={user?.phone ?? ""}
-          defaultWhatsapp={user?.whatsapp ?? ""}
         />
       </div>
     </div>

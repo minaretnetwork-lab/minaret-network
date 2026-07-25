@@ -50,85 +50,62 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     <div className="flex flex-col">
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="bg-white overflow-hidden">
-        <div className="flex min-h-[460px] lg:min-h-[520px]">
+      <section className="overflow-hidden">
+        <div className="relative flex flex-col bg-[#071a0e] min-h-[580px] lg:min-h-[640px]">
 
-          {/* Left — search content */}
-          <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-14 xl:px-20 pt-8 pb-10 lg:pt-10 lg:pb-12">
-            <div className="w-full">
+          {/* Background image */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/mosque8.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            aria-hidden="true"
+          />
+          {/* Dark gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/80" />
 
-              <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-4 py-1.5 text-sm text-emerald-700 font-medium mb-6">
-                GTA Masjid Professional Directory
-              </div>
+          {/* Main content — centered */}
+          <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
 
-              <h1
-                className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-[1.05] mb-4"
-                style={{ fontFamily: "var(--font-lora)" }}
-              >
-                Find professionals from your mosque community.
-              </h1>
-
-              <p className="text-lg text-gray-500 mb-7 leading-relaxed" style={{ fontFamily: "var(--font-inter)" }}>
-                Verified by mosque admins. Recommended by your community.
-              </p>
-
-              <HeroSearch light />
-
-              {/* Popular tags */}
-              <div className="flex flex-wrap items-center gap-x-1 gap-y-2 text-sm mt-5">
-                <span className="text-gray-400 font-medium mr-1">Popular:</span>
-                {POPULAR_TAGS.map((tag, i) => (
-                  <span key={tag.href} className="flex items-center gap-1">
-                    <Link
-                      href={tag.href}
-                      className="text-gray-600 hover:text-emerald-700 hover:underline underline-offset-2 transition-colors"
-                    >
-                      {tag.label}
-                    </Link>
-                    {i < POPULAR_TAGS.length - 1 && (
-                      <span className="text-gray-300 select-none">·</span>
-                    )}
-                  </span>
-                ))}
-              </div>
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-5 py-2 text-base text-white/90 font-medium mb-8 backdrop-blur-sm">
+              GTA Masjid Professional Directory
             </div>
-          </div>
 
-          {/* Right — full-panel image */}
-          <div className="hidden md:block md:w-[44%] xl:w-[46%] relative overflow-hidden bg-[#071a0e]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/mosque8.jpg"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover object-center"
-              aria-hidden="true"
-            />
-            {/* Verse overlay — top of image */}
-            <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/85 via-black/60 to-transparent px-6 pt-7 pb-16 text-center">
-              <p
-                className="text-white text-4xl leading-loose mb-3"
-                style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
-              >
-                لِتَعَارَفُوا
-              </p>
-              <p
-                className="text-white/85 text-base leading-loose mb-4"
-                style={{ fontFamily: "var(--font-lora)", direction: "rtl" }}
-              >
-                يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا
-              </p>
-              <p className="text-white/65 text-sm italic leading-relaxed">
-                &ldquo;O mankind, We created you from a single pair and made you into nations and tribes — so that you may know one another.&rdquo;
-              </p>
-              <p className="text-white/45 text-xs uppercase tracking-widest mt-2">
-                Surah Al-Hujurat — 49:13
-              </p>
+            <h1
+              className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-5 max-w-4xl"
+              style={{ fontFamily: "var(--font-lora)" }}
+            >
+              Find professionals from your mosque community.
+            </h1>
+
+            <p className="text-xl sm:text-2xl text-white/70 mb-10 leading-relaxed max-w-2xl" style={{ fontFamily: "var(--font-inter)" }}>
+              Mosque-affiliated. Community recommended.
+            </p>
+
+            <HeroSearch light />
+
+            {/* Popular tags */}
+            <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-base mt-6">
+              <span className="text-white/50 font-medium mr-1">Popular:</span>
+              {POPULAR_TAGS.map((tag, i) => (
+                <span key={tag.href} className="flex items-center gap-1">
+                  <Link
+                    href={tag.href}
+                    className="text-white/75 hover:text-white hover:underline underline-offset-2 transition-colors"
+                  >
+                    {tag.label}
+                  </Link>
+                  {i < POPULAR_TAGS.length - 1 && (
+                    <span className="text-white/30 select-none">·</span>
+                  )}
+                </span>
+              ))}
             </div>
           </div>
 
         </div>
 
-        {/* Trust bar — full width below the two columns */}
+        {/* Trust bar */}
         <div className="bg-[#14532d] py-4">
           <div className="container mx-auto px-4 lg:px-6 flex flex-wrap justify-center gap-6 sm:gap-12">
             {[

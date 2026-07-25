@@ -9,7 +9,9 @@ export async function submitServiceRequest(data: {
   serviceAreaId?: string;
   description: string;
   preferredContact: "EMAIL" | "PHONE" | "WHATSAPP";
-  contactValue: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
   preferredDate?: string;
 }) {
   try {
@@ -32,7 +34,9 @@ export async function submitServiceRequest(data: {
         serviceAreaId: data.serviceAreaId || null,
         description: data.description,
         preferredContact: data.preferredContact,
-        contactValue: data.contactValue,
+        contactName: data.contactName,
+        contactEmail: data.contactEmail,
+        contactPhone: data.contactPhone || null,
         preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
       },
     });
