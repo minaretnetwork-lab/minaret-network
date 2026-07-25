@@ -62,7 +62,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             aria-hidden="true"
           />
           {/* Dark gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/80 pointer-events-none" />
 
           {/* Main content — centered */}
           <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
@@ -201,7 +201,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       {/* ── Trust Section ────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#0a2e1a] text-white py-20">
-        <div className="absolute inset-0 opacity-[0.06]" aria-hidden="true">
+        <div className="absolute inset-0 opacity-[0.06] pointer-events-none" aria-hidden="true">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="geo2" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
