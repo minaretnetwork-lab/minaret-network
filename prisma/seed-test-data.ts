@@ -246,6 +246,145 @@ async function main() {
         { name: "Anonymous Community Member", content: "Samira helped me through one of the most difficult periods of my life. She is compassionate, non-judgmental, and truly understands the Muslim experience. I cannot thank her enough." },
       ],
     },
+
+    // ── Keswick / York Region / Northern GTA ──────────────────────────────
+    {
+      firstName: "Khalid",
+      lastName: "Mirza",
+      email: "khalid.mirza@example.com",
+      title: "Licensed Electrician",
+      businessName: "Mirza Electric — York Region",
+      bio: "Licensed electrician serving Keswick, Newmarket, Aurora, and surrounding York Region communities for over 12 years. I handle residential rewiring, panel upgrades, pot lights, EV charger installations, and emergency electrical work. Local to Keswick — fast response times guaranteed.",
+      categorySlug: "electrician",
+      yearsOfExperience: 12,
+      qualifications: "Licensed Electrician (ESA Certified)\nJourneyman Electrician — Red Seal",
+      licenses: "Ontario Electrical Safety Authority License #67234",
+      languages: ["English", "Urdu", "Punjabi"],
+      phone: "+1 905 555 1101",
+      whatsapp: "+19055551101",
+      serviceAreaSlugs: ["keswick", "newmarket", "aurora", "east-gwillimbury", "georgina", "bradford"],
+      badges: ["MOSQUE_AFFILIATED"],
+      isFeatured: false,
+      availability: "Monday–Saturday, 7am–7pm. Emergency calls available evenings.",
+      recommendations: [
+        { name: "Yusra Baig", content: "Khalid replaced our entire electrical panel and installed EV charger. Quick, clean, very professional. Glad to have a trusted electrician in Keswick." },
+        { name: "Adnan Qureshi", content: "Called Khalid for an emergency on a Friday evening and he was there within the hour. Fixed the issue quickly and charged a fair price. Highly recommended." },
+      ],
+    },
+    {
+      firstName: "Sana",
+      lastName: "Riaz",
+      email: "sana.riaz@example.com",
+      title: "Family Physician",
+      businessName: "Newmarket Community Health",
+      bio: "Family physician accepting new patients in the York Region area. I provide comprehensive primary care for families, children, and seniors. Fluent in Urdu and Punjabi, making it easier to serve our growing South Asian community in the north GTA. Telehealth appointments available.",
+      categorySlug: "doctor",
+      yearsOfExperience: 8,
+      qualifications: "MD — McMaster University\nCCFP — College of Family Physicians of Canada",
+      licenses: "Ontario College of Physicians and Surgeons #3102874",
+      languages: ["English", "Urdu", "Punjabi"],
+      phone: "+1 905 555 1202",
+      whatsapp: "+19055551202",
+      serviceAreaSlugs: ["newmarket", "aurora", "keswick", "bradford", "east-gwillimbury", "king-city"],
+      badges: ["MOSQUE_AFFILIATED", "HIGHLY_RECOMMENDED"],
+      isFeatured: false,
+      availability: "Mon–Fri 9am–5pm, Sat 9am–12pm. Evening telehealth available Tuesdays.",
+      recommendations: [
+        { name: "Farhan Siddiqui", content: "Dr. Sana is wonderful — patient, thorough, and genuinely cares about her patients. Finally a doctor close to home who speaks Urdu. Our whole family sees her." },
+        { name: "Noor Malik", content: "She took the time to actually listen and address all my concerns. Very rare these days. I drive from Bradford just to see her." },
+      ],
+    },
+    {
+      firstName: "Omer",
+      lastName: "Farooq",
+      email: "omer.farooq@example.com",
+      title: "Master Plumber",
+      businessName: "Farooq Plumbing & Heating",
+      bio: "Licensed master plumber based in Keswick, serving York Region and Simcoe County. Specializing in residential plumbing, bathroom and kitchen renovations, water heater replacement, and frozen pipe emergencies. 24/7 emergency service available for community members.",
+      categorySlug: "plumber",
+      yearsOfExperience: 14,
+      qualifications: "Licensed Master Plumber — TSSA Certified\nRed Seal Journeyman Plumber",
+      licenses: "TSSA License #PLM-88341",
+      languages: ["English", "Urdu"],
+      phone: "+1 905 555 1303",
+      whatsapp: "+19055551303",
+      serviceAreaSlugs: ["keswick", "newmarket", "aurora", "bradford", "barrie", "georgina", "east-gwillimbury"],
+      badges: ["MOSQUE_AFFILIATED"],
+      isFeatured: false,
+      availability: "7 days a week. 24/7 emergency line for burst pipes and flooding.",
+      recommendations: [
+        { name: "Tariq Hussain", content: "Omer came out on a Saturday for a burst pipe in our basement. Had it fixed within 2 hours. Professional and affordable. Will definitely call again." },
+        { name: "Razia Ahmed", content: "We used Omer for a full bathroom renovation in our Keswick home. Excellent workmanship and he finished ahead of schedule. Great value." },
+      ],
+    },
+    {
+      firstName: "Farrukh",
+      lastName: "Tashkentov",
+      email: "farrukh.tashkentov@example.com",
+      title: "Realtor",
+      businessName: "York Region Homes",
+      bio: "Top realtor specializing in Keswick, Newmarket, Aurora, and the broader York Region market. I help families buy and sell homes with honesty and expertise. With deep knowledge of the local market and a network of trusted professionals, I make the buying and selling process smooth and stress-free.",
+      categorySlug: "realtor",
+      yearsOfExperience: 9,
+      qualifications: "Licensed Real Estate Salesperson — RECO\nAccredited Buyer's Representative (ABR)",
+      licenses: "RECO Registration #5892341",
+      languages: ["English", "Uzbek", "Russian"],
+      phone: "+1 905 555 1404",
+      whatsapp: "+19055551404",
+      serviceAreaSlugs: ["keswick", "newmarket", "aurora", "bradford", "east-gwillimbury", "barrie", "georgina"],
+      badges: ["MOSQUE_AFFILIATED", "HIGHLY_RECOMMENDED"],
+      isFeatured: false,
+      availability: "7 days a week, 8am–9pm",
+      recommendations: [
+        { name: "Musa Karimov", content: "Farrukh helped us find our dream home in Keswick. He was patient through 3 months of searching and negotiated a great price. Honest and hardworking." },
+        { name: "Lena Abubakar", content: "Sold our Newmarket home in under a week for over asking. Farrukh knows this market inside out. Highly recommend to anyone buying or selling in York Region." },
+      ],
+    },
+    {
+      firstName: "Amir",
+      lastName: "Chowdhury",
+      email: "amir.chowdhury@example.com",
+      title: "Handyman & Home Repair Specialist",
+      businessName: "Chowdhury Handyman Services",
+      bio: "Reliable handyman serving Keswick and York Region for 10 years. I handle drywall repairs, painting, door and window installation, flooring, deck repairs, and general home maintenance. No job too small. Community members get priority booking and honest pricing.",
+      categorySlug: "handyman",
+      yearsOfExperience: 10,
+      qualifications: "Red Seal Carpenter\nCertified in Workplace Safety",
+      languages: ["English", "Bengali", "Urdu"],
+      phone: "+1 905 555 1505",
+      whatsapp: "+19055551505",
+      serviceAreaSlugs: ["keswick", "newmarket", "aurora", "east-gwillimbury", "georgina", "bradford", "barrie"],
+      badges: ["MOSQUE_AFFILIATED"],
+      isFeatured: false,
+      availability: "Monday–Saturday, 8am–6pm",
+      recommendations: [
+        { name: "Hira Zaidi", content: "Amir repaired our deck and painted two rooms. Fair price, great work, and very respectful of our home. Will definitely call him for our next project." },
+        { name: "Salim Choudhury", content: "Amir is our go-to for anything around the house. He has done drywall, flooring, and exterior repairs for us. Always on time and great quality." },
+      ],
+    },
+    {
+      firstName: "Zainab",
+      lastName: "Al-Rashid",
+      email: "zainab.alrashid@example.com",
+      title: "Chartered Professional Accountant",
+      businessName: "Al-Rashid Accounting — York Region",
+      bio: "CPA serving individuals and small businesses in Keswick, Newmarket, and York Region. Specializing in personal and corporate tax returns, HST filings, bookkeeping, and financial planning for new immigrants and self-employed professionals. Halal-conscious financial guidance available.",
+      categorySlug: "accountant",
+      yearsOfExperience: 7,
+      qualifications: "Chartered Professional Accountant (CPA)\nBBA — York University",
+      licenses: "CPA Ontario Member #CPA-92134",
+      languages: ["English", "Arabic", "Urdu"],
+      phone: "+1 905 555 1606",
+      whatsapp: "+19055551606",
+      serviceAreaSlugs: ["keswick", "newmarket", "aurora", "bradford", "barrie", "georgina"],
+      badges: ["MOSQUE_AFFILIATED"],
+      isFeatured: false,
+      availability: "Year-round. Extended hours during tax season (Feb–Apr). Virtual meetings available.",
+      recommendations: [
+        { name: "Yousef Nassar", content: "Zainab has been doing our family and business taxes for 4 years. She is sharp, proactive, and always finds deductions we miss. Very trustworthy." },
+        { name: "Dina Khalil", content: "As a new immigrant, I was completely lost with Canadian taxes. Zainab explained everything clearly and filed everything perfectly. Highly recommend." },
+      ],
+    },
   ];
 
   let created = 0;
@@ -254,6 +393,13 @@ async function main() {
     const category = getCat(pro.categorySlug);
     if (!category) {
       console.log(`⚠️  Category not found: ${pro.categorySlug}`);
+      continue;
+    }
+
+    // Skip if already seeded
+    const existing = await prisma.user.findUnique({ where: { supabaseId: `test-${pro.email}` } });
+    if (existing) {
+      console.log(`⏭️  Skipping ${pro.firstName} ${pro.lastName} (already exists)`);
       continue;
     }
 
