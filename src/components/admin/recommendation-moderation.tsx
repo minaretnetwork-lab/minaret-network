@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { approveRecommendation, rejectRecommendation } from "@/lib/actions/recommendations";
+import { approveRecommendation, rejectRecommendation, deleteRecommendation } from "@/lib/actions/recommendations";
 import { formatDate } from "@/lib/utils";
-import { CheckCircle, XCircle, Star } from "lucide-react";
+import { CheckCircle, XCircle, Star, Trash2 } from "lucide-react";
 
 type Recommendation = {
   id: string;
@@ -26,6 +26,7 @@ interface Props {
 
 export function RecommendationModerationList({ recommendations, type }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   async function handleApprove(id: string) {
     setLoading(id + "-approve");
@@ -37,6 +38,13 @@ export function RecommendationModerationList({ recommendations, type }: Props) {
     setLoading(id + "-reject");
     await rejectRecommendation(id);
     setLoading(null);
+  }
+
+  async function handleDelete(id: string) {
+    setLoading(id + "-delete");
+    await deleteRecommendation(id);
+    setLoading(null);
+    setConfirmDelete(null);
   }
 
   if (recommendations.length === 0) {
@@ -74,23 +82,43 @@ export function RecommendationModerationList({ recommendations, type }: Props) {
                   By {memberName} · {formatDate(rec.createdAt)}
                 </p>
               </div>
-              {type === "pending" && (
-                <div className="flex flex-col gap-2 flex-shrink-0">
-                  <Button size="sm" onClick={() => handleApprove(rec.id)} disabled={!!loading}
-                    className="bg-green-600 hover:bg-green-700 text-white gap-1">
-                    <CheckCircle className="h-3.5 w-3.5" /> Approve
+              <div className="flex flex-col gap-2 flex-shrink-0">
+                {type === "pending" && (
+                  <>
+                    <Button size="sm" onClick={() => handleApprove(rec.id)} disabled={!!loading}
+                      className="bg-green-600 hover:bg-green-700 text-white gap-1">
+                      <CheckCircle className="h-3.5 w-3.5" /> Approve
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleReject(rec.id)} disabled={!!loading}
+                      className="border-red-200 text-red-700 hover:bg-red-50 gap-1">
+                      <XCircle className="h-3.5 w-3.5" /> Reject
+                    </Button>
+                  </>
+                )}
+                {type === "approved" && (
+                  <span className="text-xs text-green-600 flex items-center gap-1">
+                    <CheckCircle className="h-3.5 w-3.5" /> Published
+                  </span>
+                )}
+                {confirmDelete === rec.id ? (
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[11px] text-red-700 font-medium text-center">Delete?</p>
+                    <Button size="sm" onClick={() => handleDelete(rec.id)} disabled={!!loading}
+                      className="bg-red-600 hover:bg-red-700 text-white gap-1 text-xs">
+                      <Trash2 className="h-3 w-3" /> Yes, delete
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setConfirmDelete(null)} disabled={!!loading}
+                      className="text-xs">
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => setConfirmDelete(rec.id)} disabled={!!loading}
+                    className="border-red-200 text-red-600 hover:bg-red-50 gap-1">
+                    <Trash2 className="h-3.5 w-3.5" /> Delete
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleReject(rec.id)} disabled={!!loading}
-                    className="border-red-200 text-red-700 hover:bg-red-50 gap-1">
-                    <XCircle className="h-3.5 w-3.5" /> Reject
-                  </Button>
-                </div>
-              )}
-              {type === "approved" && (
-                <span className="text-xs text-green-600 flex items-center gap-1 flex-shrink-0">
-                  <CheckCircle className="h-3.5 w-3.5" /> Published
-                </span>
-              )}
+                )}
+              </div>
             </div>
           </div>
         );

@@ -56,3 +56,21 @@ export async function rejectRecommendation(id: string, note?: string) {
   });
   revalidatePath("/admin/recommendations");
 }
+
+export async function deleteRecommendation(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser || (dbUser.role !== "ADMIN" && dbUser.role !== "SUPER_ADMIN")) {
+    throw new Error("Not authorized");
+  }
+
+  const rec = await prisma.recommendation.findUnique({ where: { id } });
+  if (!rec) throw new Error("Review not found");
+
+  await prisma.recommendation.delete({ where: { id } });
+  revalidatePath("/admin/recommendations");
+  revalidatePath(`/professionals/${rec.professionalId}`);
+}
