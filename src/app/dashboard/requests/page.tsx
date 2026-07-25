@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getMyServiceRequests } from "@/lib/actions/service-requests";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
-import { Clock, MapPin, Phone, Mail, MessageCircle, UserCheck, Plus, ClipboardList } from "lucide-react";
+import { Clock, MapPin, Phone, Mail, MessageCircle, UserCheck, Plus, ClipboardList, ChevronRight } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
 
 export const metadata = { title: "My Requests" };
@@ -73,7 +73,7 @@ export default async function MyRequestsPage() {
               : null;
 
             return (
-              <Link key={req.id} href={`/dashboard/requests/${req.id}`} className="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-emerald-200 hover:shadow-sm transition-all">
+              <Link key={req.id} href={`/dashboard/requests/${req.id}`} className="group block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-emerald-300 hover:shadow-sm transition-all cursor-pointer">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><CategoryIcon slug={req.category.slug} className="h-5 w-5" /></div>
@@ -119,6 +119,11 @@ export default async function MyRequestsPage() {
 
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium border flex-shrink-0 ${ui.pill}`}>
                     {ui.label}
+                  </span>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View details <ChevronRight className="h-3.5 w-3.5" />
                   </span>
                 </div>
               </Link>
