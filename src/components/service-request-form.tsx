@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2,
+  Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2, LogIn, UserPlus,
   Stethoscope, SmilePlus, Pill, Activity, Bone, Eye, Brain,
   Scale, Globe, FileText, Calculator, TrendingUp, Shield, Landmark, Home,
   HardHat, Hammer, Zap, Wrench, Wind, Building2, Paintbrush, Layers, Leaf,
@@ -77,6 +77,7 @@ interface ServiceArea { id: string; name: string }
 interface Props {
   categories: Category[];
   serviceAreas: ServiceArea[];
+  isAuthenticated: boolean;
   defaultName?: string;
   defaultEmail?: string;
   defaultPhone?: string;
@@ -105,8 +106,11 @@ const CONTACT_OPTIONS = [
   { value: "WHATSAPP" as ContactMethod, label: "WhatsApp", icon: <MessageCircle className="h-5 w-5" /> },
 ];
 
-export function ServiceRequestForm({ categories, serviceAreas, defaultName = "", defaultEmail = "", defaultPhone = "" }: Props) {
+const DRAFT_KEY = "minaret_draft_request";
+
+export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, defaultName = "", defaultEmail = "", defaultPhone = "" }: Props) {
   const [step, setStep] = useState(0);
+  const [authGate, setAuthGate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -123,6 +127,19 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultName = "",
     preferredDate: "",
   };
   const [form, setForm] = useState<FormState>(emptyForm);
+
+  // Restore draft saved before auth redirect
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as { form: FormState; step: number };
+      sessionStorage.removeItem(DRAFT_KEY);
+      setForm(draft.form);
+      setStep(draft.step);
+    } catch { /* ignore */ }
+  }, [isAuthenticated]);
 
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState("");
@@ -162,6 +179,11 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultName = "",
   }
 
   async function handleSubmit() {
+    if (!isAuthenticated) {
+      try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form, step: 4 })); } catch { /* ignore */ }
+      setAuthGate(true);
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
@@ -181,6 +203,42 @@ export function ServiceRequestForm({ categories, serviceAreas, defaultName = "",
     } finally {
       setSubmitting(false);
     }
+  }
+
+  /* ── Auth gate (shown at submit time for unauthenticated users) ── */
+  if (authGate) {
+    return (
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 text-center shadow-sm">
+        <div className="h-14 w-14 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2" style={{ fontFamily: "var(--font-lora)" }}>
+          Almost there!
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 leading-relaxed">
+          Your request is ready. Sign in or create a free account to submit it — your details have been saved.
+        </p>
+        <p className="text-xs text-gray-400 mb-6">Takes less than a minute.</p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="/auth/login?redirectTo=/request">
+            <Button className="w-full sm:w-auto bg-[#14532d] hover:bg-[#166534] text-white gap-2">
+              <LogIn className="h-4 w-4" /> Sign in
+            </Button>
+          </a>
+          <a href="/auth/signup?redirectTo=/request">
+            <Button variant="outline" className="w-full sm:w-auto gap-2 border-gray-200">
+              <UserPlus className="h-4 w-4" /> Create account
+            </Button>
+          </a>
+        </div>
+        <button
+          onClick={() => setAuthGate(false)}
+          className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2"
+        >
+          Go back to my request
+        </button>
+      </div>
+    );
   }
 
   /* ── Success ─────────────────────────────────────────── */
