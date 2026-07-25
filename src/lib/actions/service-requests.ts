@@ -26,22 +26,35 @@ export async function submitServiceRequest(data: {
     const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
     if (!mosque) throw new Error("Mosque not found");
 
-    const request = await prisma.serviceRequest.create({
-      data: {
-        mosqueId: mosque.id,
-        userId: dbUser.id,
-        categoryId: data.categoryId,
-        serviceAreaId: data.serviceAreaId || null,
-        description: data.description,
-        preferredContact: data.preferredContact,
-        contactName: data.contactName,
-        contactEmail: data.contactEmail,
-        contactPhone: data.contactPhone || null,
-        preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
-      },
-    });
+    const [request] = await Promise.all([
+      prisma.serviceRequest.create({
+        data: {
+          mosqueId: mosque.id,
+          userId: dbUser.id,
+          categoryId: data.categoryId,
+          serviceAreaId: data.serviceAreaId || null,
+          description: data.description,
+          preferredContact: data.preferredContact,
+          contactName: data.contactName,
+          contactEmail: data.contactEmail,
+          contactPhone: data.contactPhone || null,
+          preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
+        },
+      }),
+      // Backfill profile with contact details entered in the form
+      prisma.user.update({
+        where: { id: dbUser.id },
+        data: {
+          // Only update displayName if profile has none
+          ...(!dbUser.displayName && data.contactName ? { displayName: data.contactName } : {}),
+          // Always update phone if the form has one (user may have added it just now)
+          ...(data.contactPhone ? { phone: data.contactPhone } : {}),
+        },
+      }),
+    ]);
 
     revalidatePath("/dashboard/requests");
+    revalidatePath("/dashboard/profile");
     return request;
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to submit request";
