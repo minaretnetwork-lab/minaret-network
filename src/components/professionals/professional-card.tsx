@@ -83,15 +83,19 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
         </Avatar>
 
         <div className="min-w-0 flex-1 pt-0.5">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-lora)" }}>
-            {name}
-          </h3>
+          <Link href={`/professionals/${professional.id}`} className="block">
+            <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] leading-snug hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-lora)" }}>
+              {name}
+            </h3>
+          </Link>
           {professional.businessName && (
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{professional.businessName}</p>
           )}
           <div className="flex items-center gap-1.5 mt-1.5">
-            <CategoryIcon slug={category.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{category.name}</span>
+            <Link href={`/professionals?category=${category.slug}`} className="flex items-center gap-1.5 hover:underline">
+              <CategoryIcon slug={category.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+              <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{category.name}</span>
+            </Link>
             {professional.yearsOfExperience && (
               <>
                 <span className="text-gray-200 dark:text-gray-700">·</span>
