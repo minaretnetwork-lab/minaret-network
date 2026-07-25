@@ -252,7 +252,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/professionals/register">
               <Button size="lg" className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 h-12 px-8 shadow-sm font-medium">
-                Become a professional
+                Join as a professional
               </Button>
             </Link>
             <Link href="/professionals">
