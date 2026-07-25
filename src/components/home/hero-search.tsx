@@ -98,6 +98,11 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
   const pendingSuggestion = useRef<Suggestion | null>(null);
 
   function selectSuggestion(s: Suggestion) {
+    // Professional selected — go straight to their profile, no location needed
+    if (s.type === "professional" && s.slug) {
+      router.push(`/professionals/${s.slug}`);
+      return;
+    }
     // Strip leading emoji from category labels (e.g. "🔧 Plumber" → "Plumber")
     const cleanLabel = s.type === "category" && s.label.match(/^\S\s/)
       ? s.label.replace(/^\S+\s/, "")
@@ -105,7 +110,7 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
     setQuery(cleanLabel);
     setSugOpen(false);
     pendingSuggestion.current = s;
-    // Move focus to location if empty so the user fills it in next
+    // Move focus to location so the user fills it in next
     if (!location.trim()) {
       locationRef.current?.focus();
     }

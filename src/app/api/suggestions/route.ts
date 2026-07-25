@@ -52,6 +52,7 @@ export async function GET(request: Request) {
         ],
       },
       select: {
+        id: true,
         businessName: true,
         title: true,
         user: { select: { displayName: true, firstName: true, lastName: true } },
@@ -70,6 +71,7 @@ export async function GET(request: Request) {
     ...professionals.map((p) => ({
       label: p.businessName ?? p.user.displayName ?? `${p.user.firstName ?? ""} ${p.user.lastName ?? ""}`.trim(),
       type: "professional" as const,
+      slug: p.id,
     })),
   ];
 
