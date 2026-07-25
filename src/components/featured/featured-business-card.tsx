@@ -84,8 +84,7 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
       {/* Description */}
       {professional.bio && (
         <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-          {professional.bio.split(/\s+/).slice(0, 15).join(" ")}
-          {professional.bio.split(/\s+/).length > 15 ? "…" : ""}
+          {professional.bio}
         </p>
       )}
 
