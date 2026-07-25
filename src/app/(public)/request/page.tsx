@@ -1,6 +1,9 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
+import { LogIn, UserPlus } from "lucide-react";
 import { ServiceRequestForm } from "@/components/service-request-form";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/actions/auth";
@@ -31,13 +34,39 @@ export default async function RequestPage() {
           </p>
         </div>
 
-        <ServiceRequestForm
-          categories={mosque?.categories ?? []}
-          serviceAreas={mosque?.serviceAreas ?? []}
-          defaultName={user?.displayName ?? [user?.firstName, user?.lastName].filter(Boolean).join(" ") ?? ""}
-          defaultEmail={user?.email ?? ""}
-          defaultPhone={user?.phone ?? ""}
-        />
+        {!user ? (
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 text-center shadow-sm">
+            <div className="h-14 w-14 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-4">
+              <LogIn className="h-7 w-7 text-emerald-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2" style={{ fontFamily: "var(--font-lora)" }}>
+              Sign in to submit a request
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+              You need an account so professionals can reach you and you can track your requests.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/auth/login?redirectTo=/request">
+                <Button className="w-full sm:w-auto bg-[#14532d] hover:bg-[#166534] text-white gap-2">
+                  <LogIn className="h-4 w-4" /> Sign in
+                </Button>
+              </Link>
+              <Link href="/auth/signup?redirectTo=/request">
+                <Button variant="outline" className="w-full sm:w-auto gap-2 border-gray-200">
+                  <UserPlus className="h-4 w-4" /> Create account
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <ServiceRequestForm
+            categories={mosque?.categories ?? []}
+            serviceAreas={mosque?.serviceAreas ?? []}
+            defaultName={user.displayName ?? [user.firstName, user.lastName].filter(Boolean).join(" ") ?? ""}
+            defaultEmail={user.email ?? ""}
+            defaultPhone={user.phone ?? ""}
+          />
+        )}
       </div>
     </div>
   );
