@@ -91,6 +91,7 @@ export default async function ProfessionalsPage({ searchParams }: PageProps) {
     locationText: params.location,
     languages: params.lang ? [params.lang] : undefined,
     verifiedOnly: params.verified === "1",
+    affiliatedMosqueSlug: params.mosque,
     sortBy: (params.sort as SearchFiltersType["sortBy"]) ?? undefined,
   };
 

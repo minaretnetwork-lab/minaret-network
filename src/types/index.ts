@@ -63,5 +63,6 @@ export interface SearchFilters {
   languages?: string[];
   gender?: Gender;
   verifiedOnly?: boolean;
+  affiliatedMosqueSlug?: string;
   sortBy?: "recommended" | "newest" | "alphabetical";
 }

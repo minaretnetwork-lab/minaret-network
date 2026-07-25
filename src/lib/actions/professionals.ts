@@ -36,7 +36,7 @@ export async function getProfessionals(
   mosqueSlug: string,
   filters: SearchFilters = {}
 ) {
-  const { query, categorySlug, serviceAreaSlug, locationText, languages, gender, verifiedOnly, sortBy } = filters;
+  const { query, categorySlug, serviceAreaSlug, locationText, languages, gender, verifiedOnly, affiliatedMosqueSlug, sortBy } = filters;
 
   const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
   if (!mosque) return [];
@@ -55,6 +55,10 @@ export async function getProfessionals(
     ...areaFilter,
     ...(gender && { gender }),
     ...(verifiedOnly && { badges: { some: { type: "MOSQUE_AFFILIATED" } } }),
+    ...(affiliatedMosqueSlug && {
+      mosque: { slug: affiliatedMosqueSlug },
+      badges: { some: { type: "MOSQUE_AFFILIATED" } },
+    }),
     ...(languages && languages.length > 0 && {
       languages: { hasSome: languages },
     }),

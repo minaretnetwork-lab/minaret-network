@@ -153,9 +153,20 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           {badges.map((badge) => {
             if (badge.type === "MOSQUE_AFFILIATED") {
               return (
-                <span key={badge.id} className="group/badge relative inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50 font-medium cursor-default">
+                <span key={badge.id} className="group/badge relative inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50 font-medium">
                   <CheckCircle2 className="h-2.5 w-2.5 flex-shrink-0" />
-                  {mosque ? `Affiliated · ${mosque.name}` : "Mosque Affiliated"}
+                  {mosque ? (
+                    <>
+                      Affiliated ·{" "}
+                      <Link
+                        href={`/professionals?mosque=${mosque.slug}`}
+                        className="hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {mosque.name}
+                      </Link>
+                    </>
+                  ) : "Mosque Affiliated"}
                   <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg bg-gray-900 text-white text-[11px] leading-relaxed px-3 py-2 opacity-0 group-hover/badge:opacity-100 transition-opacity duration-150 z-20 shadow-lg text-center">
                     This professional is a member of {mosque?.name ?? "a local mosque"}&apos;s community channel (e.g. WhatsApp group). Affiliation is confirmed by a mosque admin — it does not verify professional credentials or quality of work.
                     <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
