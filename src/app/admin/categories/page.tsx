@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { CATEGORIES } from "@/lib/constants";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 export const metadata = { title: "Manage Categories" };
 
@@ -38,7 +39,7 @@ export default async function AdminCategoriesPage() {
               {categories.map((cat) => (
                 <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                    {cat.icon} {cat.name}
+                    <CategoryIcon slug={cat.slug} className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />{cat.name}
                   </td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                     {cat._count.professionals}
@@ -78,7 +79,7 @@ export default async function AdminCategoriesPage() {
                   ? "border-green-200 bg-green-50 text-green-700"
                   : "border-gray-200 bg-white text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
               }`}>
-                {cat.icon} {cat.name}
+                <CategoryIcon slug={cat.slug} className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />{cat.name}
               </div>
             ))}
           </div>

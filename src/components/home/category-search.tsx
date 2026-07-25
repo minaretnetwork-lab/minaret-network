@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Search, X, ArrowRight } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 interface Category {
   id: string;
@@ -56,7 +57,7 @@ export function CategorySearch({ categories }: { categories: Category[] }) {
               href={`/professionals?category=${cat.slug}`}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-300 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400 transition-all"
             >
-              {cat.icon && <span className="text-base leading-none">{cat.icon}</span>}
+              <CategoryIcon slug={cat.slug} className="h-3.5 w-3.5 flex-shrink-0" />
               {cat.name}
             </Link>
           ))}

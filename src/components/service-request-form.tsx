@@ -485,7 +485,7 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
           <p className="text-sm text-gray-400 mb-6">Everything look good? Hit submit to notify professionals.</p>
 
           <div className="space-y-3 mb-6">
-            <ReviewRow label="Category" value={`${form.categoryIcon} ${form.categoryName}`} onEdit={() => setStep(0)} />
+            <ReviewRow label="Category" value={form.categoryName} onEdit={() => setStep(0)} />
             <ReviewRow label="Description" value={form.description} onEdit={() => setStep(1)} multiline />
             <ReviewRow
               label="Location"

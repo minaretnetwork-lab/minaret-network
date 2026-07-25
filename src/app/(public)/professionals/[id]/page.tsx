@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
@@ -73,7 +74,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               <p className="text-sm text-gray-500 dark:text-gray-400">{professional.businessName}</p>
             )}
             <p className="text-green-700 dark:text-green-400 font-medium text-sm mt-1">
-              {professional.category.icon} {professional.category.name}
+              <CategoryIcon slug={professional.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{professional.category.name}
             </p>
 
             {professional.badges.length > 0 && (

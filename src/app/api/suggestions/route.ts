@@ -64,7 +64,7 @@ export async function GET(request: Request) {
   type Suggestion = { label: string; type: "category" | "professional"; slug?: string };
   const suggestions: Suggestion[] = [
     ...categories.map((c) => ({
-      label: `${c.icon ? c.icon + " " : ""}${c.name}`,
+      label: c.name,
       type: "category" as const,
       slug: c.slug,
     })),

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LANGUAGES } from "@/lib/constants";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { useRouter } from "next/navigation";
 import { Camera, X, Building2, ChevronRight, ChevronLeft, Check, Lightbulb } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -361,7 +362,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                               <button key={c.id} type="button"
                                 onMouseDown={(e) => { e.preventDefault(); setValue("categoryId", c.id); setCatSearch(""); setCatOpen(false); }}
                                 className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors ${c.id === watch("categoryId") ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 font-medium" : "text-gray-800 dark:text-gray-200"}`}>
-                                <span>{c.icon}</span><span>{c.name}</span>
+                                <CategoryIcon slug={c.slug} className="h-4 w-4 flex-shrink-0" /><span>{c.name}</span>
                               </button>
                             ))}
                           </div>

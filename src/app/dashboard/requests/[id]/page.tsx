@@ -90,7 +90,7 @@ export default async function RequestDetailPage({ params }: Props) {
           </Detail>
 
           <Detail icon={<Tag className="h-4 w-4" />} label="Category">
-            {req.category.icon} {req.category.name}
+            <CategoryIcon slug={req.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{req.category.name}
           </Detail>
 
           <Detail icon={CONTACT_ICON[req.preferredContact]} label="Preferred contact">

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
@@ -52,7 +53,7 @@ export default async function ProfessionalDashboardPage() {
       credentials: true,
       sponsoredListings: {
         include: {
-          category: { select: { name: true, icon: true } },
+          category: { select: { name: true, slug: true, icon: true } },
           serviceArea: { select: { name: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -153,7 +154,7 @@ export default async function ProfessionalDashboardPage() {
         <dl className="space-y-2 text-sm">
           <div className="flex gap-3">
             <dt className="text-gray-500 dark:text-gray-400 w-32 flex-shrink-0">Category</dt>
-            <dd className="text-gray-900 dark:text-white">{professional.category.icon} {professional.category.name}</dd>
+            <dd className="text-gray-900 dark:text-white flex items-center gap-1.5"><CategoryIcon slug={professional.category.slug} className="h-4 w-4 text-gray-500" />{professional.category.name}</dd>
           </div>
           {professional.businessName && (
             <div className="flex gap-3">
@@ -205,7 +206,7 @@ type SponsoredListing = {
   cancelledAt: Date | null;
   createdAt: Date;
   adminNote: string | null;
-  category: { name: string; icon: string | null };
+  category: { name: string; slug: string; icon: string | null };
   serviceArea: { name: string };
 };
 
@@ -249,7 +250,7 @@ function SponsoredHistory({ listings }: { listings: SponsoredListing[] }) {
               <div key={l.id} className="flex items-start justify-between gap-3 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0 first:pt-0">
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {l.category.icon} {l.category.name} · {l.serviceArea.name}
+                    <CategoryIcon slug={l.category.slug} className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />{l.category.name} · {l.serviceArea.name}
                   </p>
                   <div className="flex flex-wrap gap-2 mt-1 text-xs text-gray-400">
                     <span>${price.toFixed(0)}/mo</span>

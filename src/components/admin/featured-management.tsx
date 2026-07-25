@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Star, CheckCircle, XCircle, Clock, Users, DollarSign, Plus, Pencil, MapPin, Eye, MousePointer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import {
   approveFeaturedListing,
   rejectFeaturedListing,
@@ -25,7 +26,7 @@ type FeaturedListing = {
     id: string;
     businessName: string | null;
     user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string };
-    category: { name: string; icon: string | null };
+    category: { name: string; slug: string; icon: string | null };
   };
   pricingTier: { name: string; priceMonthly: number | string } | null;
 };
@@ -321,7 +322,7 @@ function ListingCard({ l, children, showStartDate, showAnalytics }: {
           <p className="text-xs text-gray-500">{l.professional.user.email}</p>
           <div className="flex items-center gap-2 mt-1.5 text-xs flex-wrap">
             <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full">
-              {l.professional.category.icon} {l.professional.category.name}
+              <CategoryIcon slug={l.professional.category.slug} className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />{l.professional.category.name}
             </span>
             <span className="flex items-center gap-1 text-gray-400"><MapPin className="h-3 w-3" />{l.city}</span>
             <span className="font-semibold text-amber-700 dark:text-amber-400">${Number(l.priceMonthly).toFixed(0)}/mo</span>

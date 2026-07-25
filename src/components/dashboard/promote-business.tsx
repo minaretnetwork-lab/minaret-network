@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Sparkles, CheckCircle, Clock, XCircle, Info, ArrowRight } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { Button } from "@/components/ui/button";
 import { applyForSponsorship, cancelMySponsorship, removeFromWaitlist } from "@/lib/actions/sponsored";
 
 type ServiceArea = { id: string; name: string };
-type Category = { id: string; name: string; icon: string | null };
+type Category = { id: string; name: string; slug: string; icon: string | null };
 
 type Listing = {
   id: string;
@@ -150,7 +151,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-600 dark:text-gray-400 block">Your category</label>
             <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300">
-              {professional.category.icon} {professional.category.name}
+              <CategoryIcon slug={professional.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{professional.category.name}
             </div>
           </div>
 
@@ -218,7 +219,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
                       </span>
                     </div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white mt-1.5">
-                      {l.category.icon} {l.category.name} · {l.serviceArea.name}
+                      <CategoryIcon slug={l.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{l.category.name} · {l.serviceArea.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       ${Number(l.priceMonthly).toFixed(0)} CAD/month
@@ -255,7 +256,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
             <div key={w.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {w.category.icon} {w.category.name} · {w.serviceArea.name}
+                  <CategoryIcon slug={w.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{w.category.name} · {w.serviceArea.name}
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   On waitlist since {new Date(w.createdAt).toLocaleDateString("en-CA", { month: "short", day: "numeric" })}

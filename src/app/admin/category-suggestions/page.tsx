@@ -47,8 +47,8 @@ export default async function CategorySuggestionsPage() {
               return (
                 <div key={s.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl flex-shrink-0">
-                      {s.icon || "⭐"}
+                    <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                      <Tag className="h-5 w-5 text-emerald-600" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-gray-900 dark:text-white">{s.name}</p>
@@ -90,7 +90,7 @@ export default async function CategorySuggestionsPage() {
               return (
                 <div key={s.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xl">{s.icon || "⭐"}</span>
+                    <Tag className="h-4 w-4 text-gray-400 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{s.name}</p>
                       <p className="text-xs text-gray-400">{requesterName} · {formatDate(s.createdAt)}</p>

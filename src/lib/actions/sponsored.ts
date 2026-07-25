@@ -54,7 +54,7 @@ export async function getMySponsorship() {
     include: {
       professional: {
         include: {
-          category: { select: { id: true, name: true, icon: true } },
+          category: { select: { id: true, name: true, slug: true, icon: true } },
           serviceAreas: { select: { id: true, name: true } },
         },
       },
@@ -68,7 +68,7 @@ export async function getMySponsorship() {
     prisma.sponsoredListing.findMany({
       where: { professionalId, status: { in: ["ACTIVE", "PENDING", "REJECTED"] } },
       include: {
-        category: { select: { id: true, name: true, icon: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true } },
         serviceArea: { select: { id: true, name: true } },
         pricingTier: true,
       },
@@ -77,7 +77,7 @@ export async function getMySponsorship() {
     prisma.sponsoredWaitlist.findMany({
       where: { professionalId },
       include: {
-        category: { select: { id: true, name: true, icon: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true } },
         serviceArea: { select: { id: true, name: true } },
       },
     }),
@@ -191,7 +191,7 @@ export async function getSponsoredListingsForAdmin() {
     prisma.sponsoredWaitlist.findMany({
       include: {
         professional: { include: { user: { select: { firstName: true, lastName: true, displayName: true, email: true } } } },
-        category: { select: { id: true, name: true, icon: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true } },
         serviceArea: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: "asc" },
@@ -213,7 +213,7 @@ const sponsoredInclude = {
       user: { select: { firstName: true, lastName: true, displayName: true, email: true } },
     },
   },
-  category: { select: { id: true, name: true, icon: true } },
+  category: { select: { id: true, name: true, slug: true, icon: true } },
   serviceArea: { select: { id: true, name: true } },
   pricingTier: true,
 } as const;

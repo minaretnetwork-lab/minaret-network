@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sparkles, CheckCircle, XCircle, Clock, Users, DollarSign, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import {
   approveSponsoredListing,
   rejectSponsoredListing,
@@ -23,7 +24,7 @@ type SponsoredListing = {
     businessName: string | null;
     user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string };
   };
-  category: { id: string; name: string; icon: string | null };
+  category: { id: string; name: string; slug: string; icon: string | null };
   serviceArea: { id: string; name: string };
   pricingTier: { id: string; name: string; priceMonthly: number | string } | null;
 };
@@ -36,7 +37,7 @@ type WaitlistEntry = {
     id: string;
     user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string };
   };
-  category: { id: string; name: string; icon: string | null };
+  category: { id: string; name: string; slug: string; icon: string | null };
   serviceArea: { id: string; name: string };
 };
 
@@ -287,7 +288,7 @@ export function SponsoredManagement({ pending, active, waitlist, tiers }: Props)
                   <p className="text-xs text-gray-500 dark:text-gray-400">{w.professional.user.email}</p>
                   <div className="flex items-center gap-2 mt-1.5">
                     <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-400">
-                      {w.category.icon} {w.category.name}
+                      <CategoryIcon slug={w.category.slug} className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />{w.category.name}
                     </span>
                     <span className="text-xs text-gray-400">·</span>
                     <span className="text-xs text-gray-500">{w.serviceArea.name}</span>
@@ -446,7 +447,7 @@ function ListingCard({ listing, children, showStartDate }: {
           <p className="text-xs text-gray-500 dark:text-gray-400">{listing.professional.user.email}</p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-400">
-              {listing.category.icon} {listing.category.name}
+              <CategoryIcon slug={listing.category.slug} className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />{listing.category.name}
             </span>
             <span className="text-xs text-gray-400">·</span>
             <span className="text-xs text-gray-500">{listing.serviceArea.name}</span>

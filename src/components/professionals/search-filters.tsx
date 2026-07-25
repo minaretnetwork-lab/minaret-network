@@ -72,7 +72,7 @@ export function SearchFilters({ categories, serviceAreas }: SearchFiltersProps) 
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
-            <option key={c.slug} value={c.slug}>{c.icon} {c.name}</option>
+            <option key={c.slug} value={c.slug}>{c.name}</option>
           ))}
         </select>
       </div>
