@@ -9,10 +9,19 @@ interface Props {
 }
 
 export async function FeaturedSection({ city }: Props) {
-  const [rawListings, cities] = await Promise.all([
-    getFeaturedBusinessesForHomepage(city),
-    getActiveFeaturedCities(),
-  ]);
+  let rawListings: Awaited<ReturnType<typeof getFeaturedBusinessesForHomepage>>;
+  let cities: Awaited<ReturnType<typeof getActiveFeaturedCities>>;
+
+  try {
+    [rawListings, cities] = await Promise.all([
+      getFeaturedBusinessesForHomepage(city),
+      getActiveFeaturedCities(),
+    ]);
+  } catch {
+    // Keep the public homepage available when the database is temporarily
+    // unreachable; database-backed sections will return once it reconnects.
+    return null;
+  }
   const listings = JSON.parse(JSON.stringify(rawListings));
 
   if (listings.length === 0) return null;
