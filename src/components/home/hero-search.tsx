@@ -157,19 +157,10 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=en`
-          );
+          const res = await fetch(`/api/geocode/reverse?lat=${latitude}&lon=${longitude}`);
           const data = await res.json();
-          const city =
-            data.address?.village ??
-            data.address?.town ??
-            data.address?.suburb ??
-            data.address?.quarter ??
-            data.address?.city ??
-            data.address?.municipality ??
-            data.address?.county ??
-            "";
+          if (!res.ok) throw new Error(data.error ?? "Location lookup failed.");
+          const city = data.city ?? "";
           if (city) {
             setLocation(city);
             setLocateError("");
@@ -184,7 +175,12 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
       },
       (err) => {
         setLocating(false);
-        setLocateError(err.code === err.PERMISSION_DENIED ? "Permission denied." : "Failed. Type your city.");
+        const message = err.code === err.PERMISSION_DENIED
+          ? "Location permission is blocked. Allow it in your browser settings."
+          : err.code === err.TIMEOUT
+            ? "Location timed out. Try again or type your city."
+            : "Couldn't read your location. Type your city.";
+        setLocateError(message);
       },
       { timeout: 8000, enableHighAccuracy: true }
     );
@@ -267,7 +263,8 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
             onClick={location ? () => { setLocation(""); setLocateError(""); setLocationSugs([]); setLocSugOpen(false); } : detectLocation}
             disabled={locating}
             title={location ? "Clear" : "Use my location"}
-            className={`absolute right-2.5 top-1/2 -translate-y-1/2 ${gpsClass} transition-colors disabled:opacity-40`}
+            aria-label={location ? "Clear location" : "Use my location"}
+            className={`absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center ${gpsClass} transition-colors disabled:opacity-40`}
           >
             {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : location ? <X className="h-4 w-4" /> : <LocateFixed className="h-4 w-4" />}
           </button>

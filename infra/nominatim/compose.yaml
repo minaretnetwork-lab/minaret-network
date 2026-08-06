@@ -1,0 +1,29 @@
+name: minaret-experiment-geocoder
+
+services:
+  nominatim:
+    image: mediagis/nominatim:5.3
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8088:8080"
+    environment:
+      PBF_URL: https://download.geofabrik.de/north-america/canada/ontario-latest.osm.pbf
+      REPLICATION_URL: https://download.geofabrik.de/north-america/canada/ontario-updates/
+      REPLICATION_UPDATE_INTERVAL: "86400"
+      NOMINATIM_PASSWORD: ${NOMINATIM_PASSWORD}
+      IMPORT_STYLE: address
+      THREADS: "8"
+    shm_size: 2gb
+    volumes:
+      - nominatim-postgres:/var/lib/postgresql/16/main
+      - nominatim-flatnode:/nominatim/flatnode
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://127.0.0.1:8080/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30m
+
+volumes:
+  nominatim-postgres:
+  nominatim-flatnode:

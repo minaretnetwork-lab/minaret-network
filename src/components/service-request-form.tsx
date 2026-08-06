@@ -152,9 +152,10 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=en`);
+          const res = await fetch(`/api/geocode/reverse?lat=${latitude}&lon=${longitude}`);
           const data = await res.json();
-          const city = data.address?.city ?? data.address?.town ?? data.address?.village ?? data.address?.suburb ?? data.address?.municipality ?? "";
+          if (!res.ok) throw new Error(data.error ?? "Location lookup failed.");
+          const city = data.city ?? "";
           if (!city) { setLocateError("Couldn't detect your city."); return; }
           const lower = city.toLowerCase();
           const match = serviceAreas.find((a) => a.name.toLowerCase().includes(lower) || lower.includes(a.name.toLowerCase()));
@@ -165,7 +166,12 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
       },
       (err) => {
         setLocating(false);
-        setLocateError(err.code === err.PERMISSION_DENIED ? "Permission denied." : "Failed. Select manually.");
+        const message = err.code === err.PERMISSION_DENIED
+          ? "Location permission is blocked. Allow it in your browser settings."
+          : err.code === err.TIMEOUT
+            ? "Location timed out. Try again or select manually."
+            : "Couldn't read your location. Select manually.";
+        setLocateError(message);
       },
       { timeout: 8000, enableHighAccuracy: true }
     );

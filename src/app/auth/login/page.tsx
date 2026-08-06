@@ -24,6 +24,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
   const idleSignOut = searchParams.get("reason") === "idle";
+  const passwordUpdated = searchParams.get("password") === "updated";
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -58,6 +59,11 @@ function LoginForm() {
       {idleSignOut && (
         <div className="mb-5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
           You were signed out after 60 minutes of inactivity.
+        </div>
+      )}
+      {passwordUpdated && (
+        <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+          Your password was updated. Sign in with the new password.
         </div>
       )}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

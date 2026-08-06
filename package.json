@@ -11,14 +11,23 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed-experiment": "tsx prisma/seed-experiment.ts",
     "db:seed-test": "tsx prisma/seed-test-data.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "experiment:start": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-start.ps1",
+    "experiment:start:full": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-start.ps1 -WithNominatim",
+    "experiment:publish": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-publish.ps1",
+    "experiment:status": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-status.ps1",
+    "experiment:stop": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-stop.ps1",
+    "experiment:backup": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-backup.ps1"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/lora": "^5.3.0",
     "@hookform/resolvers": "^5.4.0",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-avatar": "^1.2.2",
@@ -59,6 +68,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "supabase": "^2.111.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.0",
     "typescript": "^5"

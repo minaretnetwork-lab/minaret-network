@@ -10,10 +10,13 @@ const port = process.env.MINARET_PORT ?? "3220";
 const logDirectory = path.join(workspace, "logs");
 fs.mkdirSync(logDirectory, { recursive: true });
 const log = fs.openSync(path.join(logDirectory, "server.log"), "a");
+const hasProductionBuild = fs.existsSync(path.join(workspace, ".next", "BUILD_ID"));
+const command = hasProductionBuild ? "start" : "dev";
+const nodeEnvironment = hasProductionBuild ? "production" : "development";
 
-const child = spawn(process.execPath, [nextCli, "dev", "-H", host, "-p", port], {
+const child = spawn(process.execPath, [nextCli, command, "-H", host, "-p", port], {
   cwd: workspace,
-  env: { ...process.env, NODE_ENV: "development" },
+  env: { ...process.env, NODE_ENV: nodeEnvironment },
   stdio: ["ignore", log, log],
   windowsHide: true,
 });
