@@ -80,18 +80,22 @@ export async function getMyFeaturedListings() {
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
     include: {
-      professional: {
+      professionals: {
         include: {
           category: { select: { id: true, name: true, slug: true, icon: true } },
           serviceAreas: { select: { id: true, name: true } },
           mosque: { select: { city: true } },
         },
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 1,
       },
     },
   });
-  if (!dbUser?.professional) return null;
+  const professional = dbUser?.professionals[0];
+  if (!professional) return null;
 
-  const professionalId = dbUser.professional.id;
+  const professionalId = professional.id;
 
   const [listings, waitlist] = await Promise.all([
     prisma.featuredListing.findMany({
@@ -105,7 +109,7 @@ export async function getMyFeaturedListings() {
     }),
   ]);
 
-  return { listings, waitlist, professional: dbUser.professional };
+  return { listings, waitlist, professional };
 }
 
 // ── Business dashboard: apply / cancel ───────────────────────────────────────
@@ -117,12 +121,12 @@ export async function applyForFeatured(city: string) {
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professional: true },
+    include: { professionals: { where: { status: "APPROVED" }, orderBy: { createdAt: "desc" }, take: 1 } },
   });
-  if (!dbUser?.professional) throw new Error("No professional profile found");
-  if (dbUser.professional.status !== "APPROVED") throw new Error("Your profile must be approved before applying");
+  const professional = dbUser?.professionals[0];
+  if (!professional) throw new Error("No approved professional profile found");
 
-  const professionalId = dbUser.professional.id;
+  const professionalId = professional.id;
 
   const existing = await prisma.featuredListing.findFirst({
     where: { professionalId, city, status: { in: ["ACTIVE", "PENDING"] } },
@@ -156,12 +160,12 @@ export async function cancelMyFeaturedListing(listingId: string) {
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professional: true },
+    include: { professionals: { select: { id: true }, orderBy: { createdAt: "desc" } } },
   });
-  if (!dbUser?.professional) throw new Error("No professional profile found");
+  if (!dbUser?.professionals.length) throw new Error("No professional profile found");
 
   const listing = await prisma.featuredListing.findFirst({
-    where: { id: listingId, professionalId: dbUser.professional.id },
+    where: { id: listingId, professionalId: { in: dbUser.professionals.map((p) => p.id) } },
   });
   if (!listing) throw new Error("Listing not found");
 
@@ -186,12 +190,13 @@ export async function leaveFeaturedWaitlist(city: string) {
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professional: true },
+    include: { professionals: { select: { id: true }, orderBy: { createdAt: "desc" }, take: 1 } },
   });
-  if (!dbUser?.professional) throw new Error("No professional profile found");
+  const professional = dbUser?.professionals[0];
+  if (!professional) throw new Error("No professional profile found");
 
   await prisma.featuredWaitlist.deleteMany({
-    where: { professionalId: dbUser.professional.id, city },
+    where: { professionalId: professional.id, city },
   });
   revalidatePath("/dashboard/featured");
 }

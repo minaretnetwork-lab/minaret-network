@@ -9,11 +9,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login?redirectTo=/dashboard");
 
+  const hasProfessionalListings = user.professionals.length > 0;
   const links = [
     { href: "/dashboard", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: "/dashboard/profile", label: "My Profile", icon: <User className="h-4 w-4" /> },
     { href: "/dashboard/requests", label: "My Requests", icon: <FileText className="h-4 w-4" /> },
-    ...(user.role === "PROFESSIONAL" || user.professional ? [
+    ...(user.role === "PROFESSIONAL" || hasProfessionalListings ? [
       { href: "/dashboard/professional", label: "Professional Profile", icon: <Shield className="h-4 w-4" /> },
       { href: "/dashboard/promote", label: "Sponsored Listing", icon: <Sparkles className="h-4 w-4" /> },
       { href: "/dashboard/featured", label: "Featured Business", icon: <Star className="h-4 w-4" /> },
@@ -32,7 +33,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           displayName: user.displayName,
           email: user.email,
           role: user.role,
-          isProfessional: !!user.professional,
+          isProfessional: hasProfessionalListings,
         }}
       />
 

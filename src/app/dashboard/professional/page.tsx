@@ -6,10 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { formatDate } from "@/lib/utils";
-import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User } from "lucide-react";
+import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User, Plus } from "lucide-react";
 import type { BadgeType } from "@/types";
 
-export const metadata = { title: "My Professional Listing" };
+export const metadata = { title: "My Professional Listings" };
 
 const STATUS_UI: Record<string, { label: string; color: string; icon: React.ReactNode; desc: string }> = {
   PENDING: {
@@ -42,7 +42,7 @@ export default async function ProfessionalDashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
 
-  const professional = await prisma.professional.findUnique({
+  const professionals = await prisma.professional.findMany({
     where: { userId: user.id },
     include: {
       category: true,
@@ -59,14 +59,15 @@ export default async function ProfessionalDashboardPage() {
         orderBy: { createdAt: "desc" },
       },
     },
+    orderBy: { createdAt: "desc" },
   });
 
-  if (!professional) {
+  if (professionals.length === 0) {
     return (
       <div className="text-center py-16 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
         <div className="mb-4 flex justify-center"><User className="h-12 w-12 text-gray-300" /></div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          You're not registered as a professional
+          You&apos;re not registered as a professional
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
           Join Minaret Network as a professional to be discoverable by mosque members across the GTA.
@@ -80,21 +81,21 @@ export default async function ProfessionalDashboardPage() {
     );
   }
 
-  const statusInfo = STATUS_UI[professional.status] ?? STATUS_UI.PENDING;
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Professional Listing</h1>
-        {professional.status === "APPROVED" && (
-          <Link href={`/professionals/${professional.id}`} target="_blank">
-            <Button variant="outline" size="sm" className="gap-1.5 border-green-300 text-green-700">
-              <Eye className="h-4 w-4" /> View Public Profile
-            </Button>
-          </Link>
-        )}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Professional Listings</h1>
+        <Link href="/professionals/register">
+          <Button size="sm" className="gap-1.5 bg-green-600 hover:bg-green-700 text-white">
+            <Plus className="h-4 w-4" /> Add Another Listing
+          </Button>
+        </Link>
       </div>
 
+      {professionals.map((professional) => {
+        const statusInfo = STATUS_UI[professional.status] ?? STATUS_UI.PENDING;
+        return (
+          <section key={professional.id} className="space-y-6 rounded-2xl border border-gray-200 bg-white/40 p-4 dark:border-gray-800 dark:bg-gray-900/30">
       {/* Status banner */}
       <div className={`flex items-start gap-3 p-4 rounded-xl border ${statusInfo.color}`}>
         {statusInfo.icon}
@@ -186,12 +187,15 @@ export default async function ProfessionalDashboardPage() {
       </div>
 
       <div className="flex gap-3">
-        <Link href="/professionals/register">
+        <Link href={`/professionals/${professional.id}/edit`}>
           <Button variant="outline" size="sm" className="border-green-300 text-green-700 hover:bg-green-50">
-            Update Profile
+            Edit Listing
           </Button>
         </Link>
       </div>
+          </section>
+        );
+      })}
     </div>
   );
 }

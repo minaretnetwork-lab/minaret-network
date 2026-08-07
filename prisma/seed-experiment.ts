@@ -793,7 +793,7 @@ async function main() {
     };
 
     const professional = await prisma.professional.upsert({
-      where: { userId: user.id },
+      where: { id: spec.id },
       update: {
         ...sharedData,
         serviceAreas: { set: areaConnections },

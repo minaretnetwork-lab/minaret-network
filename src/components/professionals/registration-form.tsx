@@ -38,7 +38,33 @@ type FormData = z.infer<typeof schema>;
 interface Category { id: string; name: string; slug: string; icon?: string | null }
 interface ServiceArea { id: string; name: string }
 interface Mosque { id: string; name: string; city?: string | null }
-interface Props { mosques: Mosque[]; categories: Category[]; serviceAreas: ServiceArea[] }
+export interface ProfessionalFormInitialData {
+  id: string;
+  mosqueId: string | null;
+  categoryId: string;
+  businessName: string | null;
+  title: string | null;
+  bio: string | null;
+  yearsOfExperience: number | null;
+  qualifications: string | null;
+  licenses: string | null;
+  languages: string[];
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  whatsapp: string | null;
+  availability: string | null;
+  photoUrl: string | null;
+  logoUrl: string | null;
+  serviceAreas: { id: string }[];
+}
+interface Props {
+  mosques: Mosque[];
+  categories: Category[];
+  serviceAreas: ServiceArea[];
+  initialData?: ProfessionalFormInitialData | null;
+  mode?: "create" | "edit";
+}
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TIME_OPTIONS = [
@@ -93,20 +119,21 @@ const STEP_FIELDS: (keyof FormData)[][] = [
   [],
 ];
 
-export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas }: Props) {
+export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas, initialData = null, mode = "create" }: Props) {
+  const isEdit = mode === "edit" && initialData;
   const [step, setStep] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoUrl ?? null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.logoUrl ?? null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const goNextPending = useRef(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(Boolean(isEdit));
 
   const [avSchedules, setAvSchedules] = useState<Record<string, DaySchedule>>({});
   const [avEmergency, setAvEmergency] = useState(false);
@@ -126,7 +153,23 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   const { register, handleSubmit, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { languages: [], serviceAreaIds: [] },
+    defaultValues: {
+      mosqueId: initialData?.mosqueId ?? "",
+      categoryId: initialData?.categoryId ?? "",
+      businessName: initialData?.businessName ?? "",
+      title: initialData?.title ?? "",
+      bio: initialData?.bio ?? "",
+      yearsOfExperience: initialData?.yearsOfExperience?.toString() ?? "",
+      qualifications: initialData?.qualifications ?? "",
+      licenses: initialData?.licenses ?? "",
+      languages: initialData?.languages ?? [],
+      phone: initialData?.phone ?? "",
+      email: initialData?.email ?? "",
+      website: initialData?.website ?? "",
+      whatsapp: initialData?.whatsapp ?? "",
+      availability: initialData?.availability ?? "",
+      serviceAreaIds: initialData?.serviceAreas.map((area) => area.id) ?? [],
+    },
   });
 
   const selectedLanguages = watch("languages") ?? [];
@@ -213,6 +256,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       });
       if (photoFile) fd.append("photo", photoFile);
       if (logoFile) fd.append("logo", logoFile);
+      if (initialData?.id) fd.append("professionalId", initialData.id);
       const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
       const result: { ok: boolean; error?: string } = await res.json();
       if (!result.ok) {
@@ -233,12 +277,16 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
           <Check className="h-8 w-8 text-green-600" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Application Submitted!</h3>
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          {isEdit ? "Listing Updated!" : "Application Submitted!"}
+        </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-          Your application has been sent for review. You'll be notified once it's approved by our admin team.
+          {isEdit
+            ? "Your changes have been saved and sent back for admin review."
+            : "Your application has been sent for review. You'll be notified once it's approved by our admin team."}
         </p>
-        <Button onClick={() => router.push("/dashboard")} className="bg-green-600 hover:bg-green-700 text-white">
-          Go to Dashboard
+        <Button onClick={() => router.push("/dashboard/professional")} className="bg-green-600 hover:bg-green-700 text-white">
+          Go to Listings
         </Button>
       </div>
     );
@@ -585,7 +633,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   <option value="unlisted">My mosque is not listed</option>
                 </select>
                 <p className="text-xs text-gray-400 mt-2">
-                  An admin will verify your affiliation before approving your listing. If your mosque isn't listed, your profile can still be approved — the affiliation badge will not appear until your mosque is onboarded.
+                  An admin will verify your affiliation before approving your listing. If your mosque isn&apos;t listed, your profile can still be approved — the affiliation badge will not appear until your mosque is onboarded.
                 </p>
               </div>
 
@@ -667,13 +715,13 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               title={!termsAccepted ? "Please accept the terms above to submit" : undefined}
               className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm disabled:opacity-50"
             >
-              {isSubmitting ? "Submitting…" : "Submit Application"}
+              {isSubmitting ? "Submitting…" : isEdit ? "Save Changes" : "Submit Application"}
             </Button>
           )}
         </div>
 
         <p className="text-xs text-center text-gray-400 mt-3">
-          Your application will be reviewed by our admin team before going live.
+          {isEdit ? "Edited listings return to admin review before going live again." : "Your application will be reviewed by our admin team before going live."}
         </p>
       </form>
     </div>

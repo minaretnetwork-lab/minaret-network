@@ -19,6 +19,7 @@ export default async function DashboardPage() {
 
   const displayName = user.displayName ?? user.firstName ?? "there";
   const recentRequests = requests.slice(0, 3);
+  const latestProfessional = user.professionals[0] ?? null;
 
   return (
     <div className="space-y-6">
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
           Welcome, {displayName}
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Here's what's happening with your account.
+          Here&apos;s what&apos;s happening with your account.
         </p>
       </div>
 
@@ -61,7 +62,7 @@ export default async function DashboardPage() {
           </Card>
         </Link>
 
-        {!user.professional ? (
+        {!latestProfessional ? (
           <Link href="/professionals/register">
             <Card className="hover:shadow-md transition-shadow cursor-pointer border-gray-200 dark:border-gray-800">
               <CardContent className="p-5 flex items-center gap-4">
@@ -83,9 +84,9 @@ export default async function DashboardPage() {
                   <User className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-gray-900 dark:text-white">My Listing</p>
+                  <p className="font-medium text-sm text-gray-900 dark:text-white">My Listings</p>
                   <p className="text-xs text-gray-500 capitalize dark:text-gray-400">
-                    {user.professional.status.toLowerCase()}
+                    {user.professionals.length} listing{user.professionals.length === 1 ? "" : "s"} · latest {latestProfessional.status.toLowerCase()}
                   </p>
                 </div>
               </CardContent>

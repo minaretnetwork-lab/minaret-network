@@ -88,6 +88,11 @@ export async function getCurrentUser() {
 
   return prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professional: { select: { id: true, status: true } } },
+    include: {
+      professionals: {
+        select: { id: true, status: true },
+        orderBy: { createdAt: "desc" },
+      },
+    },
   });
 }

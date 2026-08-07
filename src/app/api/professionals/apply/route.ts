@@ -30,6 +30,8 @@ export async function POST(request: Request) {
     if (!dbUser) return NextResponse.json({ ok: false, error: "Your account was not found. Please sign out and back in." }, { status: 400 });
 
     const formData = await request.formData();
+    const professionalId = formData.get("professionalId") as string | null;
+    const storageListingId = professionalId ?? crypto.randomUUID();
 
     const rawMosqueId = formData.get("mosqueId") as string | null;
     const mosqueId = (!rawMosqueId || rawMosqueId === "unlisted") ? null : rawMosqueId;
@@ -48,58 +50,60 @@ export async function POST(request: Request) {
     let logoUrl: string | null = null;
     if (photoFile && photoFile.size > 0) {
       const ext = photoFile.name.split(".").pop() ?? "jpg";
-      photoUrl = await uploadToStorage("professional-photos", `${dbUser.id}/photo.${ext}`, photoFile);
+      photoUrl = await uploadToStorage("professional-photos", `${dbUser.id}/${storageListingId}/photo.${ext}`, photoFile);
     }
     if (logoFile && logoFile.size > 0) {
       const ext = logoFile.name.split(".").pop() ?? "png";
-      logoUrl = await uploadToStorage("professional-logos", `${dbUser.id}/logo.${ext}`, logoFile);
+      logoUrl = await uploadToStorage("professional-logos", `${dbUser.id}/${storageListingId}/logo.${ext}`, logoFile);
     }
 
-    await prisma.professional.upsert({
-      where: { userId: dbUser.id },
-      update: {
-        mosqueId: mosque?.id ?? null,
-        categoryId,
-        ...(photoUrl && { photoUrl }),
-        ...(logoUrl && { logoUrl }),
-        businessName: formData.get("businessName") as string || null,
-        title: formData.get("title") as string || null,
-        bio: formData.get("bio") as string || null,
-        yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
-        qualifications: formData.get("qualifications") as string || null,
-        licenses: formData.get("licenses") as string || null,
-        languages,
-        phone: formData.get("phone") as string || null,
-        email: formData.get("email") as string || null,
-        website: formData.get("website") as string || null,
-        whatsapp: formData.get("whatsapp") as string || null,
-        availability: formData.get("availability") as string || null,
-        serviceAreas: { set: serviceAreaIds.map((id) => ({ id })) },
-        status: "PENDING",
-      },
-      create: {
-        userId: dbUser.id,
-        mosqueId: mosque?.id ?? null,
-        categoryId,
-        ...(photoUrl && { photoUrl }),
-        ...(logoUrl && { logoUrl }),
-        businessName: formData.get("businessName") as string || null,
-        title: formData.get("title") as string || null,
-        bio: formData.get("bio") as string || null,
-        yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
-        qualifications: formData.get("qualifications") as string || null,
-        licenses: formData.get("licenses") as string || null,
-        languages,
-        phone: formData.get("phone") as string || null,
-        email: formData.get("email") as string || null,
-        website: formData.get("website") as string || null,
-        whatsapp: formData.get("whatsapp") as string || null,
-        availability: formData.get("availability") as string || null,
-        serviceAreas: { connect: serviceAreaIds.map((id) => ({ id })) },
-      },
-    });
+    const data = {
+      mosqueId: mosque?.id ?? null,
+      categoryId,
+      ...(photoUrl && { photoUrl }),
+      ...(logoUrl && { logoUrl }),
+      businessName: formData.get("businessName") as string || null,
+      title: formData.get("title") as string || null,
+      bio: formData.get("bio") as string || null,
+      yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
+      qualifications: formData.get("qualifications") as string || null,
+      licenses: formData.get("licenses") as string || null,
+      languages,
+      phone: formData.get("phone") as string || null,
+      email: formData.get("email") as string || null,
+      website: formData.get("website") as string || null,
+      whatsapp: formData.get("whatsapp") as string || null,
+      availability: formData.get("availability") as string || null,
+      status: "PENDING" as const,
+    };
+
+    if (professionalId) {
+      const existing = await prisma.professional.findFirst({
+        where: { id: professionalId, userId: dbUser.id },
+        select: { id: true },
+      });
+      if (!existing) return NextResponse.json({ ok: false, error: "Listing not found." }, { status: 404 });
+
+      await prisma.professional.update({
+        where: { id: professionalId },
+        data: {
+          ...data,
+          serviceAreas: { set: serviceAreaIds.map((id) => ({ id })) },
+        },
+      });
+    } else {
+      await prisma.professional.create({
+        data: {
+          id: storageListingId,
+          ...data,
+          userId: dbUser.id,
+          serviceAreas: { connect: serviceAreaIds.map((id) => ({ id })) },
+        },
+      });
+    }
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/professional");
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("POST /api/professionals/apply:", err);

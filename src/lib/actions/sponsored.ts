@@ -52,17 +52,21 @@ export async function getMySponsorship() {
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
     include: {
-      professional: {
+      professionals: {
         include: {
           category: { select: { id: true, name: true, slug: true, icon: true } },
           serviceAreas: { select: { id: true, name: true } },
         },
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 1,
       },
     },
   });
-  if (!dbUser?.professional) return null;
+  const professional = dbUser?.professionals[0];
+  if (!professional) return null;
 
-  const professionalId = dbUser.professional.id;
+  const professionalId = professional.id;
 
   const [listings, waitlist] = await Promise.all([
     prisma.sponsoredListing.findMany({
@@ -83,7 +87,7 @@ export async function getMySponsorship() {
     }),
   ]);
 
-  return { listings, waitlist, professional: dbUser.professional };
+  return { listings, waitlist, professional };
 }
 
 // ── Business dashboard: apply / cancel / leave waitlist ───────────────────────
@@ -95,12 +99,12 @@ export async function applyForSponsorship(categoryId: string, serviceAreaId: str
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professional: true },
+    include: { professionals: { where: { status: "APPROVED" }, orderBy: { createdAt: "desc" }, take: 1 } },
   });
-  if (!dbUser?.professional) throw new Error("No professional profile found");
-  if (dbUser.professional.status !== "APPROVED") throw new Error("Your profile must be approved before applying for a sponsored listing");
+  const professional = dbUser?.professionals[0];
+  if (!professional) throw new Error("No approved professional profile found");
 
-  const professionalId = dbUser.professional.id;
+  const professionalId = professional.id;
 
   const existing = await prisma.sponsoredListing.findFirst({
     where: { professionalId, categoryId, serviceAreaId, status: { in: ["ACTIVE", "PENDING"] } },
@@ -134,12 +138,12 @@ export async function cancelMySponsorship(listingId: string) {
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professional: true },
+    include: { professionals: { select: { id: true }, orderBy: { createdAt: "desc" } } },
   });
-  if (!dbUser?.professional) throw new Error("No professional profile found");
+  if (!dbUser?.professionals.length) throw new Error("No professional profile found");
 
   const listing = await prisma.sponsoredListing.findFirst({
-    where: { id: listingId, professionalId: dbUser.professional.id },
+    where: { id: listingId, professionalId: { in: dbUser.professionals.map((p) => p.id) } },
   });
   if (!listing) throw new Error("Listing not found");
 
@@ -164,12 +168,13 @@ export async function removeFromWaitlist(categoryId: string, serviceAreaId: stri
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professional: true },
+    include: { professionals: { select: { id: true }, orderBy: { createdAt: "desc" }, take: 1 } },
   });
-  if (!dbUser?.professional) throw new Error("No professional profile found");
+  const professional = dbUser?.professionals[0];
+  if (!professional) throw new Error("No professional profile found");
 
   await prisma.sponsoredWaitlist.deleteMany({
-    where: { professionalId: dbUser.professional.id, categoryId, serviceAreaId },
+    where: { professionalId: professional.id, categoryId, serviceAreaId },
   });
   revalidatePath("/dashboard/promote");
 }

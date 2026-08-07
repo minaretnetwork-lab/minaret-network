@@ -20,7 +20,7 @@ export default async function PublicLayout({
                 displayName: user.displayName,
                 email: user.email,
                 role: user.role,
-                isProfessional: !!user.professional,
+                isProfessional: user.professionals.length > 0,
               }
             : null
         }

@@ -54,7 +54,7 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  professional         Professional?
+  professionals        Professional[]
   recommendations      Recommendation[]
   serviceRequests      ServiceRequest[]
   categorySuggestions  CategorySuggestion[]
@@ -114,7 +114,7 @@ model ServiceArea {
 
 model Professional {
   id                String             @id @default(cuid())
-  userId            String             @unique
+  userId            String
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   mosqueId          String?
   mosque            Mosque?            @relation(fields: [mosqueId], references: [id])

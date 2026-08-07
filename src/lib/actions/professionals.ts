@@ -22,16 +22,6 @@ async function uploadToStorage(bucket: string, path: string, file: File): Promis
   return `${data.publicUrl}?t=${Date.now()}`;
 }
 
-async function uploadProfilePhoto(file: File, userId: string): Promise<string> {
-  const ext = file.name.split(".").pop() ?? "jpg";
-  return uploadToStorage("professional-photos", `${userId}/photo.${ext}`, file);
-}
-
-async function uploadBusinessLogo(file: File, userId: string): Promise<string> {
-  const ext = file.name.split(".").pop() ?? "png";
-  return uploadToStorage("professional-logos", `${userId}/logo.${ext}`, file);
-}
-
 export async function getProfessionals(
   mosqueSlug: string,
   filters: SearchFilters = {}
@@ -162,37 +152,24 @@ export async function submitProfessionalApplication(
 
     const languages = formData.getAll("languages") as string[];
     const serviceAreaIds = formData.getAll("serviceAreaIds") as string[];
+    const professionalId = crypto.randomUUID();
 
     const photoFile = formData.get("photo") as File | null;
     const logoFile = formData.get("logo") as File | null;
     let photoUrl: string | null = null;
     let logoUrl: string | null = null;
-    if (photoFile && photoFile.size > 0) photoUrl = await uploadProfilePhoto(photoFile, dbUser.id);
-    if (logoFile && logoFile.size > 0) logoUrl = await uploadBusinessLogo(logoFile, dbUser.id);
+    if (photoFile && photoFile.size > 0) {
+      const ext = photoFile.name.split(".").pop() ?? "jpg";
+      photoUrl = await uploadToStorage("professional-photos", `${dbUser.id}/${professionalId}/photo.${ext}`, photoFile);
+    }
+    if (logoFile && logoFile.size > 0) {
+      const ext = logoFile.name.split(".").pop() ?? "png";
+      logoUrl = await uploadToStorage("professional-logos", `${dbUser.id}/${professionalId}/logo.${ext}`, logoFile);
+    }
 
-    await prisma.professional.upsert({
-      where: { userId: dbUser.id },
-      update: {
-        mosqueId: mosque?.id ?? null,
-        categoryId,
-        ...(photoUrl && { photoUrl }),
-        ...(logoUrl && { logoUrl }),
-        businessName: formData.get("businessName") as string || null,
-        title: formData.get("title") as string || null,
-        bio: formData.get("bio") as string || null,
-        yearsOfExperience: formData.get("yearsOfExperience") ? Number(formData.get("yearsOfExperience")) : null,
-        qualifications: formData.get("qualifications") as string || null,
-        licenses: formData.get("licenses") as string || null,
-        languages,
-        phone: formData.get("phone") as string || null,
-        email: formData.get("email") as string || null,
-        website: formData.get("website") as string || null,
-        whatsapp: formData.get("whatsapp") as string || null,
-        availability: formData.get("availability") as string || null,
-        serviceAreas: { set: serviceAreaIds.map((id) => ({ id })) },
-        status: "PENDING",
-      },
-      create: {
+    await prisma.professional.create({
+      data: {
+        id: professionalId,
         userId: dbUser.id,
         mosqueId: mosque?.id ?? null,
         categoryId,
