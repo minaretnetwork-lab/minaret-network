@@ -16,6 +16,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { submitServiceRequest } from "@/lib/actions/service-requests";
+import {
+  cacheDetectedCity,
+  CITY_POSITION_OPTIONS,
+  clearCachedDetectedCity,
+  getCachedDetectedCity,
+} from "@/lib/client-location";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "doctor": Stethoscope,
@@ -144,8 +150,28 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState("");
 
+  function selectDetectedArea(city: string) {
+    const lower = city.toLowerCase();
+    const match = serviceAreas.find((a) => a.name.toLowerCase().includes(lower) || lower.includes(a.name.toLowerCase()));
+    if (match) {
+      set("serviceAreaId", match.id);
+      setLocateError("");
+      return true;
+    } else {
+      setLocateError(`"${city}" not found in service areas.`);
+      return false;
+    }
+  }
+
   async function detectArea() {
     if (!("geolocation" in navigator)) { setLocateError("Not supported by your browser."); return; }
+
+    const cachedCity = getCachedDetectedCity();
+    if (cachedCity && selectDetectedArea(cachedCity)) {
+      return;
+    }
+    clearCachedDetectedCity();
+
     setLocating(true);
     setLocateError("");
     navigator.geolocation.getCurrentPosition(
@@ -157,10 +183,7 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
           if (!res.ok) throw new Error(data.error ?? "Location lookup failed.");
           const city = data.city ?? "";
           if (!city) { setLocateError("Couldn't detect your city."); return; }
-          const lower = city.toLowerCase();
-          const match = serviceAreas.find((a) => a.name.toLowerCase().includes(lower) || lower.includes(a.name.toLowerCase()));
-          if (match) { set("serviceAreaId", match.id); setLocateError(""); }
-          else setLocateError(`"${city}" not found in service areas.`);
+          if (selectDetectedArea(city)) cacheDetectedCity(city);
         } catch { setLocateError("Location lookup failed."); }
         finally { setLocating(false); }
       },
@@ -173,7 +196,7 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
             : "Couldn't read your location. Select manually.";
         setLocateError(message);
       },
-      { timeout: 8000, enableHighAccuracy: true }
+      CITY_POSITION_OPTIONS
     );
   }
 

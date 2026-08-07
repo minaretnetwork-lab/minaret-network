@@ -4,6 +4,12 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Search, MapPin, LocateFixed, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  cacheDetectedCity,
+  CITY_POSITION_OPTIONS,
+  clearCachedDetectedCity,
+  getCachedDetectedCity,
+} from "@/lib/client-location";
 
 type Suggestion = { label: string; type: "category" | "professional"; slug?: string };
 
@@ -149,6 +155,14 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
       setLocateError("Not supported by your browser.");
       return;
     }
+
+    const cachedCity = getCachedDetectedCity();
+    if (cachedCity) {
+      setLocation(cachedCity);
+      setLocateError("");
+      return;
+    }
+
     setLocating(true);
     setLocateError("");
     setLocation("");
@@ -162,6 +176,7 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
           if (!res.ok) throw new Error(data.error ?? "Location lookup failed.");
           const city = data.city ?? "";
           if (city) {
+            cacheDetectedCity(city);
             setLocation(city);
             setLocateError("");
           } else {
@@ -182,7 +197,7 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
             : "Couldn't read your location. Type your city.";
         setLocateError(message);
       },
-      { timeout: 8000, enableHighAccuracy: true }
+      CITY_POSITION_OPTIONS
     );
   }
 
@@ -260,7 +275,7 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
           />
           <button
             type="button"
-            onClick={location ? () => { setLocation(""); setLocateError(""); setLocationSugs([]); setLocSugOpen(false); } : detectLocation}
+            onClick={location ? () => { clearCachedDetectedCity(); setLocation(""); setLocateError(""); setLocationSugs([]); setLocSugOpen(false); } : detectLocation}
             disabled={locating}
             title={location ? "Clear" : "Use my location"}
             aria-label={location ? "Clear location" : "Use my location"}
