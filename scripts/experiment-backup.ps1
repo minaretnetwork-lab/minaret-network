@@ -59,8 +59,26 @@ finally {
 }
 
 Write-Host "Copying self-hosted Supabase Storage objects..."
+$storageInspect = Invoke-ExperimentNativeQuiet -FilePath $dockerPath -Arguments @(
+  "inspect", $storageContainer
+)
+if ($storageInspect.ExitCode -ne 0) {
+  throw "Database backup succeeded, but the Storage container mount could not be inspected."
+}
+try {
+  $storageDetails = @($storageInspect.Output | ConvertFrom-Json)
+  $storageMount = @($storageDetails[0].Mounts) |
+    Where-Object { $_.Name -eq "supabase_storage_minaret-experiment" } |
+    Select-Object -First 1
+}
+catch {
+  throw "Database backup succeeded, but the Storage container mount metadata was invalid."
+}
+if (-not $storageMount -or -not $storageMount.Destination -or -not $storageMount.Destination.StartsWith("/")) {
+  throw "Database backup succeeded, but the isolated Storage volume mount was not found."
+}
 $copyStorage = Invoke-ExperimentNativeQuiet -FilePath $dockerPath -Arguments @(
-  "cp", "${storageContainer}:/var/lib/storage/.", $storageDirectory
+  "cp", "${storageContainer}:$($storageMount.Destination)/.", $storageDirectory
 )
 if ($copyStorage.ExitCode -ne 0) {
   throw "Database backup succeeded, but copying Supabase Storage objects failed."

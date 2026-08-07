@@ -32,8 +32,10 @@ if ($health.Status -ne "200") {
 
 Write-Host "Mounting only /auth/v1 and /storage/v1 on the existing Minaret Funnel origin..."
 $routes = [ordered]@{
-  "/auth/v1"    = "http://127.0.0.1:54321"
-  "/storage/v1" = "http://127.0.0.1:54321"
+  # Funnel removes the mounted prefix before proxying. Repeat it on the
+  # backend target so Supabase receives its canonical API paths.
+  "/auth/v1"    = "http://127.0.0.1:54321/auth/v1"
+  "/storage/v1" = "http://127.0.0.1:54321/storage/v1"
 }
 foreach ($path in $routes.Keys) {
   $result = Invoke-ExperimentNativeQuiet -FilePath $tailscalePath -Arguments @(

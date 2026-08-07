@@ -101,6 +101,18 @@ try {
     "al-falah"
   }
 
+  # This public UI flag is intentionally independent of OAuth secrets. Preserve
+  # an explicit true value so Google can be enabled after its provider config is added.
+  $googleAuthEnabled = if (
+    $existingEnv.ContainsKey("NEXT_PUBLIC_GOOGLE_AUTH_ENABLED") -and
+    $existingEnv["NEXT_PUBLIC_GOOGLE_AUTH_ENABLED"] -eq "true"
+  ) {
+    "true"
+  }
+  else {
+    "false"
+  }
+
   $managedValues = [ordered]@{
     DATABASE_URL                  = $supabase["DB_URL"]
     DIRECT_URL                    = $supabase["DB_URL"]
@@ -108,6 +120,7 @@ try {
     SUPABASE_INTERNAL_URL         = $supabase["API_URL"]
     NEXT_PUBLIC_SUPABASE_ANON_KEY = $supabase["ANON_KEY"]
     SUPABASE_SERVICE_ROLE_KEY     = $supabase["SERVICE_ROLE_KEY"]
+    NEXT_PUBLIC_GOOGLE_AUTH_ENABLED = $googleAuthEnabled
     NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG = $mosqueSlug
     NEXT_PUBLIC_SITE_URL          = $publicOrigin
     NOMINATIM_URL                 = "http://127.0.0.1:8088"
@@ -121,10 +134,13 @@ try {
     # these child processes. Seed Auth locally even though browsers use Funnel.
     $env:DATABASE_URL = $supabase["DB_URL"]
     $env:DIRECT_URL = $supabase["DB_URL"]
-    $env:NEXT_PUBLIC_SUPABASE_URL = $supabase["API_URL"]
+    # Admin uploads use SUPABASE_INTERNAL_URL, while any persisted/public
+    # Storage URLs must be usable by remote browsers through Funnel.
+    $env:NEXT_PUBLIC_SUPABASE_URL = $publicOrigin
     $env:SUPABASE_INTERNAL_URL = $supabase["API_URL"]
     $env:NEXT_PUBLIC_SUPABASE_ANON_KEY = $supabase["ANON_KEY"]
     $env:SUPABASE_SERVICE_ROLE_KEY = $supabase["SERVICE_ROLE_KEY"]
+    $env:NEXT_PUBLIC_GOOGLE_AUTH_ENABLED = $googleAuthEnabled
     $env:NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG = $mosqueSlug
     $env:NEXT_PUBLIC_SITE_URL = $publicOrigin
     $env:NOMINATIM_URL = "http://127.0.0.1:8088"
@@ -146,6 +162,18 @@ try {
   }
 
   if ($WithNominatim) {
+    $dockerMemoryResult = Invoke-ExperimentNativeQuiet -FilePath $dockerPath -Arguments @(
+      "info", "--format", "{{.MemTotal}}"
+    )
+    [long]$dockerMemoryBytes = 0
+    if (
+      $dockerMemoryResult.ExitCode -ne 0 -or
+      -not [long]::TryParse($dockerMemoryResult.Output.Trim(), [ref]$dockerMemoryBytes) -or
+      $dockerMemoryBytes -lt 8GB
+    ) {
+      throw "Nominatim requires at least 8 GiB allocated to Docker Desktop for this Ontario import. Set Docker Desktop > Settings > Resources > Memory to 12 GB, apply the restart, and rerun this command. Supabase and the site remain available."
+    }
+
     $nominatimDirectory = Join-Path $workspace "infra\nominatim"
     $nominatimEnvPath = Join-Path $nominatimDirectory ".env"
     $nominatimEnv = Get-ExperimentDotEnvMap -Path $nominatimEnvPath
@@ -181,6 +209,7 @@ try {
     # The seed intentionally used the loopback API; restore the public origin
     # before creating the production build.
     $env:NEXT_PUBLIC_SUPABASE_URL = $publicOrigin
+    $env:NEXT_PUBLIC_GOOGLE_AUTH_ENABLED = $googleAuthEnabled
 
     $taskName = "Minaret Network Local Site"
     $siteTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue

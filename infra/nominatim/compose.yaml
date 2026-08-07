@@ -12,11 +12,20 @@ services:
       REPLICATION_UPDATE_INTERVAL: "86400"
       NOMINATIM_PASSWORD: ${NOMINATIM_PASSWORD}
       IMPORT_STYLE: address
-      THREADS: "8"
+      # The Docker Desktop VM also runs Supabase. Keep PostgreSQL and parallel
+      # indexing comfortably inside the configured 12 GiB VM allocation.
+      POSTGRES_SHARED_BUFFERS: 512MB
+      POSTGRES_MAINTENANCE_WORK_MEM: 1GB
+      POSTGRES_AUTOVACUUM_WORK_MEM: 256MB
+      POSTGRES_WORK_MEM: 16MB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 8GB
+      POSTGRES_MAX_WAL_SIZE: 2GB
+      POSTGRES_CHECKPOINT_TIMEOUT: 30min
+      THREADS: "4"
+      GUNICORN_WORKERS: "4"
     shm_size: 2gb
     volumes:
       - nominatim-postgres:/var/lib/postgresql/16/main
-      - nominatim-flatnode:/nominatim/flatnode
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://127.0.0.1:8080/status || exit 1"]
       interval: 30s
@@ -26,4 +35,3 @@ services:
 
 volumes:
   nominatim-postgres:
-  nominatim-flatnode:

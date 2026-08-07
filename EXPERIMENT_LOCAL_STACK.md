@@ -7,13 +7,14 @@ This runbook operates only the `agent/local-self-hosting-experiments` stack. It 
 | Capability | Experiment service | Access |
 |---|---|---|
 | Application | Existing Next.js task | Local and public |
-| Database | Supabase CLI PostgreSQL 17 | Loopback only |
+| Database | Supabase CLI PostgreSQL 17 | Host-only, protected by Windows Firewall |
 | Email/password authentication | Supabase Auth | Same public Minaret origin |
 | Uploaded photos and logos | Supabase Storage local filesystem | Same public Minaret origin |
-| Auth test email | Supabase CLI Mailpit inbox | Loopback only |
+| Supabase administration | Supabase Studio | Host-only, protected by Windows Firewall |
+| Auth test email | Supabase CLI Mailpit inbox | Host-only, protected by Windows Firewall |
 | Reverse geocoding | Optional Nominatim 5.3 with Ontario OpenStreetMap data | Loopback through the app's server route |
 
-Google login is intentionally not configured yet. It remains the sole external authentication dependency and needs the repository owner's Google OAuth client ID and secret. Do not enable it in `supabase/config.toml` until those credentials and callback settings are available.
+Google login is intentionally not configured yet. It remains the sole external authentication dependency and needs the repository owner's Google OAuth client ID and secret. The Login and Signup pages therefore show Google sign-in as unavailable while `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=false`. Do not enable the public flag or the provider in `supabase/config.toml` until those credentials and callback settings are available; once configured, set the flag to `true` and rebuild the app.
 
 ## One-time prerequisite: restart Windows
 
@@ -64,6 +65,28 @@ To start infrastructure without applying the schema or refreshing fixtures:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\experiment-start.ps1 -SkipDatabaseSetup
 ```
 
+## Automatic infrastructure startup
+
+After the first successful setup, register the isolated infrastructure task once:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\experiment-install-autostart.ps1
+```
+
+This machine has that task registered as `Minaret Experiment Infrastructure`. It runs 30 seconds after the current user signs in and invokes only:
+
+```text
+experiment-start.ps1 -WithNominatim -SkipDatabaseSetup -SkipBuild
+```
+
+The task starts Docker Desktop when necessary, restores Supabase and Nominatim, and leaves both application data and the existing production build untouched. It uses the current user with limited privileges, ignores duplicate starts, and never invokes or reconfigures either feedback task. The separate `Minaret Network Local Site` task continues to start the application itself.
+
+The installer is idempotent and replaces only its own purpose-specific task. To remove that startup behavior without stopping any currently running service:
+
+```powershell
+Unregister-ScheduledTask -TaskName "Minaret Experiment Infrastructure" -Confirm:$false
+```
+
 ## Public same-origin Auth and Storage
 
 The app's browser client uses `https://am5.tail033f8c.ts.net:8443` as its Supabase origin. This is deliberate: a remote browser cannot call this computer's `127.0.0.1`.
@@ -79,8 +102,8 @@ The resulting routing design is:
 | Public path | Local target |
 |---|---|
 | `/` and ordinary site paths | Existing Minaret app on `127.0.0.1:3220` |
-| `/auth/v1/*` | Supabase gateway on `127.0.0.1:54321` |
-| `/storage/v1/*` | Supabase gateway on `127.0.0.1:54321` |
+| `/auth/v1/*` | Supabase gateway target `127.0.0.1:54321/auth/v1` |
+| `/storage/v1/*` | Supabase gateway target `127.0.0.1:54321/storage/v1` |
 
 The script uses path mounts on HTTPS port `8443`; it does not replace the root handler and does not touch the feedback Funnel on port `10000` or its tailnet-only admin route on `10001`.
 
@@ -105,7 +128,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\experiment-pub
 | Feedback local | <http://127.0.0.1:3210> |
 | Feedback admin local | <http://127.0.0.1:3211> |
 
-PostgreSQL, Studio, the email inbox, and Nominatim must remain bound to loopback. Never publish the database, Studio, service-role key, or test-email inbox.
+The Supabase CLI publishes its development ports through Docker on the host. Windows Firewall is enabled with `BlockInbound` on every profile and has no Minaret or Docker inbound allow rule, so those administration ports remain host-only. The publish script exposes only the two explicit Auth and Storage paths through Tailscale Funnel. Never add a Funnel route or inbound firewall exception for PostgreSQL, Studio, the service-role key, or the test-email inbox. Nominatim is explicitly bound to `127.0.0.1`.
 
 ## Experiment login accounts
 
@@ -144,7 +167,9 @@ Start Supabase and the Ontario Nominatim container together with:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\experiment-start.ps1 -WithNominatim
 ```
 
-This uses the exact Nominatim service already declared in `infra/nominatim/compose.yaml`, not a mock API. Its first run downloads the current Ontario OpenStreetMap PBF (roughly 1 GB) and builds a much larger PostgreSQL/PostGIS index. Depending on disk and network speed, the initial import can take tens of minutes to several hours and consume many gigabytes. The `/status` endpoint may be unavailable throughout that import. Subsequent starts reuse the named volumes.
+This uses the exact Nominatim service already declared in `infra/nominatim/compose.yaml`, not a mock API. Its first run downloads the current Ontario OpenStreetMap PBF (roughly 1 GB) and builds a much larger PostgreSQL/PostGIS index. Depending on disk and network speed, the initial import can take tens of minutes to several hours and consume many gigabytes. The `/status` endpoint may be unavailable throughout that import. Subsequent starts reuse the named volume.
+
+The Ontario import needs more memory than Docker Desktop's 2 GB factory minimum. This machine allocates 12 GB to Docker's Hyper-V VM; the start script refuses to launch Nominatim below 8 GiB instead of allowing an out-of-memory restart loop. Set the limit in Docker Desktop under **Settings > Resources > Advanced > Memory limit**, then apply Docker's restart. The compose file uses conservative PostgreSQL memory and indexing settings and deliberately avoids the 75+ GB flat-node file intended for continent/planet imports.
 
 Nominatim is independent from Supabase's PostgreSQL and does not use port `54322`. The application retains its bundled GTA/Ontario centroid fallback while Nominatim is unavailable. OpenStreetMap attribution and periodic data updates remain required for ongoing use.
 
