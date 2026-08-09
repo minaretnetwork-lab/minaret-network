@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Shield, Menu, X } from "lucide-react";
+import { LogOut, Shield, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MobileNavProps {
@@ -77,8 +77,11 @@ export function MobileNav({ isAdmin, user }: MobileNavProps) {
                   </Link>
                 )}
                 <form action="/auth/signout" method="post" className="mt-2">
-                  <Button variant="outline" size="sm" className="w-full border-white/30 text-white hover:bg-white/10">
-                    Sign out
+                  <Button
+                    size="sm"
+                    className="w-full border border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                  >
+                    <LogOut className="h-3.5 w-3.5" /> Sign out
                   </Button>
                 </form>
               </>
