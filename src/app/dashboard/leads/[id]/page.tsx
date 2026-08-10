@@ -131,14 +131,14 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
           <form action={startConversationForServiceRequest.bind(null, request.id)} className="w-full sm:w-auto">
             <Button className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
               <MessageCircle className="h-4 w-4" />
-              Message on Minaret
+              Message here
             </Button>
           </form>
           {whatsappHref && (
             <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
               <Button className="w-full gap-1.5 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
                 <MessageCircle className="h-4 w-4" />
-                Respond on WhatsApp
+                WhatsApp
               </Button>
             </a>
           )}
@@ -146,7 +146,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
             <a href={`mailto:${request.contactEmail}`} className="w-full sm:w-auto">
               <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
                 <Mail className="h-4 w-4" />
-                Email requester
+                Email
               </Button>
             </a>
           )}
@@ -154,7 +154,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
             <a href={`tel:${request.contactPhone}`} className="w-full sm:w-auto">
               <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
                 <Phone className="h-4 w-4" />
-                Call requester
+                Call
               </Button>
             </a>
           )}
