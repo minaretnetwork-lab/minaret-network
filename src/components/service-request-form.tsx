@@ -112,6 +112,55 @@ const CONTACT_OPTIONS = [
   { value: "WHATSAPP" as ContactMethod, label: "WhatsApp", icon: <MessageCircle className="h-5 w-5" /> },
 ];
 
+const CATEGORY_EXAMPLES: Record<string, string> = {
+  accountant: "e.g. I need help filing my small business taxes and reviewing HST expenses before the end of the month.",
+  "appliance-repair": "e.g. My refrigerator is cooling unevenly and making a loud humming noise. I need someone to inspect and repair it this week.",
+  "barber-hair-stylist": "e.g. I need a barber who can do a clean fade and beard lineup before an event this weekend.",
+  "business-consultant": "e.g. I need help setting up a simple business plan and pricing model for a new home-based service.",
+  childcare: "e.g. I need a babysitter for two children on weekday afternoons for the next few weeks.",
+  chiropractor: "e.g. I have lower back stiffness after sitting at work and would like an appointment for an assessment.",
+  "cleaning-services": "e.g. I need a deep clean for a 3-bedroom home, including kitchen, bathrooms, baseboards, and floors.",
+  contractor: "e.g. I want to finish part of my basement and need someone to review the space and provide a quote.",
+  counsellor: "e.g. I am looking for a counsellor for stress and anxiety support, preferably available evenings.",
+  dentist: "e.g. I need a dentist for a cleaning and to check sensitivity in one tooth that has been bothering me.",
+  doctor: "e.g. I need a family doctor appointment for a recurring cough and general checkup.",
+  electrician: "e.g. I need a licensed electrician to install 3 new outlets in my basement within the next 2 weeks.",
+  "event-wedding-planner": "e.g. I need help coordinating vendors and day-of scheduling for a wedding reception next month.",
+  "financial-advisor": "e.g. I need advice on budgeting, saving for a home, and understanding halal investment options.",
+  flooring: "e.g. I need vinyl flooring installed in a small basement room and old carpet removed.",
+  "graphic-designer": "e.g. I need a logo and simple flyer design for a new local service business.",
+  handyman: "e.g. I need help mounting shelves, fixing a loose cabinet door, and repairing a small drywall patch.",
+  "home-inspector": "e.g. I need a home inspection before finalizing a purchase, ideally later this week.",
+  hvac: "e.g. My furnace is running but the house is not warming properly. I need someone to diagnose it.",
+  "immigration-consultant": "e.g. I need advice on a spouse sponsorship application and which documents to prepare.",
+  "insurance-broker": "e.g. I need quotes for home and auto insurance and help comparing coverage options.",
+  "it-consultant": "e.g. I need help setting up secure Wi-Fi, backups, and basic cybersecurity for my small office.",
+  landscaper: "e.g. I need spring cleanup, hedge trimming, and help planning low-maintenance front yard landscaping.",
+  lawyer: "e.g. I need a lawyer to review a lease agreement before I sign it.",
+  mechanic: "e.g. My car is making a grinding noise when braking and I need it checked as soon as possible.",
+  "mortgage-broker": "e.g. I need help understanding mortgage options and pre-approval for buying a home.",
+  "moving-services": "e.g. I need movers for a 2-bedroom apartment move from Aurora to Newmarket next Saturday.",
+  "notary-public": "e.g. I need documents notarized for an application and would prefer an evening appointment.",
+  optometrist: "e.g. I need an eye exam and new glasses prescription because my vision has changed recently.",
+  painter: "e.g. I need two bedrooms painted, including minor wall repair and trim touch-ups.",
+  "personal-trainer": "e.g. I want a trainer to help me build strength safely with a beginner-friendly plan.",
+  "pest-control": "e.g. I have ants appearing in the kitchen and need pest control to inspect and treat the issue.",
+  "pet-sitter": "e.g. I need someone to check on my cat twice a day while I am away for a long weekend.",
+  pharmacist: "e.g. I need a pharmacist to explain a new prescription and possible interactions with my current medication.",
+  photographer: "e.g. I need a photographer for a small family event for about three hours.",
+  physiotherapist: "e.g. I need physiotherapy for knee pain after running and would like an assessment.",
+  plumber: "e.g. My kitchen sink is draining slowly and there may be a leak under the cabinet.",
+  realtor: "e.g. I am looking for a realtor to help estimate my home value and discuss selling options.",
+  "restaurant-catering": "e.g. I need halal catering for about 40 guests, including mains, sides, and delivery.",
+  roofer: "e.g. I noticed a small roof leak after heavy rain and need someone to inspect and repair it.",
+  "snow-removal": "e.g. I need seasonal snow removal for my driveway and walkway before winter starts.",
+  "tailor-alterations": "e.g. I need a suit jacket and pants altered before a wedding next week.",
+  "travel-agent": "e.g. I need help booking a family trip with flexible dates and halal-friendly accommodations.",
+  tutor: "e.g. I need a math tutor for a Grade 9 student who needs help preparing for exams.",
+  videographer: "e.g. I need a videographer for a community event and a short edited highlight video afterward.",
+  "web-developer": "e.g. I need a simple website for my business with services, contact form, and basic SEO.",
+};
+
 const DRAFT_KEY = "minaret_draft_request";
 
 function readStoredDraft(isAuthenticated: boolean) {
@@ -147,7 +196,13 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [form, setForm] = useState<FormState>(initialDraft?.form ?? emptyForm);
+  const selectedCategory = categories.find((category) => category.id === form.categoryId);
+  const descriptionExample =
+    CATEGORY_EXAMPLES[selectedCategory?.slug ?? ""] ??
+    `e.g. I need a ${selectedCategory?.name.toLowerCase() || "professional"} for a specific job. Please include timing, location, scope, and any important details.`;
+  const descriptionPlaceholder = descriptionFocused ? "" : descriptionExample;
   const filteredCategories = categories.filter((category) => {
     const query = categoryQuery.trim().toLowerCase();
     if (!query) return true;
@@ -385,12 +440,13 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
             The more detail you give, the better. Include scope, size, timeline, and any specific requirements.
           </p>
           <Textarea
-            autoFocus
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
-            placeholder="e.g. I need a licensed electrician to install 3 new outlets in my basement. The work needs to be done within the next 2 weeks…"
-            rows={6}
-            className="resize-none text-base"
+            onFocus={() => setDescriptionFocused(true)}
+            onBlur={() => setDescriptionFocused(false)}
+            placeholder={descriptionPlaceholder}
+            rows={8}
+            className="min-h-48 resize-none text-base leading-relaxed placeholder:text-gray-400"
           />
           <div className="flex items-center justify-between mt-2">
             <span className={`text-xs ${form.description.length < 30 ? "text-gray-400" : "text-emerald-600"}`}>
