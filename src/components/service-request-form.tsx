@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2, LogIn, UserPlus,
   Stethoscope, SmilePlus, Pill, Activity, Bone, Eye, Brain,
@@ -8,7 +8,7 @@ import {
   HardHat, Hammer, Zap, Wrench, Wind, Building2, Paintbrush, Layers, Leaf,
   Snowflake, ClipboardCheck, Truck, Bug, Plug, Sparkles, Settings,
   BookOpen, Car, Dumbbell, Monitor, Code2, Palette, Camera, Video,
-  Scissors, UtensilsCrossed, PawPrint, Briefcase, Plane, Baby, Star,
+  Scissors, UtensilsCrossed, PawPrint, Briefcase, Plane, Baby, Star, Search,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -114,12 +114,20 @@ const CONTACT_OPTIONS = [
 
 const DRAFT_KEY = "minaret_draft_request";
 
+function readStoredDraft(isAuthenticated: boolean) {
+  if (!isAuthenticated || typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    window.sessionStorage.removeItem(DRAFT_KEY);
+    return JSON.parse(raw) as { form: FormState; step: number };
+  } catch {
+    return null;
+  }
+}
+
 export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, defaultName = "", defaultEmail = "", defaultPhone = "" }: Props) {
-  const [step, setStep] = useState(0);
-  const [authGate, setAuthGate] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
   const emptyForm: FormState = {
     categoryId: "",
     categoryName: "",
@@ -132,20 +140,23 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
     contactPhone: defaultPhone,
     preferredDate: "",
   };
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [initialDraft] = useState(() => readStoredDraft(isAuthenticated));
+  const [step, setStep] = useState(initialDraft?.step ?? 0);
+  const [authGate, setAuthGate] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [categoryQuery, setCategoryQuery] = useState("");
+  const [form, setForm] = useState<FormState>(initialDraft?.form ?? emptyForm);
+  const filteredCategories = categories.filter((category) => {
+    const query = categoryQuery.trim().toLowerCase();
+    if (!query) return true;
 
-  // Restore draft saved before auth redirect
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    try {
-      const raw = sessionStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const draft = JSON.parse(raw) as { form: FormState; step: number };
-      sessionStorage.removeItem(DRAFT_KEY);
-      setForm(draft.form);
-      setStep(draft.step);
-    } catch { /* ignore */ }
-  }, [isAuthenticated]);
+    return (
+      category.name.toLowerCase().includes(query) ||
+      (category.slug?.replace(/-/g, " ").toLowerCase().includes(query) ?? false)
+    );
+  });
 
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState("");
@@ -319,30 +330,48 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
             What type of professional do you need?
           </h2>
           <p className="text-sm text-gray-400 mb-6">Select one to continue.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => {
-                  set("categoryId", c.id);
-                  set("categoryName", c.name);
-                  set("categoryIcon", c.icon ?? "");
-                  setStep(1);
-                }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 text-sm font-medium transition-all duration-150 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 ${
-                  form.categoryId === c.id
-                    ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700"
-                    : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-                }`}
-              >
-                <div className="h-8 w-8 flex items-center justify-center">
-                  <CategoryIcon slug={c.slug} className="h-6 w-6" />
-                </div>
-                <span className="text-center leading-tight">{c.name}</span>
-              </button>
-            ))}
+          <div className="relative mb-4">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="search"
+              value={categoryQuery}
+              onChange={(e) => setCategoryQuery(e.target.value)}
+              placeholder="Type a profession to filter..."
+              className="h-12 rounded-xl pl-10 text-base"
+            />
           </div>
+          {filteredCategories.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center dark:border-gray-700 dark:bg-gray-800/40">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No categories match “{categoryQuery}”.</p>
+              <p className="mt-1 text-xs text-gray-400">Try a broader term like plumber, doctor, realtor, or childcare.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {filteredCategories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    set("categoryId", c.id);
+                    set("categoryName", c.name);
+                    set("categoryIcon", c.icon ?? "");
+                    setCategoryQuery("");
+                    setStep(1);
+                  }}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 text-sm font-medium transition-all duration-150 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 ${
+                    form.categoryId === c.id
+                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700"
+                      : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  <div className="h-8 w-8 flex items-center justify-center">
+                    <CategoryIcon slug={c.slug} className="h-6 w-6" />
+                  </div>
+                  <span className="text-center leading-tight">{c.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
