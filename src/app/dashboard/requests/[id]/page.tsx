@@ -9,6 +9,7 @@ import {
 import { getServiceRequestById } from "@/lib/actions/service-requests";
 import { getConversationsForMyRequest } from "@/lib/actions/messages";
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { CloseRequestForm } from "@/components/dashboard/close-request-form";
 import { formatDate } from "@/lib/utils";
 
 interface Props {
@@ -165,6 +166,16 @@ export default async function RequestDetailPage({ params }: Props) {
       {req.status === "OPEN" && (
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-2xl p-5 text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
           Your request is open and visible to matching professionals in the mosque network. You will be contacted via your preferred method when someone reaches out.
+        </div>
+      )}
+
+      {req.status === "OPEN" && <CloseRequestForm requestId={req.id} />}
+
+      {req.status === "CLOSED" && req.closeReason && (
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+          <p className="font-semibold text-gray-900 dark:text-white">Closed: {req.closeReason}</p>
+          {req.closeNote && <p className="mt-2 whitespace-pre-line">{req.closeNote}</p>}
+          {req.closedAt && <p className="mt-2 text-xs text-gray-400">Closed {formatDate(req.closedAt)}</p>}
         </div>
       )}
     </div>

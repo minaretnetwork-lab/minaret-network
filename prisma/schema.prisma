@@ -387,6 +387,9 @@ model ServiceRequest {
   contactPhone     String?
   preferredDate    DateTime?
   status           RequestStatus @default(OPEN)
+  closeReason      String?
+  closeNote        String?
+  closedAt         DateTime?
   assignedToId     String?
   assignedTo       Professional? @relation(fields: [assignedToId], references: [id])
   createdAt        DateTime      @default(now())

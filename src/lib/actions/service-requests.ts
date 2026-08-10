@@ -291,3 +291,39 @@ export async function updateRequestStatus(id: string, status: string) {
   revalidatePath("/admin/requests");
   revalidatePath("/dashboard/leads");
 }
+
+export async function closeMyServiceRequest(id: string, data: { reason: string; note?: string }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser) throw new Error("User not found");
+
+  const reason = data.reason.trim();
+  const note = data.note?.trim() ?? "";
+  if (!reason) throw new Error("Please choose a reason for closing this request.");
+
+  const request = await prisma.serviceRequest.findFirst({
+    where: { id, userId: dbUser.id },
+    select: { id: true, status: true },
+  });
+
+  if (!request) throw new Error("Request not found.");
+  if (request.status === "CLOSED" || request.status === "CANCELLED") return;
+
+  await prisma.serviceRequest.update({
+    where: { id },
+    data: {
+      status: "CLOSED",
+      closeReason: reason,
+      closeNote: note || null,
+      closedAt: new Date(),
+    },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/requests");
+  revalidatePath(`/dashboard/requests/${id}`);
+  revalidatePath("/dashboard/leads");
+}
