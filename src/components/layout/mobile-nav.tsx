@@ -88,12 +88,15 @@ export function MobileNav({ isAdmin, user }: MobileNavProps) {
             ) : (
               <>
                 <Link href="/auth/login">
-                  <Button variant="outline" size="sm" className="w-full border-white/30 text-white hover:bg-white/10">
+                  <Button
+                    size="sm"
+                    className="w-full border border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                  >
                     Sign in
                   </Button>
                 </Link>
                 <Link href="/professionals/register">
-                  <Button size="sm" className="w-full bg-white text-[#14532d] hover:bg-white/90 font-medium">
+                  <Button size="sm" className="w-full bg-white text-[#14532d] hover:bg-white/90 hover:text-[#14532d] font-medium">
                     Join as Professional
                   </Button>
                 </Link>
