@@ -15,6 +15,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
+import { getExistingConversationWithProfessional } from "@/lib/actions/messages";
 import { getInitials, buildWhatsAppUrl, formatDate } from "@/lib/utils";
 import type { BadgeType } from "@/types";
 
@@ -24,9 +25,10 @@ interface Props {
 
 export default async function ProfessionalProfilePage({ params }: Props) {
   const { id } = await params;
-  const [professional, currentUser] = await Promise.all([
+  const [professional, currentUser, existingConversation] = await Promise.all([
     getProfessionalById(id),
     getCurrentUser().catch(() => null),
+    getExistingConversationWithProfessional(id).catch(() => null),
   ]);
 
   if (!professional || professional.status !== "APPROVED") {
@@ -149,6 +151,15 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                   />
                 </div>
               )
+            )}
+
+            {currentUser && existingConversation && (
+              <Link href={`/dashboard/messages/${existingConversation.id}`} className="mt-2 flex">
+                <Button variant="outline" className="w-full gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                  <MessageCircle className="h-4 w-4" />
+                  Continue chat
+                </Button>
+              </Link>
             )}
           </div>
 

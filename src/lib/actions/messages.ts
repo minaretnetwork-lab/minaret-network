@@ -245,6 +245,20 @@ export async function getConversationsForMyRequest(serviceRequestId: string) {
   });
 }
 
+export async function getExistingConversationWithProfessional(professionalId: string) {
+  const dbUser = await getCurrentDbUser();
+  if (!dbUser) return null;
+
+  return prisma.conversation.findFirst({
+    where: {
+      requesterId: dbUser.id,
+      professionalId,
+    },
+    select: { id: true },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 export async function sendConversationMessage(conversationId: string, formData: FormData) {
   const body = cleanMessageBody(formData.get("body"));
   if (body.length < 1) return;

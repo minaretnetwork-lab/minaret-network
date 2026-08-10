@@ -37,9 +37,13 @@ export default async function MessagesPage() {
         <div className="space-y-3">
           {conversations.map((conversation) => {
             const isRequester = conversation.requesterId === currentUserId;
-            const otherPerson = isRequester
-              ? displayName(conversation.professional.user)
+            const professionalName = displayName(conversation.professional.user);
+            const title = isRequester
+              ? conversation.professional.businessName || professionalName
               : displayName(conversation.requester);
+            const context = isRequester && conversation.professional.businessName
+              ? `${professionalName} · ${conversation.serviceRequest.category.name}`
+              : conversation.serviceRequest.category.name;
             const lastMessage = conversation.messages[0];
 
             return (
@@ -55,9 +59,9 @@ export default async function MessagesPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">{otherPerson}</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{title}</p>
                         <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                          {conversation.serviceRequest.category.name}
+                          {context}
                           {conversation.serviceRequest.serviceArea ? ` · ${conversation.serviceRequest.serviceArea.name}` : ""}
                         </p>
                       </div>

@@ -17,6 +17,10 @@ function displayName(user: { displayName: string | null; firstName: string | nul
   return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "User";
 }
 
+function firstName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string }) {
+  return user.firstName || user.displayName?.split(" ")[0] || user.email?.split("@")[0] || "them";
+}
+
 export default async function ConversationPage({ params }: Props) {
   const { id } = await params;
   const data = await getConversationById(id);
@@ -27,6 +31,15 @@ export default async function ConversationPage({ params }: Props) {
   const otherPerson = isRequester
     ? displayName(conversation.professional.user)
     : displayName(conversation.requester);
+  const professionalDisplayName = displayName(conversation.professional.user);
+  const conversationTitle = isRequester
+    ? conversation.professional.businessName || professionalDisplayName
+    : otherPerson;
+  const contactTitle = isRequester
+    ? `Contact ${firstName(conversation.professional.user)}${
+        conversation.professional.businessName ? ` at ${conversation.professional.businessName}` : ""
+      }`
+    : `Contact ${firstName(conversation.requester)}`;
   const requestLink = isRequester
     ? `/dashboard/requests/${conversation.serviceRequestId}`
     : `/dashboard/leads/${conversation.serviceRequestId}`;
@@ -65,8 +78,9 @@ export default async function ConversationPage({ params }: Props) {
             <CategoryIcon slug={conversation.serviceRequest.category.slug} className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Conversation with {otherPerson}</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Conversation with {conversationTitle}</h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {isRequester && conversation.professional.businessName ? `${professionalDisplayName} · ` : ""}
               About {conversation.serviceRequest.category.name}
               {conversation.serviceRequest.serviceArea ? ` in ${conversation.serviceRequest.serviceArea.name}` : ""}
             </p>
@@ -112,7 +126,7 @@ export default async function ConversationPage({ params }: Props) {
 
       {(whatsappHref || email || callPhone) && (
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm dark:border-emerald-800/40 dark:bg-emerald-900/20">
-          <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Switch contact method</h2>
+          <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">{contactTitle}</h2>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {whatsappHref && (
               <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
