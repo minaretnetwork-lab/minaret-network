@@ -72,6 +72,71 @@ export async function startConversationForServiceRequest(serviceRequestId: strin
   redirect(`/dashboard/messages/${conversation.id}`);
 }
 
+export async function getConversationForMatchingServiceRequest(serviceRequestId: string) {
+  const dbUser = await getCurrentDbUser();
+  if (!dbUser) return null;
+
+  const request = await prisma.serviceRequest.findUnique({
+    where: { id: serviceRequestId },
+    select: {
+      id: true,
+      userId: true,
+      categoryId: true,
+      serviceAreaId: true,
+      status: true,
+    },
+  });
+
+  if (!request || request.status !== "OPEN" || request.userId === dbUser.id || !request.serviceAreaId) {
+    return null;
+  }
+
+  const professional = await prisma.professional.findFirst({
+    where: {
+      userId: dbUser.id,
+      status: "APPROVED",
+      categoryId: request.categoryId,
+      serviceAreas: { some: { id: request.serviceAreaId } },
+    },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (!professional) return null;
+
+  const conversation = await prisma.conversation.upsert({
+    where: {
+      serviceRequestId_professionalId: {
+        serviceRequestId: request.id,
+        professionalId: professional.id,
+      },
+    },
+    create: {
+      serviceRequestId: request.id,
+      professionalId: professional.id,
+      requesterId: request.userId,
+    },
+    update: {},
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { sender: { select: { id: true, displayName: true, firstName: true, lastName: true, email: true } } },
+      },
+    },
+  });
+
+  await prisma.message.updateMany({
+    where: {
+      conversationId: conversation.id,
+      senderId: { not: dbUser.id },
+      readAt: null,
+    },
+    data: { readAt: new Date() },
+  });
+
+  return { currentUserId: dbUser.id, conversation };
+}
+
 export async function getMyConversations() {
   const dbUser = await getCurrentDbUser();
   if (!dbUser) return { currentUserId: null, conversations: [] };

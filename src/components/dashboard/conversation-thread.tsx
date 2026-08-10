@@ -164,7 +164,6 @@ export function ConversationThread({
           <SendHorizonal className="h-4 w-4" />
           {isPending ? "Sending..." : "Send message"}
         </Button>
-        <p className="text-xs text-gray-400">Updates automatically every few seconds while this page is open.</p>
       </form>
     </div>
   );

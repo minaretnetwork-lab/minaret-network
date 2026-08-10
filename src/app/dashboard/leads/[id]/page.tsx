@@ -13,8 +13,9 @@ import {
   User,
 } from "lucide-react";
 import { getMatchingServiceRequestById } from "@/lib/actions/service-requests";
-import { startConversationForServiceRequest } from "@/lib/actions/messages";
+import { getConversationForMatchingServiceRequest } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
+import { ConversationThread } from "@/components/dashboard/conversation-thread";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
 
@@ -36,9 +37,16 @@ const CONTACT_ICON: Record<string, React.ReactNode> = {
   WHATSAPP: <MessageCircle className="h-4 w-4" />,
 };
 
+function displayName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string }) {
+  return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "User";
+}
+
 export default async function MatchingRequestDetailPage({ params }: Props) {
   const { id } = await params;
-  const request = await getMatchingServiceRequestById(id);
+  const [request, conversationData] = await Promise.all([
+    getMatchingServiceRequestById(id),
+    getConversationForMatchingServiceRequest(id),
+  ]);
 
   if (!request) notFound();
 
@@ -125,15 +133,26 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
         </div>
       </div>
 
+      {conversationData && (
+        <div className="space-y-3">
+          <h2 className="font-semibold text-gray-900 dark:text-white">Message the requester</h2>
+          <ConversationThread
+            conversationId={conversationData.conversation.id}
+            currentUserId={conversationData.currentUserId}
+            initialMessages={conversationData.conversation.messages.map((message) => ({
+              id: message.id,
+              senderId: message.senderId,
+              senderName: displayName(message.sender),
+              body: message.body,
+              createdAt: message.createdAt.toISOString(),
+            }))}
+          />
+        </div>
+      )}
+
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 dark:border-emerald-800/40 dark:bg-emerald-900/20">
-        <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Respond to the requester</h2>
+        <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Other contact methods</h2>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <form action={startConversationForServiceRequest.bind(null, request.id)} className="w-full sm:w-auto">
-            <Button type="submit" className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
-              <MessageCircle className="h-4 w-4" />
-              Message
-            </Button>
-          </form>
           {whatsappHref && (
             <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
               <Button className="w-full gap-1.5 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
