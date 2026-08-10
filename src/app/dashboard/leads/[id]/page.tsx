@@ -127,9 +127,6 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
 
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 dark:border-emerald-800/40 dark:bg-emerald-900/20">
         <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Respond to the requester</h2>
-        <p className="mt-1 text-sm leading-relaxed text-emerald-800/80 dark:text-emerald-200/80">
-          Start a site conversation to keep a history here, or use the contact details they provided.
-        </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <form action={startConversationForServiceRequest.bind(null, request.id)} className="w-full sm:w-auto">
             <Button className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
