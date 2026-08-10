@@ -75,8 +75,7 @@ export function ConversationThread({
     };
   }, [endpoint]);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function sendMessage() {
     const trimmedBody = body.trim();
     if (!trimmedBody) return;
 
@@ -98,6 +97,18 @@ export function ConversationThread({
       setMessages((current) => [...current.filter((message) => message.id !== payload.message.id), payload.message]);
       setBody("");
     });
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    sendMessage();
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
+
+    event.preventDefault();
+    if (!isPending) sendMessage();
   }
 
   return (
@@ -136,6 +147,7 @@ export function ConversationThread({
         <Textarea
           value={body}
           onChange={(event) => setBody(event.target.value)}
+          onKeyDown={handleKeyDown}
           maxLength={2000}
           required
           rows={4}
@@ -143,6 +155,7 @@ export function ConversationThread({
           className="min-h-28 resize-none bg-white dark:bg-gray-950"
         />
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        <p className="text-xs text-gray-400">Press Enter to send. Use Shift+Enter for a new line.</p>
         <Button
           type="submit"
           disabled={isPending || body.trim().length === 0}
