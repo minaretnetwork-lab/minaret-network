@@ -71,14 +71,11 @@ else {
 Write-Host ""
 $checks = @(
   (Test-ExperimentHttpEndpoint -Name "Minaret local" -Url "http://127.0.0.1:3220"),
-  (Test-ExperimentHttpEndpoint -Name "Feedback local" -Url "http://127.0.0.1:3210"),
-  (Test-ExperimentHttpEndpoint -Name "Feedback admin local" -Url "http://127.0.0.1:3211"),
   (Test-ExperimentHttpEndpoint -Name "Supabase Auth local" -Url "http://127.0.0.1:54321/auth/v1/health"),
   (Test-ExperimentHttpEndpoint -Name "Supabase Storage local" -Url "http://127.0.0.1:54321/storage/v1/status"),
   (Test-ExperimentHttpEndpoint -Name "Nominatim local" -Url "http://127.0.0.1:8088/status" -TimeoutSeconds 2),
   (Test-ExperimentHttpEndpoint -Name "Minaret public" -Url "https://am5.tail033f8c.ts.net:8443"),
-  (Test-ExperimentHttpEndpoint -Name "Supabase Auth public" -Url "https://am5.tail033f8c.ts.net:8443/auth/v1/health"),
-  (Test-ExperimentHttpEndpoint -Name "Feedback public" -Url "https://am5.tail033f8c.ts.net:10000")
+  (Test-ExperimentHttpEndpoint -Name "Supabase Auth public" -Url "https://am5.tail033f8c.ts.net:8443/auth/v1/health")
 )
 $checks | Format-Table -AutoSize
 

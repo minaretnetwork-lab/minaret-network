@@ -1,6 +1,6 @@
 # Minaret local-stack experiment
 
-This runbook operates only the `agent/local-self-hosting-experiments` stack. It does not replace the hosted upstream project, and its scripts never stop, reconfigure, or bind the feedback service's local ports (`3210` and `3211`) or Funnel ports (`10000` and `10001`).
+This runbook operates only the `agent/local-self-hosting-experiments` stack. It does not replace the hosted upstream project, and its scripts are scoped to the Minaret application, local Supabase services, Nominatim, and the Minaret Funnel routes.
 
 ## What is self-hosted
 
@@ -48,7 +48,7 @@ The script:
 4. Refuses to run Prisma unless Supabase reports the expected loopback database and API ports (`54322` and `54321`).
 5. Preserves unrelated `.env.local` values and preserves an existing experiment password. Otherwise it generates a strong random password.
 6. Runs Prisma `db push` against only the local database and executes `prisma/seed-experiment.ts` using the loopback Supabase Auth endpoint.
-7. Stops only the Minaret site task, creates a production Next.js build with the public browser origin, and restarts only that task. The feedback task is never stopped.
+7. Stops only the Minaret site task, creates a production Next.js build with the public browser origin, and restarts only that task.
 
 To skip the production build and task restart while diagnosing infrastructure, add `-SkipBuild`. After a manual build, restart only Minaret so it reloads `.env.local`:
 
@@ -56,8 +56,6 @@ To skip the production build and task restart while diagnosing infrastructure, a
 Stop-ScheduledTask -TaskName "Minaret Network Local Site"
 Start-ScheduledTask -TaskName "Minaret Network Local Site"
 ```
-
-Do not restart the `Feedback Inbox` task.
 
 To start infrastructure without applying the schema or refreshing fixtures:
 
@@ -79,7 +77,7 @@ This machine has that task registered as `Minaret Experiment Infrastructure`. It
 experiment-start.ps1 -WithNominatim -SkipDatabaseSetup -SkipBuild
 ```
 
-The task starts Docker Desktop when necessary, restores Supabase and Nominatim, and leaves both application data and the existing production build untouched. It uses the current user with limited privileges, ignores duplicate starts, and never invokes or reconfigures either feedback task. The separate `Minaret Network Local Site` task continues to start the application itself.
+The task starts Docker Desktop when necessary, restores Supabase and Nominatim, and leaves both application data and the existing production build untouched. It uses the current user with limited privileges and ignores duplicate starts. The separate `Minaret Network Local Site` task continues to start the application itself.
 
 The installer is idempotent and replaces only its own purpose-specific task. To remove that startup behavior without stopping any currently running service:
 
@@ -105,7 +103,7 @@ The resulting routing design is:
 | `/auth/v1/*` | Supabase gateway target `127.0.0.1:54321/auth/v1` |
 | `/storage/v1/*` | Supabase gateway target `127.0.0.1:54321/storage/v1` |
 
-The script uses path mounts on HTTPS port `8443`; it does not replace the root handler and does not touch the feedback Funnel on port `10000` or its tailnet-only admin route on `10001`.
+The script uses path mounts on HTTPS port `8443`; it does not replace the root handler.
 
 Remove only those two Supabase mounts with:
 
@@ -124,9 +122,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\experiment-pub
 | Supabase Studio | <http://127.0.0.1:54323> |
 | Auth test-email inbox | <http://127.0.0.1:54324> |
 | Nominatim health/API | <http://127.0.0.1:8088/status> |
-| Feedback public | <https://am5.tail033f8c.ts.net:10000> |
-| Feedback local | <http://127.0.0.1:3210> |
-| Feedback admin local | <http://127.0.0.1:3211> |
 
 The Supabase CLI publishes its development ports through Docker on the host. Windows Firewall is enabled with `BlockInbound` on every profile and has no Minaret or Docker inbound allow rule, so those administration ports remain host-only. The publish script exposes only the two explicit Auth and Storage paths through Tailscale Funnel. Never add a Funnel route or inbound firewall exception for PostgreSQL, Studio, the service-role key, or the test-email inbox. Nominatim is explicitly bound to `127.0.0.1`.
 
@@ -181,7 +176,7 @@ Run the secret-free status report at any time:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\experiment-status.ps1
 ```
 
-It reports Docker/container state, sanitized Supabase endpoints, local/public HTTP checks, and the complete Funnel route table. It also checks both feedback endpoints so accidental interference is immediately visible.
+It reports Docker/container state, sanitized Supabase endpoints, local/public Minaret HTTP checks, and the complete Funnel route table.
 
 ## Backup
 
@@ -215,6 +210,6 @@ Stop Nominatim too and remove the two public Supabase mounts:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\experiment-stop.ps1 -StopNominatim -Unpublish
 ```
 
-This deliberately leaves Docker Desktop, Tailscale, the Minaret site task, and the feedback site running. It never uses `supabase stop --all`, `--no-backup`, `docker compose down -v`, or a Funnel reset.
+This deliberately leaves Docker Desktop, Tailscale, and the Minaret site task running. It never uses `supabase stop --all`, `--no-backup`, `docker compose down -v`, or a Funnel reset.
 
 After stopping and unpublishing, switching back to `master` rolls back the application code. Docker volumes remain available if the experiment branch is revisited. Deleting the `minaret-experiment` or `minaret-experiment-geocoder` volumes is destructive and should only be done after an explicit backup and target review.

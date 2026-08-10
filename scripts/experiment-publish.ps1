@@ -18,10 +18,10 @@ if ($Disable) {
       "funnel", "--yes", "--https=8443", "--set-path=$path", "off"
     )
     if ($result.ExitCode -ne 0) {
-      throw "Could not remove the $path Funnel mount. The Minaret root and feedback routes were not intentionally changed."
+      throw "Could not remove the $path Funnel mount. The Minaret root route was not intentionally changed."
     }
   }
-  Write-Host "Supabase path mounts removed. The Minaret root and feedback routes were left in place."
+  Write-Host "Supabase path mounts removed. The Minaret root route was left in place."
   return
 }
 
@@ -47,5 +47,5 @@ foreach ($path in $routes.Keys) {
 }
 
 Write-Host "Public Supabase paths configured under https://am5.tail033f8c.ts.net:8443."
-Write-Host "The root path still targets Minaret, and feedback ports 10000/10001 were not changed."
+Write-Host "The root path still targets Minaret."
 Write-Host "Run scripts/experiment-status.ps1 to verify the complete route table."

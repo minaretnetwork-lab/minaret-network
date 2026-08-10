@@ -21,7 +21,7 @@ try {
   Write-Host "Stopping only the Minaret local Supabase project while retaining its Docker volumes..."
   $stop = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("supabase", "stop")
   if ($stop.ExitCode -ne 0) {
-    throw "Supabase stop failed. No feedback service command was issued."
+    throw "Supabase stop failed. No unrelated service command was issued."
   }
 
   if ($StopNominatim) {
@@ -44,4 +44,4 @@ finally {
 }
 
 Write-Host "Experiment infrastructure stopped with data retained."
-Write-Host "Docker Desktop, Minaret's site task, Tailscale, and the feedback service were not stopped."
+Write-Host "Docker Desktop, Minaret's site task, and Tailscale were not stopped."

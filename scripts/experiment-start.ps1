@@ -149,7 +149,7 @@ try {
     Write-Host "Applying the Prisma schema..."
     $dbPush = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("prisma", "db", "push")
     if ($dbPush.ExitCode -ne 0) {
-      throw "Prisma db push failed. Secret-bearing command output was suppressed. The local database remains isolated from the feedback service."
+      throw "Prisma db push failed. Secret-bearing command output was suppressed. The local database remains isolated."
     }
 
     Write-Host "Creating or refreshing experiment Auth users and fixtures..."
@@ -157,7 +157,7 @@ try {
       "tsx", "prisma/seed-experiment.ts"
     )
     if ($seed.ExitCode -ne 0) {
-      throw "The experiment seed failed. Secret-bearing command output was suppressed; no production or feedback database was targeted."
+      throw "The experiment seed failed. Secret-bearing command output was suppressed; no production database was targeted."
     }
   }
 
