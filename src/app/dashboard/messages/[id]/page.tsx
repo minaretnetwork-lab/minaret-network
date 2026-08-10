@@ -72,6 +72,7 @@ export default async function ConversationPage({ params }: Props) {
   const requestClosed = conversation.serviceRequest.status === "CLOSED" || conversation.serviceRequest.status === "CANCELLED";
   const closedLabel = conversation.serviceRequest.status === "CANCELLED" ? "cancelled" : "closed";
   const statusUi = REQUEST_STATUS_STYLES[conversation.serviceRequest.status] ?? REQUEST_STATUS_STYLES.OPEN;
+  const titleClassName = "text-xl font-bold text-gray-900 dark:text-white";
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -90,7 +91,16 @@ export default async function ConversationPage({ params }: Props) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Conversation with {conversationTitle}</h1>
+              {isRequester ? (
+                <Link
+                  href={`/professionals/${conversation.professional.id}`}
+                  className={`${titleClassName} transition-colors hover:text-emerald-700`}
+                >
+                  {conversationTitle}
+                </Link>
+              ) : (
+                <h1 className={titleClassName}>{conversationTitle}</h1>
+              )}
               <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${statusUi.className}`}>
                 {statusUi.label}
               </span>
