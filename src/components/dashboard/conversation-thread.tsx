@@ -121,7 +121,7 @@ export function ConversationThread({
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-      <div className="space-y-3">
+      <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1 sm:max-h-[34rem]">
         {messages.length === 0 ? (
           <div className="rounded-xl bg-gray-50 p-5 text-center text-sm text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
             No messages yet. Send the first note below.
