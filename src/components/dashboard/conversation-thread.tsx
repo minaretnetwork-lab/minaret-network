@@ -34,11 +34,13 @@ export function ConversationThread({
   currentUserId,
   initialMessages,
   initialContextMessage,
+  disabledReason,
 }: {
   conversationId: string;
   currentUserId: string;
   initialMessages: ConversationMessage[];
   initialContextMessage?: ConversationMessage;
+  disabledReason?: string;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [body, setBody] = useState("");
@@ -90,6 +92,7 @@ export function ConversationThread({
   }, [endpoint]);
 
   function sendMessage() {
+    if (disabledReason) return;
     const trimmedBody = body.trim();
     if (!trimmedBody) return;
 
@@ -157,6 +160,11 @@ export function ConversationThread({
         <div ref={bottomRef} />
       </div>
 
+      {disabledReason ? (
+        <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
+          {disabledReason}
+        </div>
+      ) : (
       <form onSubmit={handleSubmit} className="mt-5 space-y-3 border-t border-gray-100 pt-4 dark:border-gray-800">
         <Textarea
           value={body}
@@ -179,6 +187,7 @@ export function ConversationThread({
           {isPending ? "Sending..." : "Send message"}
         </Button>
       </form>
+      )}
     </div>
   );
 }

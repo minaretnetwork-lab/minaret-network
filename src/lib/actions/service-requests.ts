@@ -327,3 +327,36 @@ export async function closeMyServiceRequest(id: string, data: { reason: string; 
   revalidatePath(`/dashboard/requests/${id}`);
   revalidatePath("/dashboard/leads");
 }
+
+export async function reopenMyServiceRequest(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser) throw new Error("User not found");
+
+  const request = await prisma.serviceRequest.findFirst({
+    where: { id, userId: dbUser.id },
+    select: { id: true, status: true },
+  });
+
+  if (!request) throw new Error("Request not found.");
+  if (request.status === "OPEN") return;
+
+  await prisma.serviceRequest.update({
+    where: { id },
+    data: {
+      status: "OPEN",
+      closeReason: null,
+      closeNote: null,
+      closedAt: null,
+    },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/requests");
+  revalidatePath(`/dashboard/requests/${id}`);
+  revalidatePath("/dashboard/messages");
+  revalidatePath("/dashboard/leads");
+}

@@ -7,6 +7,7 @@ import { getConversationById } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { ConversationThread } from "@/components/dashboard/conversation-thread";
+import { ReopenRequestButton } from "@/components/dashboard/reopen-request-button";
 import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
 
 interface Props {
@@ -20,6 +21,13 @@ function displayName(user: { displayName: string | null; firstName: string | nul
 function firstName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string }) {
   return user.firstName || user.displayName?.split(" ")[0] || user.email?.split("@")[0] || "them";
 }
+
+const REQUEST_STATUS_STYLES: Record<string, { label: string; className: string }> = {
+  OPEN: { label: "Open", className: "border-green-200 bg-green-100 text-green-700" },
+  IN_PROGRESS: { label: "In progress", className: "border-blue-200 bg-blue-100 text-blue-700" },
+  CLOSED: { label: "Closed", className: "border-gray-200 bg-gray-100 text-gray-600" },
+  CANCELLED: { label: "Cancelled", className: "border-red-200 bg-red-100 text-red-700" },
+};
 
 export default async function ConversationPage({ params }: Props) {
   const { id } = await params;
@@ -61,6 +69,9 @@ export default async function ConversationPage({ params }: Props) {
         `Hi ${targetName}, I'm following up on our ${conversation.serviceRequest.category.name} conversation from Minaret Network.`
       )
     : null;
+  const requestClosed = conversation.serviceRequest.status === "CLOSED" || conversation.serviceRequest.status === "CANCELLED";
+  const closedLabel = conversation.serviceRequest.status === "CANCELLED" ? "cancelled" : "closed";
+  const statusUi = REQUEST_STATUS_STYLES[conversation.serviceRequest.status] ?? REQUEST_STATUS_STYLES.OPEN;
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -78,7 +89,12 @@ export default async function ConversationPage({ params }: Props) {
             <CategoryIcon slug={conversation.serviceRequest.category.slug} className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Conversation with {conversationTitle}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Conversation with {conversationTitle}</h1>
+              <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${statusUi.className}`}>
+                {statusUi.label}
+              </span>
+            </div>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {isRequester && conversation.professional.businessName ? `${professionalDisplayName} · ` : ""}
               About {conversation.serviceRequest.category.name}
@@ -129,7 +145,30 @@ export default async function ConversationPage({ params }: Props) {
           body: message.body,
           createdAt: message.createdAt.toISOString(),
         }))}
+        disabledReason={
+          requestClosed
+            ? `This request is ${closedLabel}. The requester needs to reopen it before more messages can be sent.`
+            : undefined
+        }
       />
+
+      {requestClosed && (
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h2 className="font-semibold text-gray-900 dark:text-white">This request is {closedLabel}</h2>
+          <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            Messaging is paused while the related service request is {closedLabel}.
+          </p>
+          {isRequester ? (
+            <div className="mt-4">
+              <ReopenRequestButton requestId={conversation.serviceRequestId} />
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+              Ask the requester to reopen the ticket if more discussion is needed.
+            </p>
+          )}
+        </div>
+      )}
 
       {(whatsappHref || email || callPhone) && (
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm dark:border-emerald-800/40 dark:bg-emerald-900/20">

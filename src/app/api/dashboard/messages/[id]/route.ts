@@ -20,7 +20,10 @@ async function getAuthorizedConversation(conversationId: string, userId: string)
         { professional: { userId } },
       ],
     },
-    select: { id: true },
+    select: {
+      id: true,
+      serviceRequest: { select: { status: true } },
+    },
   });
 }
 
@@ -31,6 +34,12 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 
   const conversation = await getAuthorizedConversation(id, dbUser.id);
   if (!conversation) return Response.json({ error: "Conversation not found" }, { status: 404 });
+  if (conversation.serviceRequest.status === "CLOSED" || conversation.serviceRequest.status === "CANCELLED") {
+    return Response.json(
+      { error: "This request is closed. The requester needs to reopen it before more messages can be sent." },
+      { status: 409 }
+    );
+  }
 
   await prisma.message.updateMany({
     where: {

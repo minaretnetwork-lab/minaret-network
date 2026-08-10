@@ -10,6 +10,13 @@ function displayName(user: { displayName: string | null; firstName: string | nul
   return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 }
 
+const REQUEST_STATUS_STYLES: Record<string, { label: string; className: string }> = {
+  OPEN: { label: "Open", className: "border-green-200 bg-green-100 text-green-700" },
+  IN_PROGRESS: { label: "In progress", className: "border-blue-200 bg-blue-100 text-blue-700" },
+  CLOSED: { label: "Closed", className: "border-gray-200 bg-gray-100 text-gray-600" },
+  CANCELLED: { label: "Cancelled", className: "border-red-200 bg-red-100 text-red-700" },
+};
+
 export default async function MessagesPage() {
   const { currentUserId, conversations } = await getMyConversations();
 
@@ -45,6 +52,7 @@ export default async function MessagesPage() {
               ? `${professionalName} · ${conversation.serviceRequest.category.name}`
               : conversation.serviceRequest.category.name;
             const lastMessage = conversation.messages[0];
+            const statusUi = REQUEST_STATUS_STYLES[conversation.serviceRequest.status] ?? REQUEST_STATUS_STYLES.OPEN;
 
             return (
               <Link
@@ -65,7 +73,12 @@ export default async function MessagesPage() {
                           {conversation.serviceRequest.serviceArea ? ` · ${conversation.serviceRequest.serviceArea.name}` : ""}
                         </p>
                       </div>
-                      <ChevronRight className="mt-1 h-4 w-4 flex-shrink-0 text-gray-400" />
+                      <div className="flex flex-shrink-0 items-center gap-2">
+                        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusUi.className}`}>
+                          {statusUi.label}
+                        </span>
+                        <ChevronRight className="h-4 w-4 text-gray-400" />
+                      </div>
                     </div>
                     <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <MessageCircle className="h-4 w-4 flex-shrink-0" />
