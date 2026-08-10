@@ -2,11 +2,12 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, ChevronLeft, FileText, MapPin, Tag } from "lucide-react";
+import { CalendarDays, ChevronLeft, FileText, Mail, MapPin, MessageCircle, Phone, Tag } from "lucide-react";
 import { getConversationById } from "@/lib/actions/messages";
+import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { ConversationThread } from "@/components/dashboard/conversation-thread";
-import { formatDate } from "@/lib/utils";
+import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -29,6 +30,24 @@ export default async function ConversationPage({ params }: Props) {
   const requestLink = isRequester
     ? `/dashboard/requests/${conversation.serviceRequestId}`
     : `/dashboard/leads/${conversation.serviceRequestId}`;
+  const targetName = isRequester
+    ? conversation.professional.businessName || otherPerson
+    : otherPerson;
+  const whatsappPhone = isRequester
+    ? conversation.professional.whatsapp || conversation.professional.phone
+    : conversation.serviceRequest.contactPhone;
+  const email = isRequester
+    ? conversation.professional.email || conversation.professional.user.email
+    : conversation.serviceRequest.contactEmail || conversation.requester.email;
+  const callPhone = isRequester
+    ? conversation.professional.phone || conversation.professional.whatsapp
+    : conversation.serviceRequest.contactPhone;
+  const whatsappHref = whatsappPhone
+    ? buildWhatsAppUrl(
+        whatsappPhone,
+        `Hi ${targetName}, I'm following up on our ${conversation.serviceRequest.category.name} conversation from Minaret Network.`
+      )
+    : null;
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -90,6 +109,38 @@ export default async function ConversationPage({ params }: Props) {
           createdAt: message.createdAt.toISOString(),
         }))}
       />
+
+      {(whatsappHref || email || callPhone) && (
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm dark:border-emerald-800/40 dark:bg-emerald-900/20">
+          <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Switch contact method</h2>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            {whatsappHref && (
+              <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                <Button className="w-full gap-1.5 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
+                </Button>
+              </a>
+            )}
+            {email && (
+              <a href={`mailto:${email}`} className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
+                  <Mail className="h-4 w-4" />
+                  Email
+                </Button>
+              </a>
+            )}
+            {callPhone && (
+              <a href={`tel:${callPhone}`} className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
+                  <Phone className="h-4 w-4" />
+                  Call
+                </Button>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
