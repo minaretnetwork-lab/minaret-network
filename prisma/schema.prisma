@@ -421,3 +421,25 @@ model CategorySuggestion {
 
   @@map("category_suggestions")
 }
+
+// Lightweight first-party analytics for the self-hosted experiment.
+model AnalyticsEvent {
+  id         String             @id @default(cuid())
+  eventType  AnalyticsEventType
+  visitorId  String
+  path       String?
+  searchTerm String?
+  region     String?
+  createdAt  DateTime           @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([visitorId, createdAt])
+  @@index([region, createdAt])
+  @@index([searchTerm, createdAt])
+  @@map("analytics_events")
+}
+
+enum AnalyticsEventType {
+  PAGE_VIEW
+  HOME_SEARCH
+}

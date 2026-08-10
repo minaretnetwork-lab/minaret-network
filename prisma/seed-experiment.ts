@@ -1,8 +1,10 @@
 import {
+  AnalyticsEventType,
   BadgeType,
   ContactMethod,
   FeaturedStatus,
   Gender,
+  Prisma,
   PrismaClient,
   ProfessionalStatus,
   RecommendationStatus,
@@ -1448,6 +1450,80 @@ async function main() {
       },
     });
   }
+
+  await prisma.analyticsEvent.deleteMany({
+    where: { id: { startsWith: "exp-analytics-" } },
+  });
+
+  const analyticsNow = new Date();
+  const analyticsRegions = ["Keswick", "Newmarket", "Aurora", "Richmond Hill", "Markham", "East Gwillimbury", "Vaughan"];
+  const analyticsTerms = ["plumber", "family doctor", "accountant", "realtor", "electrician", "barber", "web developer", "photographer"];
+  const analyticsEvents: Prisma.AnalyticsEventCreateManyInput[] = [];
+
+  for (let hour = 0; hour < 24; hour++) {
+    const visitorsThisHour = 2 + ((hour * 7) % 9);
+    for (let visitor = 0; visitor < visitorsThisHour; visitor++) {
+      const createdAt = new Date(analyticsNow);
+      createdAt.setHours(createdAt.getHours() - hour, (visitor * 11) % 60, 0, 0);
+      analyticsEvents.push({
+        id: `exp-analytics-page-hour-${hour}-${visitor}`,
+        eventType: AnalyticsEventType.PAGE_VIEW,
+        visitorId: `exp-visitor-${(hour * 5 + visitor) % 31}`,
+        path: visitor % 3 === 0 ? "/" : visitor % 3 === 1 ? "/professionals" : "/categories",
+        createdAt,
+      });
+    }
+  }
+
+  for (let day = 0; day < 7; day++) {
+    for (let visitor = 0; visitor < 14 + day * 3; visitor++) {
+      const createdAt = new Date(analyticsNow);
+      createdAt.setDate(createdAt.getDate() - day);
+      createdAt.setHours((visitor * 3) % 24, (visitor * 13) % 60, 0, 0);
+      analyticsEvents.push({
+        id: `exp-analytics-page-day-${day}-${visitor}`,
+        eventType: AnalyticsEventType.PAGE_VIEW,
+        visitorId: `exp-week-visitor-${day}-${visitor}`,
+        path: visitor % 4 === 0 ? "/" : visitor % 4 === 1 ? "/professionals" : visitor % 4 === 2 ? "/request" : "/professionals/exp-prof-omar-plumber",
+        createdAt,
+      });
+    }
+  }
+
+  for (let month = 0; month < 12; month++) {
+    for (let visitor = 0; visitor < 20 + month * 4; visitor++) {
+      const createdAt = new Date(analyticsNow);
+      createdAt.setMonth(createdAt.getMonth() - month);
+      createdAt.setDate(1 + (visitor % 24));
+      createdAt.setHours((visitor * 5) % 24, 0, 0, 0);
+      analyticsEvents.push({
+        id: `exp-analytics-page-month-${month}-${visitor}`,
+        eventType: AnalyticsEventType.PAGE_VIEW,
+        visitorId: `exp-month-visitor-${month}-${visitor}`,
+        path: visitor % 2 === 0 ? "/" : "/professionals",
+        createdAt,
+      });
+    }
+  }
+
+  for (let index = 0; index < 96; index++) {
+    const createdAt = new Date(analyticsNow);
+    createdAt.setHours(createdAt.getHours() - (index % 72), (index * 17) % 60, 0, 0);
+    analyticsEvents.push({
+      id: `exp-analytics-search-${index}`,
+      eventType: AnalyticsEventType.HOME_SEARCH,
+      visitorId: `exp-search-visitor-${index % 42}`,
+      path: "/",
+      searchTerm: analyticsTerms[index % analyticsTerms.length],
+      region: analyticsRegions[(index * 3) % analyticsRegions.length],
+      createdAt,
+    });
+  }
+
+  await prisma.analyticsEvent.createMany({
+    data: analyticsEvents,
+    skipDuplicates: true,
+  });
 
   console.log("Experiment seed complete.");
   console.log(

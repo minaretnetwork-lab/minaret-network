@@ -1,16 +1,20 @@
 export const dynamic = "force-dynamic";
 
-import { getAdminStats } from "@/lib/actions/admin";
+import { getAdminAnalytics, getAdminStats } from "@/lib/actions/admin";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Users, Clock, CheckCircle, MessageSquare, FileText, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard";
 
 export const metadata = { title: "Admin Dashboard" };
 
 export default async function AdminDashboardPage() {
-  const stats = await getAdminStats(DEFAULT_MOSQUE_SLUG);
+  const [stats, analytics] = await Promise.all([
+    getAdminStats(DEFAULT_MOSQUE_SLUG),
+    getAdminAnalytics(),
+  ]);
 
   const tiles = [
     { label: "Approved Professionals", value: stats?.approvedProfessionals ?? 0, icon: <CheckCircle className="h-5 w-5 text-green-600" />, href: "/admin/professionals?status=APPROVED", color: "bg-green-50 dark:bg-green-900/20" },
@@ -70,6 +74,8 @@ export default async function AdminDashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      <AnalyticsDashboard data={analytics} />
     </div>
   );
 }

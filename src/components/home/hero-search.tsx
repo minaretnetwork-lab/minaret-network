@@ -10,6 +10,7 @@ import {
   clearCachedDetectedCity,
   getCachedDetectedCity,
 } from "@/lib/client-location";
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 
 type Suggestion = { label: string; type: "category" | "professional"; slug?: string };
 
@@ -146,6 +147,12 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
       params.set("q", query.trim());
     }
     params.set("location", location.trim());
+    trackAnalyticsEvent({
+      eventType: "HOME_SEARCH",
+      path: "/",
+      searchTerm: query.trim() || pending?.label,
+      region: location.trim(),
+    });
     pendingSuggestion.current = null;
     router.push(`/professionals?${params.toString()}`);
   }
