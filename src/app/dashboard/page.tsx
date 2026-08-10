@@ -125,10 +125,14 @@ export default async function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {recentRequests.map((req) => (
-                <div key={req.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                <Link
+                  key={req.id}
+                  href={`/dashboard/requests/${req.id}`}
+                  className="group flex items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-emerald-50 dark:bg-gray-800/50 dark:hover:bg-emerald-900/10"
+                >
                   <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><CategoryIcon slug={req.category.slug} className="h-4 w-4" /></div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{req.category.name}</p>
+                    <p className="text-sm font-medium text-gray-900 transition-colors group-hover:text-emerald-700 dark:text-white">{req.category.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{req.description}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
@@ -144,7 +148,7 @@ export default async function DashboardPage() {
                       {formatDate(req.createdAt)}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
