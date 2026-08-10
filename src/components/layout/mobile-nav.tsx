@@ -77,12 +77,12 @@ export function MobileNav({ isAdmin, user }: MobileNavProps) {
                   </Link>
                 )}
                 <form action="/auth/signout" method="post" className="mt-2">
-                  <Button
-                    size="sm"
-                    className="w-full border border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                  <button
+                    type="submit"
+                    className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-[min(var(--radius-md),12px)] border border-white/20 bg-white/10 px-2.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/20"
                   >
                     <LogOut className="h-3.5 w-3.5" /> Sign out
-                  </Button>
+                  </button>
                 </form>
               </>
             ) : (
