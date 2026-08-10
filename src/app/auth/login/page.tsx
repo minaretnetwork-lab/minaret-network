@@ -22,6 +22,7 @@ const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true"
 
 function LoginForm() {
   const [error, setError] = useState("");
+  const [focusedField, setFocusedField] = useState<keyof FormData | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
@@ -37,6 +38,7 @@ function LoginForm() {
   const passwordField = register("password");
 
   function clearOnFirstFocus(field: keyof FormData, input: HTMLInputElement) {
+    setFocusedField(field);
     if (clearedOnFocusRef.current[field]) return;
 
     clearedOnFocusRef.current[field] = true;
@@ -90,8 +92,9 @@ function LoginForm() {
             type="email"
             {...emailField}
             onFocus={(event) => clearOnFirstFocus("email", event.currentTarget)}
+            onBlur={() => setFocusedField(null)}
             className="mt-1.5"
-            placeholder="you@example.com"
+            placeholder={focusedField === "email" ? "" : "you@example.com"}
           />
           {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
         </div>
@@ -105,7 +108,8 @@ function LoginForm() {
             type="password"
             {...passwordField}
             onFocus={(event) => clearOnFirstFocus("password", event.currentTarget)}
-            placeholder="••••••••"
+            onBlur={() => setFocusedField(null)}
+            placeholder={focusedField === "password" ? "" : "••••••••"}
           />
           {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>}
         </div>
