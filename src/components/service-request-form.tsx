@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2, LogIn, UserPlus,
+  ChevronLeft, ChevronRight,
   Stethoscope, SmilePlus, Pill, Activity, Bone, Eye, Brain,
   Scale, Globe, FileText, Calculator, TrendingUp, Shield, Landmark, Home,
   HardHat, Hammer, Zap, Wrench, Wind, Building2, Paintbrush, Layers, Leaf,
@@ -198,6 +199,7 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
   const [categoryQuery, setCategoryQuery] = useState("");
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [form, setForm] = useState<FormState>(initialDraft?.form ?? emptyForm);
+  const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(parseDateValue(initialDraft?.form.preferredDate) ?? todayDate()));
   const selectedCategory = categories.find((category) => category.id === form.categoryId);
   const descriptionExample =
     CATEGORY_EXAMPLES[selectedCategory?.slug ?? ""] ??
@@ -505,11 +507,11 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
               <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Calendar className="h-4 w-4 text-gray-400" /> Preferred date
               </label>
-              <input
-                type="date"
+              <PreferredDatePicker
                 value={form.preferredDate}
-                onChange={(e) => set("preferredDate", e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                calendarMonth={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                onChange={(value) => set("preferredDate", value)}
               />
             </div>
           </div>
@@ -644,6 +646,157 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
       )}
     </div>
   );
+}
+
+function PreferredDatePicker({
+  value,
+  calendarMonth,
+  onMonthChange,
+  onChange,
+}: {
+  value: string;
+  calendarMonth: Date;
+  onMonthChange: (date: Date) => void;
+  onChange: (value: string) => void;
+}) {
+  const selectedDate = parseDateValue(value);
+  const today = todayDate();
+  const monthDays = buildMonthDays(calendarMonth);
+  const monthLabel = calendarMonth.toLocaleDateString("en-CA", { month: "long", year: "numeric" });
+  const selectedLabel = selectedDate
+    ? selectedDate.toLocaleDateString("en-CA", { weekday: "short", month: "long", day: "numeric", year: "numeric" })
+    : "Select a preferred date";
+  const canGoPrevious = startOfMonth(calendarMonth) > startOfMonth(today);
+
+  function selectDate(date: Date) {
+    if (isBeforeDay(date, today)) return;
+    onChange(formatDateValue(date));
+    onMonthChange(startOfMonth(date));
+  }
+
+  return (
+    <div className="rounded-xl border border-gray-300 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Preferred date</p>
+          <p className={`text-sm font-medium ${selectedDate ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+            {selectedLabel}
+          </p>
+        </div>
+        {selectedDate && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="rounded-full px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-950">
+        <div className="mb-3 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => onMonthChange(addMonths(calendarMonth, -1))}
+            disabled={!canGoPrevious}
+            aria-label="Previous month"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-white hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-gray-900 dark:hover:text-white"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">{monthLabel}</p>
+          <button
+            type="button"
+            onClick={() => onMonthChange(addMonths(calendarMonth, 1))}
+            aria-label="Next month"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-white hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-white"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <span key={day}>{day}</span>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {monthDays.map((date, index) => {
+            if (!date) return <span key={`empty-${index}`} className="h-10" />;
+
+            const disabled = isBeforeDay(date, today);
+            const selected = selectedDate ? isSameDay(date, selectedDate) : false;
+            return (
+              <button
+                key={formatDateValue(date)}
+                type="button"
+                disabled={disabled}
+                onClick={() => selectDate(date)}
+                className={`flex h-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                  selected
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : disabled
+                      ? "cursor-not-allowed text-gray-300 line-through dark:text-gray-700"
+                      : "text-gray-800 hover:bg-white hover:text-emerald-700 dark:text-gray-100 dark:hover:bg-gray-900 dark:hover:text-emerald-300"
+                }`}
+              >
+                {date.getDate()}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function todayDate() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function parseDateValue(value?: string | null) {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function formatDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date: Date, months: number) {
+  return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function isBeforeDay(a: Date, b: Date) {
+  const left = new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime();
+  const right = new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime();
+  return left < right;
+}
+
+function buildMonthDays(month: Date): Array<Date | null> {
+  const firstDay = startOfMonth(month);
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const blanks = Array.from({ length: firstDay.getDay() }, () => null as Date | null);
+  const days = Array.from({ length: daysInMonth }, (_, index) => new Date(month.getFullYear(), month.getMonth(), index + 1));
+
+  return [...blanks, ...days];
 }
 
 function StepButtons({ onBack, onNext, nextDisabled }: {
