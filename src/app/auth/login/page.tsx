@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -28,9 +28,21 @@ function LoginForm() {
   const idleSignOut = searchParams.get("reason") === "idle";
   const passwordUpdated = searchParams.get("password") === "updated";
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const clearedOnFocusRef = useRef({ email: false, password: false });
+
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+  const emailField = register("email");
+  const passwordField = register("password");
+
+  function clearOnFirstFocus(field: keyof FormData, input: HTMLInputElement) {
+    if (clearedOnFocusRef.current[field]) return;
+
+    clearedOnFocusRef.current[field] = true;
+    input.value = "";
+    setValue(field, "", { shouldDirty: true, shouldValidate: false });
+  }
 
   async function onSubmit(data: FormData) {
     try {
@@ -73,7 +85,14 @@ function LoginForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" {...register("email")} className="mt-1.5" placeholder="you@example.com" />
+          <Input
+            id="email"
+            type="email"
+            {...emailField}
+            onFocus={(event) => clearOnFirstFocus("email", event.currentTarget)}
+            className="mt-1.5"
+            placeholder="you@example.com"
+          />
           {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
         </div>
         <div>
@@ -81,7 +100,13 @@ function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Link href="/auth/forgot-password" className="text-xs text-green-700 hover:underline">Forgot password?</Link>
           </div>
-          <Input id="password" type="password" {...register("password")} placeholder="••••••••" />
+          <Input
+            id="password"
+            type="password"
+            {...passwordField}
+            onFocus={(event) => clearOnFirstFocus("password", event.currentTarget)}
+            placeholder="••••••••"
+          />
           {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>}
         </div>
 
@@ -92,7 +117,7 @@ function LoginForm() {
         )}
 
         <Button type="submit" disabled={isSubmitting} className="w-full bg-green-600 hover:bg-green-700 text-white h-11">
-          {isSubmitting ? "Signing in…" : "Sign In"}
+          {isSubmitting ? "Signing inâ€¦" : "Sign In"}
         </Button>
       </form>
 
