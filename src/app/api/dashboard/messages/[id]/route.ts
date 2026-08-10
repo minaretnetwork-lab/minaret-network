@@ -32,6 +32,15 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const conversation = await getAuthorizedConversation(id, dbUser.id);
   if (!conversation) return Response.json({ error: "Conversation not found" }, { status: 404 });
 
+  await prisma.message.updateMany({
+    where: {
+      conversationId: id,
+      senderId: { not: dbUser.id },
+      readAt: null,
+    },
+    data: { readAt: new Date() },
+  });
+
   const messages = await prisma.message.findMany({
     where: { conversationId: id },
     orderBy: { createdAt: "asc" },

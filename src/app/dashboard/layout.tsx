@@ -36,6 +36,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           email: user.email,
           role: user.role,
           isProfessional: hasProfessionalListings,
+          unreadMessageCount: user.unreadMessageCount,
+          latestUnreadConversationId: user.latestUnreadConversationId,
         }}
       />
 

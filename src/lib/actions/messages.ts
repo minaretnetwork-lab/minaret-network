@@ -143,6 +143,16 @@ export async function getConversationById(id: string) {
   });
 
   if (!conversation) return null;
+
+  await prisma.message.updateMany({
+    where: {
+      conversationId: conversation.id,
+      senderId: { not: dbUser.id },
+      readAt: null,
+    },
+    data: { readAt: new Date() },
+  });
+
   return { currentUserId: dbUser.id, conversation };
 }
 

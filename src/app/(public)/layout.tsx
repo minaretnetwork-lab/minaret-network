@@ -23,6 +23,8 @@ export default async function PublicLayout({
                 email: user.email,
                 role: user.role,
                 isProfessional: user.professionals.length > 0,
+                unreadMessageCount: user.unreadMessageCount,
+                latestUnreadConversationId: user.latestUnreadConversationId,
               }
             : null
         }

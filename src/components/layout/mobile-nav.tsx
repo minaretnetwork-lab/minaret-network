@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LogOut, Shield, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface MobileNavProps {
@@ -11,11 +12,44 @@ interface MobileNavProps {
     displayName?: string | null;
     firstName?: string | null;
     email: string;
+    unreadMessageCount?: number;
+    latestUnreadConversationId?: string | null;
   } | null;
 }
 
 export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavProps) {
   const displayName = user?.displayName ?? user?.firstName ?? user?.email;
+  const [messageNotification, setMessageNotification] = useState({
+    count: user?.unreadMessageCount ?? 0,
+    latestConversationId: user?.latestUnreadConversationId ?? null,
+  });
+  const messageHref = messageNotification.latestConversationId
+    ? `/dashboard/messages/${messageNotification.latestConversationId}`
+    : "/dashboard/messages";
+
+  useEffect(() => {
+    if (!user) return;
+
+    let cancelled = false;
+
+    async function refreshUnreadMessages() {
+      try {
+        const response = await fetch("/api/dashboard/messages/unread", { cache: "no-store" });
+        if (!response.ok) return;
+
+        const payload = await response.json() as { count: number; latestConversationId: string | null };
+        if (!cancelled) setMessageNotification(payload);
+      } catch {
+        // Keep the last known badge state if the network blips.
+      }
+    }
+
+    const interval = window.setInterval(refreshUnreadMessages, 10000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [user]);
 
   return (
     <details className="lg:hidden group">
@@ -56,8 +90,15 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
             {user ? (
               <>
                 <div className="flex items-center gap-2 px-3 py-2 mb-1">
-                  <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                    {(displayName?.[0] ?? "U").toUpperCase()}
+                  <div className="relative flex-shrink-0">
+                    <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold">
+                      {(displayName?.[0] ?? "U").toUpperCase()}
+                    </div>
+                    {messageNotification.count > 0 && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#14532d]">
+                        {messageNotification.count > 9 ? "9+" : messageNotification.count}
+                      </span>
+                    )}
                   </div>
                   <span className="text-sm font-medium text-white truncate">{displayName}</span>
                 </div>
@@ -65,12 +106,17 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                   { href: "/dashboard", label: "My Dashboard" },
                   { href: "/dashboard/profile", label: "My Profile" },
                   { href: "/dashboard/requests", label: "My Requests" },
-                  { href: "/dashboard/messages", label: "Messages" },
+                  { href: messageHref, label: "Messages", badge: messageNotification.count },
                   ...(isProfessional ? [{ href: "/dashboard/leads", label: "Incoming Requests" }] : []),
                 ].map((link) => (
                   <Link key={link.href} href={link.href}
-                    className="py-2.5 px-3 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">
-                    {link.label}
+                    className="flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+                    <span className="flex-1">{link.label}</span>
+                    {typeof link.badge === "number" && link.badge > 0 && (
+                      <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                        {link.badge > 9 ? "9+" : link.badge}
+                      </span>
+                    )}
                   </Link>
                 ))}
                 {isAdmin && (

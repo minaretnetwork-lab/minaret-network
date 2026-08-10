@@ -86,7 +86,7 @@ export async function getCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  return prisma.user.findUnique({
+  const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
     include: {
       professionals: {
@@ -95,4 +95,32 @@ export async function getCurrentUser() {
       },
     },
   });
+
+  if (!dbUser) return null;
+
+  const unreadWhere = {
+    readAt: null,
+    senderId: { not: dbUser.id },
+    conversation: {
+      OR: [
+        { requesterId: dbUser.id },
+        { professional: { userId: dbUser.id } },
+      ],
+    },
+  };
+
+  const [unreadMessageCount, latestUnreadMessage] = await Promise.all([
+    prisma.message.count({ where: unreadWhere }),
+    prisma.message.findFirst({
+      where: unreadWhere,
+      orderBy: { createdAt: "desc" },
+      select: { conversationId: true },
+    }),
+  ]);
+
+  return {
+    ...dbUser,
+    unreadMessageCount,
+    latestUnreadConversationId: latestUnreadMessage?.conversationId ?? null,
+  };
 }

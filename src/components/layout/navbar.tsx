@@ -12,6 +12,8 @@ interface NavbarProps {
     email: string;
     role: string;
     isProfessional?: boolean;
+    unreadMessageCount?: number;
+    latestUnreadConversationId?: string | null;
   } | null;
 }
 
@@ -73,6 +75,8 @@ export function Navbar({ user }: NavbarProps) {
                 displayName={displayName}
                 isAdmin={isAdmin}
                 isProfessional={isProfessional}
+                unreadMessageCount={user.unreadMessageCount ?? 0}
+                latestUnreadConversationId={user.latestUnreadConversationId ?? null}
               />
             ) : (
               <>
