@@ -33,13 +33,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing message details." }, { status: 400 });
   }
 
-  if (!dbUser.preferredContact) {
-    return NextResponse.json(
-      { error: "Please choose your preferred contact method first.", profileUrl: "/dashboard/profile" },
-      { status: 409 }
-    );
-  }
-
   const professional = await prisma.professional.findFirst({
     where: { id: professionalId, status: "APPROVED" },
     include: {
@@ -63,6 +56,7 @@ export async function POST(request: Request) {
     null;
 
   const contactPhone = dbUser.whatsapp || dbUser.phone || null;
+  const preferredContact = dbUser.preferredContact ?? (dbUser.whatsapp ? "WHATSAPP" : dbUser.phone ? "PHONE" : "EMAIL");
   const serviceRequest = await prisma.serviceRequest.create({
     data: {
       mosqueId: mosque.id,
@@ -70,7 +64,7 @@ export async function POST(request: Request) {
       categoryId: professional.categoryId,
       serviceAreaId: serviceArea?.id ?? null,
       description: issue,
-      preferredContact: dbUser.preferredContact,
+      preferredContact,
       contactName: displayName(dbUser),
       contactEmail: dbUser.email,
       contactPhone,

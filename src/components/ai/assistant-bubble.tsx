@@ -186,11 +186,6 @@ export function AssistantBubble() {
         router.push(`/auth/login?redirectTo=${encodeURIComponent("/")}`);
         return;
       }
-      if (response.status === 409 && payload.profileUrl) {
-        setError("Please save your preferred contact method once, then come back to message professionals.");
-        router.push(payload.profileUrl);
-        return;
-      }
       if (!response.ok) throw new Error(payload.error ?? "Could not start the chat.");
       router.push(payload.chatUrl);
     } catch (err) {
@@ -330,7 +325,11 @@ export function AssistantBubble() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => startChat(professional.id)}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              startChat(professional.id);
+                            }}
                             disabled={loading}
                             className="w-full gap-1 border-emerald-200 text-emerald-700 sm:w-auto"
                           >
@@ -338,7 +337,13 @@ export function AssistantBubble() {
                             Message
                           </Button>
                           {professional.whatsappUrl && (
-                            <a href={professional.whatsappUrl} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                            <a
+                              href={professional.whatsappUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(event) => event.stopPropagation()}
+                              className="w-full sm:w-auto"
+                            >
                               <Button size="sm" className="w-full gap-1 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
                                 <MessageCircle className="h-3.5 w-3.5" />
                                 WhatsApp
@@ -346,7 +351,7 @@ export function AssistantBubble() {
                             </a>
                           )}
                           {professional.emailUrl && (
-                            <a href={professional.emailUrl} className="w-full sm:w-auto">
+                            <a href={professional.emailUrl} onClick={(event) => event.stopPropagation()} className="w-full sm:w-auto">
                               <Button size="sm" variant="outline" className="w-full gap-1 border-emerald-200 text-emerald-700 sm:w-auto">
                                 <Mail className="h-3.5 w-3.5" />
                                 Email
@@ -354,7 +359,7 @@ export function AssistantBubble() {
                             </a>
                           )}
                           {professional.callUrl && (
-                            <a href={professional.callUrl} className="w-full sm:w-auto">
+                            <a href={professional.callUrl} onClick={(event) => event.stopPropagation()} className="w-full sm:w-auto">
                               <Button size="sm" variant="outline" className="w-full gap-1 border-emerald-200 text-emerald-700 sm:w-auto">
                                 <Phone className="h-3.5 w-3.5" />
                                 Call
