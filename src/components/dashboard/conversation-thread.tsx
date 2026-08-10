@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { SendHorizonal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
 import { cn } from "@/lib/utils";
 
 type ConversationMessage = {
@@ -54,6 +55,10 @@ export function ConversationThread({
   }, [latestMessageId]);
 
   useEffect(() => {
+    window.dispatchEvent(new Event(MESSAGE_NOTIFICATIONS_CHANGED_EVENT));
+  }, [conversationId]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function refreshMessages() {
@@ -62,7 +67,10 @@ export function ConversationThread({
         if (!response.ok) return;
 
         const payload = await response.json() as MessagesPayload;
-        if (!cancelled) setMessages(payload.messages);
+        if (!cancelled) {
+          setMessages(payload.messages);
+          window.dispatchEvent(new Event(MESSAGE_NOTIFICATIONS_CHANGED_EVENT));
+        }
       } catch {
         // Keep the current thread visible if the network blips.
       }

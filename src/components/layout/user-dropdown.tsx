@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LayoutDashboard, User, FileText, Sparkles, Star, Shield, LogOut, ChevronDown, Send, MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
 
 interface Props {
   displayName: string;
@@ -52,9 +53,12 @@ export function UserDropdown({
       }
     }
 
+    refreshUnreadMessages();
+    window.addEventListener(MESSAGE_NOTIFICATIONS_CHANGED_EVENT, refreshUnreadMessages);
     const interval = window.setInterval(refreshUnreadMessages, 10000);
     return () => {
       cancelled = true;
+      window.removeEventListener(MESSAGE_NOTIFICATIONS_CHANGED_EVENT, refreshUnreadMessages);
       window.clearInterval(interval);
     };
   }, []);

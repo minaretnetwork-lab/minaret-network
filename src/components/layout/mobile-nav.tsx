@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LogOut, Shield, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
 
 interface MobileNavProps {
   isAdmin: boolean;
@@ -44,9 +45,12 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
       }
     }
 
+    refreshUnreadMessages();
+    window.addEventListener(MESSAGE_NOTIFICATIONS_CHANGED_EVENT, refreshUnreadMessages);
     const interval = window.setInterval(refreshUnreadMessages, 10000);
     return () => {
       cancelled = true;
+      window.removeEventListener(MESSAGE_NOTIFICATIONS_CHANGED_EVENT, refreshUnreadMessages);
       window.clearInterval(interval);
     };
   }, [user]);
