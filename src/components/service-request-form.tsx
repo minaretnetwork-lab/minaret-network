@@ -88,6 +88,7 @@ interface Props {
   defaultName?: string;
   defaultEmail?: string;
   defaultPhone?: string;
+  defaultPreferredContact?: ContactMethod;
 }
 
 type ContactMethod = "EMAIL" | "PHONE" | "WHATSAPP";
@@ -177,28 +178,59 @@ function readStoredDraft() {
   }
 }
 
-export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, defaultName = "", defaultEmail = "", defaultPhone = "" }: Props) {
+export function ServiceRequestForm({
+  categories,
+  serviceAreas,
+  isAuthenticated,
+  defaultName = "",
+  defaultEmail = "",
+  defaultPhone = "",
+  defaultPreferredContact,
+}: Props) {
   const emptyForm: FormState = {
     categoryId: "",
     categoryName: "",
     categoryIcon: "",
     serviceAreaId: "",
     description: "",
-    preferredContact: "EMAIL",
+    preferredContact: defaultPreferredContact ?? "EMAIL",
     contactName: defaultName,
     contactEmail: defaultEmail,
     contactPhone: defaultPhone,
     preferredDate: "",
   };
   const [initialDraft] = useState(() => readStoredDraft());
-  const [step, setStep] = useState(initialDraft?.step ?? 0);
+  const mergedDraft = initialDraft
+    ? {
+        ...initialDraft,
+        form: {
+          ...emptyForm,
+          ...initialDraft.form,
+          contactName: initialDraft.form.contactName || defaultName,
+          contactEmail: initialDraft.form.contactEmail || defaultEmail,
+          contactPhone: initialDraft.form.contactPhone || defaultPhone,
+          preferredContact: defaultPreferredContact ?? initialDraft.form.preferredContact,
+        },
+        step:
+          isAuthenticated &&
+          defaultName &&
+          defaultEmail &&
+          defaultPreferredContact &&
+          initialDraft.form.categoryId &&
+          initialDraft.form.serviceAreaId &&
+          initialDraft.form.description
+            ? 4
+            : initialDraft.step,
+      }
+    : null;
+  const [step, setStep] = useState(mergedDraft?.step ?? 0);
   const [authGate, setAuthGate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("");
   const [descriptionFocused, setDescriptionFocused] = useState(false);
-  const [form, setForm] = useState<FormState>(initialDraft?.form ?? emptyForm);
+  const [form, setForm] = useState<FormState>(mergedDraft?.form ?? emptyForm);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(parseDateValue(initialDraft?.form.preferredDate) ?? todayDate()));
   const selectedCategory = categories.find((category) => category.id === form.categoryId);
   const descriptionExample =

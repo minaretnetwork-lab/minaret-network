@@ -38,6 +38,7 @@ export default async function RequestPage() {
           defaultName={user?.displayName ?? [user?.firstName, user?.lastName].filter(Boolean).join(" ") ?? ""}
           defaultEmail={user?.email ?? ""}
           defaultPhone={user?.phone ?? ""}
+          defaultPreferredContact={user?.preferredContact ?? undefined}
         />
       </div>
     </div>

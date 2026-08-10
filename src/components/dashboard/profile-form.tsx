@@ -16,12 +16,13 @@ const schema = z.object({
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
   whatsappSameAsPhone: z.boolean(),
+  preferredContact: z.enum(["EMAIL", "PHONE", "WHATSAPP"]).optional(),
 });
 
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  defaultValues: { firstName: string; lastName: string; phone: string; whatsapp: string };
+  defaultValues: { firstName: string; lastName: string; phone: string; whatsapp: string; preferredContact?: "EMAIL" | "PHONE" | "WHATSAPP" };
 }
 
 export function ProfileForm({ defaultValues }: Props) {
@@ -56,6 +57,7 @@ export function ProfileForm({ defaultValues }: Props) {
         lastName: data.lastName,
         phone: data.phone,
         whatsapp: data.whatsappSameAsPhone ? data.phone : data.whatsapp,
+        preferredContact: data.preferredContact,
       });
       setStatus("success");
     } catch {
@@ -108,6 +110,31 @@ export function ProfileForm({ defaultValues }: Props) {
               onChange={(val) => setValue("whatsapp", val)}
             />
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Default preferred contact method</Label>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {[
+              ["EMAIL", "Email"],
+              ["PHONE", "Phone call"],
+              ["WHATSAPP", "WhatsApp"],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setValue("preferredContact", value as "EMAIL" | "PHONE" | "WHATSAPP")}
+                className={`rounded-xl border-2 px-3 py-3 text-sm font-medium transition ${
+                  watch("preferredContact") === value
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-gray-200 text-gray-600 hover:border-emerald-300 dark:border-gray-700 dark:text-gray-300"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400">Used to prefill future service requests.</p>
         </div>
 
         {status === "success" && (

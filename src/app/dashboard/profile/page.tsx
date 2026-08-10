@@ -17,6 +17,7 @@ export default async function ProfilePage() {
           lastName: user.lastName ?? "",
           phone: user.phone ?? "",
           whatsapp: user.whatsapp ?? "",
+          preferredContact: user.preferredContact ?? undefined,
         }}
       />
     </div>

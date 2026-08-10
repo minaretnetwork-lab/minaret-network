@@ -46,6 +46,7 @@ model User {
   avatarUrl     String?
   phone         String?
   whatsapp      String?
+  preferredContact ContactMethod?
   role          UserRole @default(MEMBER)
   mosqueId      String?
   mosque        Mosque?  @relation(fields: [mosqueId], references: [id])

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Bot, BriefcaseBusiness, Loader2, LocateFixed, Mail, MapPin, MessageCircle, Phone, Send, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,7 @@ function storeBroadcastDraft(result: MatchResult, issue: string) {
 }
 
 export function AssistantBubble() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("issue");
   const [issue, setIssue] = useState("");
@@ -160,6 +162,39 @@ export function AssistantBubble() {
       setStage("results");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not match your request.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function startChat(professionalId: string) {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/ai/start-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ professionalId, issue, location }),
+      });
+      const payload = await response.json();
+      if (response.status === 401) {
+        try {
+          window.sessionStorage.setItem("minaret_ai_pending_chat", JSON.stringify({ professionalId, issue, location }));
+        } catch {
+          // ignore
+        }
+        router.push(`/auth/login?redirectTo=${encodeURIComponent("/")}`);
+        return;
+      }
+      if (response.status === 409 && payload.profileUrl) {
+        setError("Please save your preferred contact method once, then come back to message professionals.");
+        router.push(payload.profileUrl);
+        return;
+      }
+      if (!response.ok) throw new Error(payload.error ?? "Could not start the chat.");
+      router.push(payload.chatUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not start the chat.");
     } finally {
       setLoading(false);
     }
@@ -268,7 +303,12 @@ export function AssistantBubble() {
                 ) : (
                   <div className="space-y-3">
                     {result.professionals.map((professional) => (
-                      <div key={professional.id} className="rounded-2xl border border-gray-200 p-4 dark:border-gray-800">
+                      <div key={professional.id} className="relative rounded-2xl border border-gray-200 p-4 transition hover:border-emerald-300 dark:border-gray-800">
+                        <Link
+                          href={professional.profileUrl}
+                          aria-label={`View ${professional.businessName} profile`}
+                          className="absolute inset-0 rounded-2xl"
+                        />
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-semibold text-gray-900 dark:text-white">{professional.businessName}</p>
@@ -286,12 +326,17 @@ export function AssistantBubble() {
                             </span>
                           )}
                         </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <Link href={professional.profileUrl} className="w-full sm:w-auto">
-                            <Button size="sm" variant="outline" className="w-full sm:w-auto">
-                              View profile
-                            </Button>
-                          </Link>
+                        <div className="relative z-10 mt-3 flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startChat(professional.id)}
+                            disabled={loading}
+                            className="w-full gap-1 border-emerald-200 text-emerald-700 sm:w-auto"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            Message
+                          </Button>
                           {professional.whatsappUrl && (
                             <a href={professional.whatsappUrl} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
                               <Button size="sm" className="w-full gap-1 bg-green-600 text-white hover:bg-green-700 sm:w-auto">

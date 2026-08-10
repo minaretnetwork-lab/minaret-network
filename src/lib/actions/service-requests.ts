@@ -49,6 +49,7 @@ export async function submitServiceRequest(data: {
           ...(!dbUser.displayName && data.contactName ? { displayName: data.contactName } : {}),
           // Always update phone if the form has one (user may have added it just now)
           ...(data.contactPhone ? { phone: data.contactPhone } : {}),
+          preferredContact: data.preferredContact,
         },
       }),
     ]);

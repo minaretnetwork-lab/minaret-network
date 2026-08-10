@@ -53,6 +53,7 @@ export async function updateUserProfile(data: {
   lastName: string;
   phone?: string;
   whatsapp?: string;
+  preferredContact?: "EMAIL" | "PHONE" | "WHATSAPP";
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -67,6 +68,7 @@ export async function updateUserProfile(data: {
       displayName: `${data.firstName} ${data.lastName}`,
       phone: data.phone || null,
       whatsapp: data.whatsapp || null,
+      preferredContact: data.preferredContact ?? null,
     },
   });
 
