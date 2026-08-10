@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bell, ChevronDown } from "lucide-react";
+import { Bell, ArrowDown } from "lucide-react";
 
 const STORAGE_KEY = "minaret_viewed_incoming_request_ids";
 
@@ -56,13 +56,13 @@ export function IncomingRequestsAlert({ requestIds }: { requestIds: string[] }) 
           onClick={markViewedAndScroll}
           className="inline-flex flex-shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
         >
-          <span>{requestIds.length} open</span>
+          <span>View {requestIds.length} open</span>
           {newIds.length > 0 && (
             <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">
               {newIds.length} new
             </span>
           )}
-          <ChevronDown className="h-3.5 w-3.5" />
+          <ArrowDown className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>
