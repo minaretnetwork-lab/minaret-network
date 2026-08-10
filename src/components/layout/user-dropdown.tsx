@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, User, FileText, Sparkles, Star, Shield, LogOut, ChevronDown, Send } from "lucide-react";
+import { LayoutDashboard, User, FileText, Sparkles, Star, Shield, LogOut, ChevronDown, Send, MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface Props {
@@ -26,6 +26,7 @@ export function UserDropdown({ displayName, isAdmin, isProfessional }: Props) {
     { href: "/dashboard", label: "My Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: "/dashboard/profile", label: "My Profile", icon: <User className="h-4 w-4" /> },
     { href: "/dashboard/requests", label: "My Requests", icon: <FileText className="h-4 w-4" /> },
+    { href: "/dashboard/messages", label: "Messages", icon: <MessageCircle className="h-4 w-4" /> },
     ...(isProfessional ? [
       { href: "/dashboard/leads", label: "Incoming Requests", icon: <Send className="h-4 w-4" /> },
       { href: "/dashboard/promote", label: "Sponsored Listing", icon: <Sparkles className="h-4 w-4" /> },

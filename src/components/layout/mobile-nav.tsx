@@ -65,6 +65,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                   { href: "/dashboard", label: "My Dashboard" },
                   { href: "/dashboard/profile", label: "My Profile" },
                   { href: "/dashboard/requests", label: "My Requests" },
+                  { href: "/dashboard/messages", label: "Messages" },
                   ...(isProfessional ? [{ href: "/dashboard/leads", label: "Incoming Requests" }] : []),
                 ].map((link) => (
                   <Link key={link.href} href={link.href}

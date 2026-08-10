@@ -7,6 +7,7 @@ import {
   UserCheck, CalendarDays, Tag, FileText,
 } from "lucide-react";
 import { getServiceRequestById } from "@/lib/actions/service-requests";
+import { getConversationsForMyRequest } from "@/lib/actions/messages";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
 
@@ -33,7 +34,10 @@ const CONTACT_ICON: Record<string, React.ReactNode> = {
 
 export default async function RequestDetailPage({ params }: Props) {
   const { id } = await params;
-  const req = await getServiceRequestById(id);
+  const [req, conversations] = await Promise.all([
+    getServiceRequestById(id),
+    getConversationsForMyRequest(id),
+  ]);
 
   if (!req) notFound();
 
@@ -123,6 +127,37 @@ export default async function RequestDetailPage({ params }: Props) {
             {assignedName}
           </Link>
           <p className="text-sm text-emerald-600/70 mt-1">Click to view their full profile</p>
+        </div>
+      )}
+
+      {conversations.length > 0 && (
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h2 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+            <MessageCircle className="h-4 w-4 text-emerald-600" />
+            Conversations about this request
+          </h2>
+          <div className="mt-4 space-y-2">
+            {conversations.map((conversation) => {
+              const proName =
+                conversation.professional.user.displayName ||
+                [conversation.professional.user.firstName, conversation.professional.user.lastName].filter(Boolean).join(" ") ||
+                conversation.professional.user.email;
+              const lastMessage = conversation.messages[0];
+
+              return (
+                <Link
+                  key={conversation.id}
+                  href={`/dashboard/messages/${conversation.id}`}
+                  className="block rounded-xl border border-gray-100 bg-gray-50 p-3 transition hover:border-emerald-200 hover:bg-emerald-50 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-emerald-900/10"
+                >
+                  <p className="font-medium text-gray-900 dark:text-white">{proName}</p>
+                  <p className="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">
+                    {lastMessage?.body ?? "Open the thread to reply."}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
 
