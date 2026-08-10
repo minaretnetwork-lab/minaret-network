@@ -2,12 +2,11 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, ChevronLeft, FileText, MapPin, SendHorizonal, Tag } from "lucide-react";
-import { getConversationById, sendConversationMessage } from "@/lib/actions/messages";
-import { Button } from "@/components/ui/button";
+import { CalendarDays, ChevronLeft, FileText, MapPin, Tag } from "lucide-react";
+import { getConversationById } from "@/lib/actions/messages";
 import { CategoryIcon } from "@/components/ui/category-icon";
-import { Textarea } from "@/components/ui/textarea";
-import { cn, formatDate } from "@/lib/utils";
+import { ConversationThread } from "@/components/dashboard/conversation-thread";
+import { formatDate } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -80,58 +79,17 @@ export default async function ConversationPage({ params }: Props) {
         </Link>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <div className="space-y-3">
-          {conversation.messages.length === 0 ? (
-            <div className="rounded-xl bg-gray-50 p-5 text-center text-sm text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
-              No messages yet. Send the first note below.
-            </div>
-          ) : (
-            conversation.messages.map((message) => {
-              const mine = message.senderId === currentUserId;
-              return (
-                <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                  <div
-                    className={cn(
-                      "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
-                      mine
-                        ? "rounded-br-sm bg-emerald-600 text-white"
-                        : "rounded-bl-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                    )}
-                  >
-                    <p className="whitespace-pre-line">{message.body}</p>
-                    <p className={cn("mt-2 text-[11px]", mine ? "text-white/70" : "text-gray-400")}>
-                      {displayName(message.sender)} ·{" "}
-                      {new Date(message.createdAt).toLocaleString("en-CA", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        <form action={sendConversationMessage.bind(null, conversation.id)} className="mt-5 space-y-3 border-t border-gray-100 pt-4 dark:border-gray-800">
-          <Textarea
-            name="body"
-            minLength={1}
-            maxLength={2000}
-            required
-            rows={4}
-            placeholder="Write a reply..."
-            className="min-h-28 resize-none bg-white dark:bg-gray-950"
-          />
-          <Button type="submit" className="w-full gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700 sm:w-auto">
-            <SendHorizonal className="h-4 w-4" />
-            Send message
-          </Button>
-        </form>
-      </div>
+      <ConversationThread
+        conversationId={conversation.id}
+        currentUserId={currentUserId}
+        initialMessages={conversation.messages.map((message) => ({
+          id: message.id,
+          senderId: message.senderId,
+          senderName: displayName(message.sender),
+          body: message.body,
+          createdAt: message.createdAt.toISOString(),
+        }))}
+      />
     </div>
   );
 }
