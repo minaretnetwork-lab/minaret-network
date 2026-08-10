@@ -164,8 +164,8 @@ const CATEGORY_EXAMPLES: Record<string, string> = {
 
 const DRAFT_KEY = "minaret_draft_request";
 
-function readStoredDraft(isAuthenticated: boolean) {
-  if (!isAuthenticated || typeof window === "undefined") return null;
+function readStoredDraft() {
+  if (typeof window === "undefined") return null;
 
   try {
     const raw = window.sessionStorage.getItem(DRAFT_KEY);
@@ -190,7 +190,7 @@ export function ServiceRequestForm({ categories, serviceAreas, isAuthenticated, 
     contactPhone: defaultPhone,
     preferredDate: "",
   };
-  const [initialDraft] = useState(() => readStoredDraft(isAuthenticated));
+  const [initialDraft] = useState(() => readStoredDraft());
   const [step, setStep] = useState(initialDraft?.step ?? 0);
   const [authGate, setAuthGate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
