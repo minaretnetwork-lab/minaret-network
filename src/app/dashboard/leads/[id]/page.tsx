@@ -148,6 +148,13 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
           <ConversationThread
             conversationId={conversationData.conversation.id}
             currentUserId={conversationData.currentUserId}
+            initialContextMessage={{
+              id: `request-${request.id}`,
+              senderId: request.userId,
+              senderName: requesterName,
+              body: request.description,
+              createdAt: request.createdAt.toISOString(),
+            }}
             initialMessages={conversationData.conversation.messages.map((message) => ({
               id: message.id,
               senderId: message.senderId,

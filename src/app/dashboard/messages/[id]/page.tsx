@@ -115,6 +115,13 @@ export default async function ConversationPage({ params }: Props) {
       <ConversationThread
         conversationId={conversation.id}
         currentUserId={currentUserId}
+        initialContextMessage={{
+          id: `request-${conversation.serviceRequestId}`,
+          senderId: conversation.requesterId,
+          senderName: displayName(conversation.requester),
+          body: conversation.serviceRequest.description,
+          createdAt: conversation.serviceRequest.createdAt.toISOString(),
+        }}
         initialMessages={conversation.messages.map((message) => ({
           id: message.id,
           senderId: message.senderId,

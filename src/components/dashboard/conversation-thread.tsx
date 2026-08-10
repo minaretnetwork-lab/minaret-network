@@ -33,17 +33,23 @@ export function ConversationThread({
   conversationId,
   currentUserId,
   initialMessages,
+  initialContextMessage,
 }: {
   conversationId: string;
   currentUserId: string;
   initialMessages: ConversationMessage[];
+  initialContextMessage?: ConversationMessage;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
-  const latestMessageId = messages.at(-1)?.id;
+  const displayMessages = useMemo(
+    () => initialContextMessage ? [initialContextMessage, ...messages] : messages,
+    [initialContextMessage, messages]
+  );
+  const latestMessageId = displayMessages.at(-1)?.id;
 
   const endpoint = useMemo(
     () => `/api/dashboard/messages/${encodeURIComponent(conversationId)}`,
@@ -122,12 +128,12 @@ export function ConversationThread({
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
       <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1 sm:max-h-[34rem]">
-        {messages.length === 0 ? (
+        {displayMessages.length === 0 ? (
           <div className="rounded-xl bg-gray-50 p-5 text-center text-sm text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
             No messages yet. Send the first note below.
           </div>
         ) : (
-          messages.map((message) => {
+          displayMessages.map((message) => {
             const mine = message.senderId === currentUserId;
             return (
               <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
