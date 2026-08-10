@@ -102,6 +102,7 @@ async function getCurrentDbUserWithListings() {
           title: true,
           categoryId: true,
           category: { select: { name: true, slug: true, icon: true } },
+          user: { select: { firstName: true, lastName: true, displayName: true } },
           serviceAreas: { select: { id: true, name: true } },
         },
       },
@@ -130,7 +131,7 @@ export async function getMatchingServiceRequests(limit?: number) {
   const filters = buildProfessionalRequestFilters(dbUser.professionals);
   if (filters.length === 0) return [];
 
-  return prisma.serviceRequest.findMany({
+  const requests = await prisma.serviceRequest.findMany({
     where: {
       userId: { not: dbUser.id },
       status: "OPEN",
@@ -139,9 +140,45 @@ export async function getMatchingServiceRequests(limit?: number) {
     include: {
       category: { select: { name: true, slug: true, icon: true } },
       serviceArea: { select: { id: true, name: true } },
+      conversations: {
+        where: { professional: { userId: dbUser.id } },
+        select: {
+          id: true,
+          professionalId: true,
+          professional: {
+            select: {
+              id: true,
+              businessName: true,
+              title: true,
+              user: { select: { firstName: true, lastName: true, displayName: true } },
+            },
+          },
+        },
+        take: 1,
+      },
     },
     orderBy: { createdAt: "desc" },
     ...(limit ? { take: limit } : {}),
+  });
+
+  return requests.map((request) => {
+    const conversation = request.conversations[0] ?? null;
+    const matchedProfessional =
+      conversation?.professional ??
+      dbUser.professionals.find((professional) => {
+        const matchesCategory = professional.categoryId === request.categoryId;
+        const matchesArea = request.serviceAreaId
+          ? professional.serviceAreas.some((area) => area.id === request.serviceAreaId)
+          : false;
+        return matchesCategory && matchesArea;
+      }) ??
+      null;
+
+    return {
+      ...request,
+      matchedProfessional,
+      conversationId: conversation?.id ?? null,
+    };
   });
 }
 
