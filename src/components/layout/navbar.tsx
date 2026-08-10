@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
+import { MobileProfileShortcut } from "./mobile-profile-shortcut";
 import { UserDropdown } from "./user-dropdown";
 
 interface NavbarProps {
@@ -95,7 +96,16 @@ export function Navbar({ user }: NavbarProps) {
           </div>
 
           {/* Mobile toggle — isolated client component */}
-          <MobileNav isAdmin={isAdmin} isProfessional={isProfessional} user={user ?? null} />
+          <div className="flex items-center gap-1 lg:hidden">
+            {user && (
+              <MobileProfileShortcut
+                displayName={displayName}
+                unreadMessageCount={user.unreadMessageCount ?? 0}
+                latestUnreadConversationId={user.latestUnreadConversationId ?? null}
+              />
+            )}
+            <MobileNav isAdmin={isAdmin} isProfessional={isProfessional} user={user ?? null} />
+          </div>
         </div>
       </header>
     </>
