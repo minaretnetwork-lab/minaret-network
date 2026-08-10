@@ -129,7 +129,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
         <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Respond to the requester</h2>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <form action={startConversationForServiceRequest.bind(null, request.id)} className="w-full sm:w-auto">
-            <Button className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
+            <Button type="submit" className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
               <MessageCircle className="h-4 w-4" />
               Message
             </Button>
