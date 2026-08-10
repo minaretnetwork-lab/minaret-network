@@ -41,6 +41,11 @@ function displayName(user: { displayName: string | null; firstName: string | nul
   return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "User";
 }
 
+function firstName(user?: { displayName: string | null; firstName: string | null; lastName: string | null } | null) {
+  if (!user) return "Professional";
+  return user.firstName || user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || "Professional";
+}
+
 export default async function MatchingRequestDetailPage({ params }: Props) {
   const { id } = await params;
   const [request, conversationData] = await Promise.all([
@@ -55,6 +60,10 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
     request.user.displayName ??
     [request.user.firstName, request.user.lastName].filter(Boolean).join(" ") ??
     "Requester";
+  const professional = request.matchedProfessional;
+  const professionalName = firstName(professional?.user);
+  const businessName = professional?.businessName || professional?.title || request.category.name;
+  const requestTitle = professional ? `${professionalName} at ${businessName}` : request.category.name;
   const whatsappHref = request.contactPhone
     ? buildWhatsAppUrl(
         request.contactPhone,
@@ -79,7 +88,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
               <CategoryIcon slug={request.category.slug} className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{request.category.name}</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{requestTitle}</h1>
               {request.serviceArea && (
                 <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-400">
                   <MapPin className="h-3.5 w-3.5" />

@@ -189,7 +189,7 @@ export async function getMatchingServiceRequestById(id: string) {
   const filters = buildProfessionalRequestFilters(dbUser.professionals);
   if (filters.length === 0) return null;
 
-  return prisma.serviceRequest.findFirst({
+  const request = await prisma.serviceRequest.findFirst({
     where: {
       id,
       userId: { not: dbUser.id },
@@ -200,8 +200,44 @@ export async function getMatchingServiceRequestById(id: string) {
       category: { select: { id: true, name: true, slug: true, icon: true } },
       serviceArea: { select: { id: true, name: true } },
       user: { select: { displayName: true, firstName: true, lastName: true } },
+      conversations: {
+        where: { professional: { userId: dbUser.id } },
+        select: {
+          id: true,
+          professionalId: true,
+          professional: {
+            select: {
+              id: true,
+              businessName: true,
+              title: true,
+              user: { select: { firstName: true, lastName: true, displayName: true } },
+            },
+          },
+        },
+        take: 1,
+      },
     },
   });
+
+  if (!request) return null;
+
+  const conversation = request.conversations[0] ?? null;
+  const matchedProfessional =
+    conversation?.professional ??
+    dbUser.professionals.find((professional) => {
+      const matchesCategory = professional.categoryId === request.categoryId;
+      const matchesArea = request.serviceAreaId
+        ? professional.serviceAreas.some((area) => area.id === request.serviceAreaId)
+        : false;
+      return matchesCategory && matchesArea;
+    }) ??
+    null;
+
+  return {
+    ...request,
+    matchedProfessional,
+    conversationId: conversation?.id ?? null,
+  };
 }
 
 export async function getServiceRequestById(id: string) {
