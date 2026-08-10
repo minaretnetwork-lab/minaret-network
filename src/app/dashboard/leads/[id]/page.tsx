@@ -130,15 +130,15 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
         <p className="mt-1 text-sm leading-relaxed text-emerald-800/80 dark:text-emerald-200/80">
           Start a site conversation to keep a history here, or use the contact details they provided.
         </p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-          <form action={startConversationForServiceRequest.bind(null, request.id)}>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <form action={startConversationForServiceRequest.bind(null, request.id)} className="w-full sm:w-auto">
             <Button className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
               <MessageCircle className="h-4 w-4" />
               Message on Minaret
             </Button>
           </form>
           {whatsappHref && (
-            <a href={whatsappHref} target="_blank" rel="noreferrer">
+            <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
               <Button className="w-full gap-1.5 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
                 <MessageCircle className="h-4 w-4" />
                 Respond on WhatsApp
@@ -146,7 +146,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
             </a>
           )}
           {request.contactEmail && (
-            <a href={`mailto:${request.contactEmail}`}>
+            <a href={`mailto:${request.contactEmail}`} className="w-full sm:w-auto">
               <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
                 <Mail className="h-4 w-4" />
                 Email requester
@@ -154,7 +154,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
             </a>
           )}
           {request.contactPhone && (
-            <a href={`tel:${request.contactPhone}`}>
+            <a href={`tel:${request.contactPhone}`} className="w-full sm:w-auto">
               <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
                 <Phone className="h-4 w-4" />
                 Call requester
