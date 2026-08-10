@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
-import { LayoutDashboard, User, FileText, Shield, Sparkles, Star } from "lucide-react";
+import { LayoutDashboard, User, FileText, Shield, Sparkles, Star, Send } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
@@ -16,6 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { href: "/dashboard/requests", label: "My Requests", icon: <FileText className="h-4 w-4" /> },
     ...(user.role === "PROFESSIONAL" || hasProfessionalListings ? [
       { href: "/dashboard/professional", label: "Professional Profile", icon: <Shield className="h-4 w-4" /> },
+      { href: "/dashboard/leads", label: "Matching Requests", icon: <Send className="h-4 w-4" /> },
       { href: "/dashboard/promote", label: "Sponsored Listing", icon: <Sparkles className="h-4 w-4" /> },
       { href: "/dashboard/featured", label: "Featured Business", icon: <Star className="h-4 w-4" /> },
     ] : []),

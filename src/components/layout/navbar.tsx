@@ -91,7 +91,7 @@ export function Navbar({ user }: NavbarProps) {
           </div>
 
           {/* Mobile toggle — isolated client component */}
-          <MobileNav isAdmin={isAdmin} user={user ?? null} />
+          <MobileNav isAdmin={isAdmin} isProfessional={isProfessional} user={user ?? null} />
         </div>
       </header>
     </>

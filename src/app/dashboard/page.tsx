@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
-import { getMyServiceRequests } from "@/lib/actions/service-requests";
+import { getMatchingServiceRequests, getMyServiceRequests } from "@/lib/actions/service-requests";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, User, Search, ChevronRight, Clock } from "lucide-react";
+import { FileText, User, Search, ChevronRight, Clock, MapPin, Send } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
 
@@ -20,6 +20,7 @@ export default async function DashboardPage() {
   const displayName = user.displayName ?? user.firstName ?? "there";
   const recentRequests = requests.slice(0, 3);
   const latestProfessional = user.professionals[0] ?? null;
+  const recentMatchingRequests = latestProfessional ? await getMatchingServiceRequests(3) : [];
 
   return (
     <div className="space-y-6">
@@ -145,6 +146,55 @@ export default async function DashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {latestProfessional && (
+        <Card className="border-gray-200 dark:border-gray-800">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Matching Service Requests</CardTitle>
+              <Link href="/dashboard/leads">
+                <Button variant="ghost" size="sm" className="text-xs text-green-700 gap-1">
+                  View all <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {recentMatchingRequests.length === 0 ? (
+              <div className="text-center py-8">
+                <Send className="mx-auto mb-3 h-9 w-9 text-gray-300" />
+                <p className="text-sm text-gray-400">No matching requests right now.</p>
+                <p className="mt-1 text-xs text-gray-400">Open requests matching your category and service areas will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentMatchingRequests.map((req) => (
+                  <Link key={req.id} href={`/dashboard/leads/${req.id}`} className="group flex items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-emerald-50 dark:bg-gray-800/50 dark:hover:bg-emerald-900/10">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-gray-800">
+                      <CategoryIcon slug={req.category.slug} className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{req.category.name}</p>
+                        {req.serviceArea && (
+                          <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                            <MapPin className="h-3 w-3" />
+                            {req.serviceArea.name}
+                          </span>
+                        )}
+                      </div>
+                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">{req.description}</p>
+                    </div>
+                    <span className="flex-shrink-0 text-xs text-gray-400">
+                      {formatDate(req.createdAt)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

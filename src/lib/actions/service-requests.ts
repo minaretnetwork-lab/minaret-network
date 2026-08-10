@@ -54,6 +54,7 @@ export async function submitServiceRequest(data: {
     ]);
 
     revalidatePath("/dashboard/requests");
+    revalidatePath("/dashboard/leads");
     revalidatePath("/dashboard/profile");
     return request;
   } catch (e) {
@@ -82,6 +83,87 @@ export async function getMyServiceRequests() {
       },
     },
     orderBy: { createdAt: "desc" },
+  });
+}
+
+async function getCurrentDbUserWithListings() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  return prisma.user.findUnique({
+    where: { supabaseId: user.id },
+    include: {
+      professionals: {
+        where: { status: "APPROVED" },
+        select: {
+          id: true,
+          businessName: true,
+          title: true,
+          categoryId: true,
+          category: { select: { name: true, slug: true, icon: true } },
+          serviceAreas: { select: { id: true, name: true } },
+        },
+      },
+    },
+  });
+}
+
+function buildProfessionalRequestFilters(
+  professionals: NonNullable<Awaited<ReturnType<typeof getCurrentDbUserWithListings>>>["professionals"]
+) {
+  return professionals.flatMap((professional) => {
+    const serviceAreaIds = professional.serviceAreas.map((area) => area.id);
+    if (serviceAreaIds.length === 0) return [];
+
+    return {
+      categoryId: professional.categoryId,
+      serviceAreaId: { in: serviceAreaIds },
+    };
+  });
+}
+
+export async function getMatchingServiceRequests(limit?: number) {
+  const dbUser = await getCurrentDbUserWithListings();
+  if (!dbUser || dbUser.professionals.length === 0) return [];
+
+  const filters = buildProfessionalRequestFilters(dbUser.professionals);
+  if (filters.length === 0) return [];
+
+  return prisma.serviceRequest.findMany({
+    where: {
+      userId: { not: dbUser.id },
+      status: "OPEN",
+      OR: filters,
+    },
+    include: {
+      category: { select: { name: true, slug: true, icon: true } },
+      serviceArea: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    ...(limit ? { take: limit } : {}),
+  });
+}
+
+export async function getMatchingServiceRequestById(id: string) {
+  const dbUser = await getCurrentDbUserWithListings();
+  if (!dbUser || dbUser.professionals.length === 0) return null;
+
+  const filters = buildProfessionalRequestFilters(dbUser.professionals);
+  if (filters.length === 0) return null;
+
+  return prisma.serviceRequest.findFirst({
+    where: {
+      id,
+      userId: { not: dbUser.id },
+      status: "OPEN",
+      OR: filters,
+    },
+    include: {
+      category: { select: { id: true, name: true, slug: true, icon: true } },
+      serviceArea: { select: { id: true, name: true } },
+      user: { select: { displayName: true, firstName: true, lastName: true } },
+    },
   });
 }
 
@@ -133,4 +215,5 @@ export async function updateRequestStatus(id: string, status: string) {
     data: { status: status as never },
   });
   revalidatePath("/admin/requests");
+  revalidatePath("/dashboard/leads");
 }

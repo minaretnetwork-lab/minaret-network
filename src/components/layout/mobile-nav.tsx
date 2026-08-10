@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 
 interface MobileNavProps {
   isAdmin: boolean;
+  isProfessional?: boolean;
   user?: {
     displayName?: string | null;
     firstName?: string | null;
@@ -13,7 +14,7 @@ interface MobileNavProps {
   } | null;
 }
 
-export function MobileNav({ isAdmin, user }: MobileNavProps) {
+export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavProps) {
   const displayName = user?.displayName ?? user?.firstName ?? user?.email;
 
   return (
@@ -64,6 +65,7 @@ export function MobileNav({ isAdmin, user }: MobileNavProps) {
                   { href: "/dashboard", label: "My Dashboard" },
                   { href: "/dashboard/profile", label: "My Profile" },
                   { href: "/dashboard/requests", label: "My Requests" },
+                  ...(isProfessional ? [{ href: "/dashboard/leads", label: "Matching Requests" }] : []),
                 ].map((link) => (
                   <Link key={link.href} href={link.href}
                     className="py-2.5 px-3 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">
