@@ -24,7 +24,7 @@ export function IncomingRequestsAlert({ requestIds }: { requestIds: string[] }) 
     return requestIds.filter((id) => !viewedIds.has(id));
   }, [requestIds, viewedIds]);
 
-  if (requestIds.length === 0 || newIds.length === 0) return null;
+  if (requestIds.length === 0) return null;
 
   function markViewedAndScroll() {
     const nextViewedIds = new Set([...(viewedIds ?? new Set<string>()), ...requestIds]);
@@ -46,15 +46,22 @@ export function IncomingRequestsAlert({ requestIds }: { requestIds: string[] }) 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">You have incoming service requests</p>
           <p className="mt-0.5 text-xs text-emerald-800/75 dark:text-emerald-200/75">
-            New requests matching your professional listings are waiting below.
+            {newIds.length > 0
+              ? "New requests matching your professional listings are waiting below."
+              : "Open requests matching your professional listings are waiting below."}
           </p>
         </div>
         <button
           type="button"
           onClick={markViewedAndScroll}
-          className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+          className="inline-flex flex-shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
         >
-          {newIds.length} new
+          <span>{requestIds.length} open</span>
+          {newIds.length > 0 && (
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">
+              {newIds.length} new
+            </span>
+          )}
           <ChevronDown className="h-3.5 w-3.5" />
         </button>
       </div>
