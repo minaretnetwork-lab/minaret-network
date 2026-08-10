@@ -131,7 +131,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
           <form action={startConversationForServiceRequest.bind(null, request.id)} className="w-full sm:w-auto">
             <Button className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
               <MessageCircle className="h-4 w-4" />
-              Message here
+              Message
             </Button>
           </form>
           {whatsappHref && (
