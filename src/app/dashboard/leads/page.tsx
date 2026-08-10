@@ -6,7 +6,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Matching Requests" };
+export const metadata = { title: "Incoming Service Requests" };
 
 const CONTACT_ICON: Record<string, React.ReactNode> = {
   EMAIL: <Mail className="h-3.5 w-3.5" />,
@@ -20,7 +20,7 @@ export default async function MatchingRequestsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Matching Requests</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Incoming Service Requests</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Open service requests that match your approved listing categories and service areas.
         </p>

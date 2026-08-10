@@ -60,7 +60,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-[#14532d]"
       >
         <ChevronLeft className="h-4 w-4" />
-        Back to matching requests
+        Back to incoming requests
       </Link>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">

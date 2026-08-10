@@ -65,7 +65,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                   { href: "/dashboard", label: "My Dashboard" },
                   { href: "/dashboard/profile", label: "My Profile" },
                   { href: "/dashboard/requests", label: "My Requests" },
-                  ...(isProfessional ? [{ href: "/dashboard/leads", label: "Matching Requests" }] : []),
+                  ...(isProfessional ? [{ href: "/dashboard/leads", label: "Incoming Requests" }] : []),
                 ].map((link) => (
                   <Link key={link.href} href={link.href}
                     className="py-2.5 px-3 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">

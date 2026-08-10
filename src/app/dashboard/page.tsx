@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, User, Search, ChevronRight, Clock, MapPin, Send } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { IncomingRequestsAlert } from "@/components/dashboard/incoming-requests-alert";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
@@ -20,7 +21,8 @@ export default async function DashboardPage() {
   const displayName = user.displayName ?? user.firstName ?? "there";
   const recentRequests = requests.slice(0, 3);
   const latestProfessional = user.professionals[0] ?? null;
-  const recentMatchingRequests = latestProfessional ? await getMatchingServiceRequests(3) : [];
+  const matchingRequests = latestProfessional ? await getMatchingServiceRequests() : [];
+  const recentMatchingRequests = matchingRequests.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -32,6 +34,8 @@ export default async function DashboardPage() {
           Here&apos;s what&apos;s happening with your account.
         </p>
       </div>
+
+      {latestProfessional && <IncomingRequestsAlert requestIds={matchingRequests.map((request) => request.id)} />}
 
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -148,10 +152,10 @@ export default async function DashboardPage() {
       </Card>
 
       {latestProfessional && (
-        <Card className="border-gray-200 dark:border-gray-800">
+        <Card id="incoming-service-requests" className="scroll-mt-24 border-gray-200 dark:border-gray-800">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">Matching Service Requests</CardTitle>
+              <CardTitle className="text-base font-semibold">Incoming Service Requests</CardTitle>
               <Link href="/dashboard/leads">
                 <Button variant="ghost" size="sm" className="text-xs text-green-700 gap-1">
                   View all <ChevronRight className="h-3.5 w-3.5" />
