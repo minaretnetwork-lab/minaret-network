@@ -141,27 +141,28 @@ function VisitorBars({ series, range }: { series: SeriesPoint[]; range: (typeof 
   const chartMax = niceCeil(max);
   const yTicks = [chartMax, Math.round(chartMax / 2), 0];
   const selectedPoint = series.find((point) => point.label === selectedLabel) ?? series.at(-1) ?? null;
-  const axisTicks = getAxisTicks(series, range);
+  const axisLabels = getAxisLabels(series, range);
+  const chartColumns = `repeat(${series.length}, minmax(0, 1fr))`;
 
   return (
     <div className="mt-5">
       <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2 rounded-xl bg-gray-50 px-3 pb-4 pt-3 dark:bg-gray-950">
         <div className="flex h-48 flex-col justify-between text-right text-[10px] font-medium tabular-nums text-gray-400">
-          {yTicks.map((tick) => (
-            <span key={tick}>{tick.toLocaleString("en-CA")}</span>
+          {yTicks.map((tick, index) => (
+            <span key={`${tick}-${index}`}>{tick.toLocaleString("en-CA")}</span>
           ))}
         </div>
-        <div className="relative flex h-48 items-end gap-1.5">
+        <div className="relative grid h-48 items-end gap-1.5" style={{ gridTemplateColumns: chartColumns }}>
           <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
-            {yTicks.map((tick) => (
-              <span key={tick} className="border-t border-gray-200/80 dark:border-gray-800" />
+            {yTicks.map((tick, index) => (
+              <span key={`${tick}-${index}`} className="border-t border-gray-200/80 dark:border-gray-800" />
             ))}
           </div>
           {series.map((point) => {
             const height = Math.max((point.value / chartMax) * 100, point.value > 0 ? 8 : 2);
             const isSelected = selectedPoint?.label === point.label;
             return (
-              <div key={point.label} className="group relative z-10 flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
+              <div key={point.label} className="group relative z-10 flex h-full min-w-0 flex-col items-center justify-end gap-2">
                 <div className="relative flex h-full w-full items-end justify-center">
                   <button
                     type="button"
@@ -184,16 +185,15 @@ function VisitorBars({ series, range }: { series: SeriesPoint[]; range: (typeof 
           })}
         </div>
       </div>
-      <div className="relative ml-10 mt-2 h-5 text-[10px] font-medium text-gray-400">
-        {axisTicks.map((tick) => (
-          <span
-            key={`${tick.label}-${tick.index}`}
-            className="absolute top-0 -translate-x-1/2 whitespace-nowrap"
-            style={{ left: `${tick.left}%` }}
-          >
-            {tick.label}
-          </span>
-        ))}
+      <div className="mt-2 grid grid-cols-[2rem_minmax(0,1fr)] gap-2 px-3 text-[10px] font-medium text-gray-400">
+        <span aria-hidden="true" />
+        <div className="grid gap-1.5" style={{ gridTemplateColumns: chartColumns }}>
+          {axisLabels.map((label, index) => (
+            <span key={`${label}-${index}`} className="min-w-0 text-center">
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
       {selectedPoint && (
         <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-100">
@@ -214,23 +214,13 @@ function niceCeil(value: number) {
   return niceNormalized * magnitude;
 }
 
-function getAxisTicks(series: SeriesPoint[], range: (typeof RANGE_OPTIONS)[number]["key"]) {
-  if (series.length === 0) return [];
+function getAxisLabels(series: SeriesPoint[], range: (typeof RANGE_OPTIONS)[number]["key"]) {
+  if (range === "daily" || range === "monthly") {
+    return series.map((point) => compactAxisLabel(point.label, range));
+  }
 
-  const indexes =
-    range === "daily"
-      ? series.map((_, index) => index)
-      : range === "monthly"
-        ? [0, 3, 6, 9, series.length - 1]
-        : [0, 6, 12, 18, series.length - 1];
-
-  return Array.from(new Set(indexes))
-    .filter((index) => index >= 0 && index < series.length)
-    .map((index) => ({
-      index,
-      left: series.length === 1 ? 50 : (index / (series.length - 1)) * 100,
-      label: compactAxisLabel(series[index].label, range),
-    }));
+  const visibleIndexes = new Set([0, 6, 12, 18, series.length - 1].filter((index) => index >= 0 && index < series.length));
+  return series.map((point, index) => (visibleIndexes.has(index) ? compactAxisLabel(point.label, range) : ""));
 }
 
 function compactAxisLabel(label: string, range: (typeof RANGE_OPTIONS)[number]["key"]) {
@@ -238,9 +228,9 @@ function compactAxisLabel(label: string, range: (typeof RANGE_OPTIONS)[number]["
     return label.replace(/\s*a\.m\./i, "a").replace(/\s*p\.m\./i, "p").replace(/\s*AM/i, "a").replace(/\s*PM/i, "p");
   }
   if (range === "daily") {
-    return label.split(",")[0].split(" ")[0];
+    return label.trim()[0] ?? "";
   }
-  return label.split(" ")[0];
+  return label.trim()[0] ?? "";
 }
 
 function RankedList({
