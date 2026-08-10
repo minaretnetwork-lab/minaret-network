@@ -117,18 +117,18 @@ export default async function RequestDetailPage({ params }: Props) {
 
       {/* Assigned professional */}
       {assignedName && req.assignedTo && (
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 rounded-2xl p-5">
+        <Link
+          href={`/professionals/${req.assignedTo.id}`}
+          className="block rounded-2xl border border-emerald-100 bg-emerald-50 p-5 transition hover:border-emerald-300 hover:bg-emerald-100/70 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30"
+        >
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3 flex items-center gap-1.5">
             <UserCheck className="h-3.5 w-3.5" /> Assigned Professional
           </p>
-          <Link
-            href={`/professionals/${req.assignedTo.id}`}
-            className="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline text-lg"
-          >
+          <p className="text-lg font-semibold text-emerald-700 dark:text-emerald-400">
             {assignedName}
-          </Link>
+          </p>
           <p className="text-sm text-emerald-600/70 mt-1">Click to view their full profile</p>
-        </div>
+        </Link>
       )}
 
       {conversations.length > 0 && (
