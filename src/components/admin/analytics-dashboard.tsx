@@ -138,39 +138,53 @@ function Metric({ label, value }: { label: string; value: number }) {
 function VisitorBars({ series, range }: { series: SeriesPoint[]; range: (typeof RANGE_OPTIONS)[number]["key"] }) {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(series.at(-1)?.label ?? null);
   const max = Math.max(...series.map((point) => point.value), 1);
+  const chartMax = niceCeil(max);
+  const yTicks = [chartMax, Math.round(chartMax / 2), 0];
   const selectedPoint = series.find((point) => point.label === selectedLabel) ?? series.at(-1) ?? null;
   const axisTicks = getAxisTicks(series, range);
 
   return (
     <div className="mt-5">
-      <div className="flex h-48 items-end gap-1.5 rounded-xl bg-gray-50 px-3 pb-4 pt-3 dark:bg-gray-950">
-        {series.map((point) => {
-          const height = Math.max((point.value / max) * 100, point.value > 0 ? 8 : 2);
-          const isSelected = selectedPoint?.label === point.label;
-          return (
-            <div key={point.label} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
-              <div className="relative flex h-full w-full items-end justify-center">
-                <button
-                  type="button"
-                  aria-label={`${point.label}: ${point.value} visitor${point.value === 1 ? "" : "s"}`}
-                  aria-pressed={isSelected}
-                  onClick={() => setSelectedLabel(point.label)}
-                  className={`w-full max-w-8 rounded-t-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-950 ${
-                    isSelected
-                      ? "bg-emerald-700 shadow-sm"
-                      : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
-                  }`}
-                  style={{ height: `${height}%` }}
-                />
-                <span className="pointer-events-none absolute bottom-full mb-2 hidden rounded-md bg-gray-900 px-2 py-1 text-[11px] text-white shadow-lg group-hover:block">
-                  {point.label}: {point.value} visitor{point.value === 1 ? "" : "s"}
-                </span>
+      <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2 rounded-xl bg-gray-50 px-3 pb-4 pt-3 dark:bg-gray-950">
+        <div className="flex h-48 flex-col justify-between text-right text-[10px] font-medium tabular-nums text-gray-400">
+          {yTicks.map((tick) => (
+            <span key={tick}>{tick.toLocaleString("en-CA")}</span>
+          ))}
+        </div>
+        <div className="relative flex h-48 items-end gap-1.5">
+          <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
+            {yTicks.map((tick) => (
+              <span key={tick} className="border-t border-gray-200/80 dark:border-gray-800" />
+            ))}
+          </div>
+          {series.map((point) => {
+            const height = Math.max((point.value / chartMax) * 100, point.value > 0 ? 8 : 2);
+            const isSelected = selectedPoint?.label === point.label;
+            return (
+              <div key={point.label} className="group relative z-10 flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                <div className="relative flex h-full w-full items-end justify-center">
+                  <button
+                    type="button"
+                    aria-label={`${point.label}: ${point.value} visitor${point.value === 1 ? "" : "s"}`}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedLabel(point.label)}
+                    className={`w-full max-w-8 rounded-t-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-950 ${
+                      isSelected
+                        ? "bg-emerald-700 shadow-sm"
+                        : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
+                    }`}
+                    style={{ height: `${height}%` }}
+                  />
+                  <span className="pointer-events-none absolute bottom-full mb-2 hidden rounded-md bg-gray-900 px-2 py-1 text-[11px] text-white shadow-lg group-hover:block">
+                    {point.label}: {point.value} visitor{point.value === 1 ? "" : "s"}
+                  </span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-      <div className="relative mt-2 h-5 text-[10px] font-medium text-gray-400">
+      <div className="relative ml-10 mt-2 h-5 text-[10px] font-medium text-gray-400">
         {axisTicks.map((tick) => (
           <span
             key={`${tick.label}-${tick.index}`}
@@ -188,6 +202,16 @@ function VisitorBars({ series, range }: { series: SeriesPoint[]; range: (typeof 
       )}
     </div>
   );
+}
+
+function niceCeil(value: number) {
+  if (value <= 2) return value;
+
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  const normalized = value / magnitude;
+  const niceNormalized = normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+
+  return niceNormalized * magnitude;
 }
 
 function getAxisTicks(series: SeriesPoint[], range: (typeof RANGE_OPTIONS)[number]["key"]) {
