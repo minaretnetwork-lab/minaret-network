@@ -34,7 +34,13 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
 
   const open   = requests.filter((r) => r.status === "OPEN").length;
   const closed = requests.filter((r) => ["CLOSED", "CANCELLED"].includes(r.status)).length;
-  const filteredRequests = requests.filter((request) => {
+  const sortedRequests = [...requests].sort((a, b) => {
+    const aClosed = ["CLOSED", "CANCELLED"].includes(a.status);
+    const bClosed = ["CLOSED", "CANCELLED"].includes(b.status);
+    if (aClosed !== bClosed) return aClosed ? 1 : -1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+  const filteredRequests = sortedRequests.filter((request) => {
     if (statusFilter === "open") return request.status === "OPEN";
     if (statusFilter === "closed") return ["CLOSED", "CANCELLED"].includes(request.status);
     return true;
