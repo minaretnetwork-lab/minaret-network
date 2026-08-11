@@ -4,7 +4,13 @@ import { getMatchingServiceRequests } from "@/lib/actions/service-requests";
 import { startConversationForServiceRequest } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { IncomingDistanceControl } from "@/components/dashboard/incoming-distance-control";
 import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
+import {
+  distanceBetweenServiceAreas,
+  findServiceAreaCoordinateByName,
+  findServiceAreaCoordinateBySlug,
+} from "@/lib/service-area-coordinates";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Incoming Service Requests" };
@@ -34,8 +40,19 @@ function requesterName(request: {
   return request.contactName || request.user.displayName || [request.user.firstName, request.user.lastName].filter(Boolean).join(" ") || request.user.email || "Requester";
 }
 
-export default async function MatchingRequestsPage() {
+function formatDistance(distanceKm: number | null) {
+  if (distanceKm === null) return null;
+  return distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `${distanceKm.toFixed(1)} km`;
+}
+
+interface Props {
+  searchParams: Promise<{ origin?: string }>;
+}
+
+export default async function MatchingRequestsPage({ searchParams }: Props) {
+  const { origin = "" } = await searchParams;
   const requests = await getMatchingServiceRequests();
+  const originCoordinate = findServiceAreaCoordinateByName(origin);
 
   return (
     <div className="space-y-6">
@@ -45,6 +62,14 @@ export default async function MatchingRequestsPage() {
           Service requests that match your approved listing categories and service areas.
         </p>
       </div>
+
+      <IncomingDistanceControl initialOrigin={origin} />
+
+      {origin && !originCoordinate && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">
+          I couldn&apos;t match &ldquo;{origin}&rdquo; to a supported service area, so distances are hidden. Try a nearby city like Keswick, Aurora, Newmarket, or Markham.
+        </div>
+      )}
 
       {requests.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white py-16 text-center dark:border-gray-800 dark:bg-gray-900">
@@ -65,6 +90,13 @@ export default async function MatchingRequestsPage() {
             const contactTitle = professional ? `${ownerName} at ${businessName}` : request.category.name;
             const requester = requesterName(request);
             const isClosed = request.status === "CLOSED" || request.status === "CANCELLED";
+            const requestCoordinate = request.serviceArea
+              ? findServiceAreaCoordinateBySlug(request.serviceArea.slug) ?? findServiceAreaCoordinateByName(request.serviceArea.name)
+              : null;
+            const distanceKm = originCoordinate && requestCoordinate
+              ? Math.round(distanceBetweenServiceAreas(originCoordinate, requestCoordinate) * 10) / 10
+              : null;
+            const distanceLabel = formatDistance(distanceKm);
             const whatsappHref = request.contactPhone
               ? buildWhatsAppUrl(
                   request.contactPhone,
@@ -96,6 +128,7 @@ export default async function MatchingRequestsPage() {
                           <span className="inline-flex items-center gap-1 text-xs text-gray-400">
                             <MapPin className="h-3 w-3" />
                             {request.serviceArea.name}
+                            {distanceLabel && <span className="font-medium text-emerald-600">({distanceLabel})</span>}
                           </span>
                         )}
                       </div>
