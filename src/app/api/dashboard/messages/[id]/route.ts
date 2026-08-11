@@ -34,12 +34,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 
   const conversation = await getAuthorizedConversation(id, dbUser.id);
   if (!conversation) return Response.json({ error: "Conversation not found" }, { status: 404 });
-  if (conversation.serviceRequest.status === "CLOSED" || conversation.serviceRequest.status === "CANCELLED") {
-    return Response.json(
-      { error: "This request is closed. The requester needs to reopen it before more messages can be sent." },
-      { status: 409 }
-    );
-  }
 
   await prisma.message.updateMany({
     where: {
@@ -80,6 +74,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const conversation = await getAuthorizedConversation(id, dbUser.id);
   if (!conversation) return Response.json({ error: "Conversation not found" }, { status: 404 });
+  if (conversation.serviceRequest.status === "CLOSED" || conversation.serviceRequest.status === "CANCELLED") {
+    return Response.json(
+      { error: "This request is closed. The requester needs to reopen it before more messages can be sent." },
+      { status: 409 }
+    );
+  }
 
   const payload = await request.json().catch(() => null) as { body?: unknown } | null;
   const body = typeof payload?.body === "string" ? payload.body.trim().replace(/\n{4,}/g, "\n\n\n") : "";

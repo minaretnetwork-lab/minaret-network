@@ -37,6 +37,13 @@ const CONTACT_ICON: Record<string, React.ReactNode> = {
   WHATSAPP: <MessageCircle className="h-4 w-4" />,
 };
 
+const STATUS_BADGE: Record<string, string> = {
+  OPEN: "border-green-200 bg-green-100 text-green-700",
+  IN_PROGRESS: "border-blue-200 bg-blue-100 text-blue-700",
+  CLOSED: "border-gray-200 bg-gray-100 text-gray-600",
+  CANCELLED: "border-red-200 bg-red-100 text-red-700",
+};
+
 function displayName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string }) {
   return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "User";
 }
@@ -64,6 +71,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
   const professionalName = firstName(professional?.user);
   const businessName = professional?.businessName || professional?.title || request.category.name;
   const requestTitle = professional ? `${professionalName} at ${businessName}` : request.category.name;
+  const isClosed = request.status === "CLOSED" || request.status === "CANCELLED";
   const whatsappHref = request.contactPhone
     ? buildWhatsAppUrl(
         request.contactPhone,
@@ -97,10 +105,18 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
               )}
             </div>
           </div>
-          <span className="flex-shrink-0 rounded-full border border-green-200 bg-green-100 px-3 py-1.5 text-xs font-medium text-green-700">
-            Open
+          <span className={`flex-shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${STATUS_BADGE[request.status] ?? STATUS_BADGE.OPEN}`}>
+            {request.status.replace("_", " ")}
           </span>
         </div>
+
+        {isClosed && request.closeReason && (
+          <div className="mb-5 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
+            <p className="font-semibold text-gray-900 dark:text-white">Closed: {request.closeReason}</p>
+            {request.closeNote && <p className="mt-1">{request.closeNote}</p>}
+            {request.closedAt && <p className="mt-1 text-xs text-gray-400">Closed {formatDate(request.closedAt)}</p>}
+          </div>
+        )}
 
         <div className="mb-5">
           <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -162,10 +178,12 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
               body: message.body,
               createdAt: message.createdAt.toISOString(),
             }))}
+            disabledReason={isClosed ? "This request is closed. The requester will need to reopen it before new messages can be sent." : undefined}
           />
         </div>
       )}
 
+      {!isClosed && (
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 dark:border-emerald-800/40 dark:bg-emerald-900/20">
         <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Other contact methods</h2>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -195,6 +213,7 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

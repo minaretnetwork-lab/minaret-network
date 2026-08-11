@@ -87,7 +87,7 @@ export async function getConversationForMatchingServiceRequest(serviceRequestId:
     },
   });
 
-  if (!request || request.status !== "OPEN" || request.userId === dbUser.id || !request.serviceAreaId) {
+  if (!request || request.userId === dbUser.id || !request.serviceAreaId) {
     return null;
   }
 
@@ -104,19 +104,29 @@ export async function getConversationForMatchingServiceRequest(serviceRequestId:
 
   if (!professional) return null;
 
-  const conversation = await prisma.conversation.upsert({
+  const existingConversation = await prisma.conversation.findUnique({
     where: {
       serviceRequestId_professionalId: {
         serviceRequestId: request.id,
         professionalId: professional.id,
       },
     },
-    create: {
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { sender: { select: { id: true, displayName: true, firstName: true, lastName: true, email: true } } },
+      },
+    },
+  });
+
+  if (request.status !== "OPEN" && !existingConversation) return null;
+
+  const conversation = existingConversation ?? await prisma.conversation.create({
+    data: {
       serviceRequestId: request.id,
       professionalId: professional.id,
       requesterId: request.userId,
     },
-    update: {},
     include: {
       messages: {
         orderBy: { createdAt: "asc" },

@@ -15,6 +15,13 @@ const CONTACT_ICON: Record<string, React.ReactNode> = {
   WHATSAPP: <MessageCircle className="h-3.5 w-3.5" />,
 };
 
+const STATUS_BADGE: Record<string, string> = {
+  OPEN: "border-green-200 bg-green-100 text-green-700",
+  IN_PROGRESS: "border-blue-200 bg-blue-100 text-blue-700",
+  CLOSED: "border-gray-200 bg-gray-100 text-gray-600",
+  CANCELLED: "border-red-200 bg-red-100 text-red-700",
+};
+
 function personName(user?: { displayName: string | null; firstName: string | null; lastName: string | null } | null) {
   if (!user) return "Professional";
   return user.firstName || user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || "Professional";
@@ -28,7 +35,7 @@ export default async function MatchingRequestsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Incoming Service Requests</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Open service requests that match your approved listing categories and service areas.
+          Service requests that match your approved listing categories and service areas.
         </p>
       </div>
 
@@ -39,7 +46,7 @@ export default async function MatchingRequestsPage() {
           </div>
           <h2 className="mb-2 font-semibold text-gray-900 dark:text-white">No matching requests right now</h2>
           <p className="mx-auto max-w-md text-sm text-gray-500 dark:text-gray-400">
-            When someone submits an open request in one of your listing categories and service areas, it will appear here.
+            When someone submits a request in one of your listing categories and service areas, it will appear here.
           </p>
         </div>
       ) : (
@@ -49,6 +56,7 @@ export default async function MatchingRequestsPage() {
             const ownerName = personName(professional?.user);
             const businessName = professional?.businessName || professional?.title || request.category.name;
             const contactTitle = professional ? `${ownerName} at ${businessName}` : request.category.name;
+            const isClosed = request.status === "CLOSED" || request.status === "CANCELLED";
             const whatsappHref = request.contactPhone
               ? buildWhatsAppUrl(
                   request.contactPhone,
@@ -108,13 +116,30 @@ export default async function MatchingRequestsPage() {
                       </div>
                     </div>
                   </div>
-                  <span className="flex-shrink-0 rounded-full border border-green-200 bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
-                    Open
+                  <span className={`flex-shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium ${STATUS_BADGE[request.status] ?? STATUS_BADGE.OPEN}`}>
+                    {request.status.replace("_", " ")}
                   </span>
                 </div>
 
+                {isClosed && request.closeReason && (
+                  <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
+                    <p className="font-medium text-gray-800 dark:text-gray-100">Closed: {request.closeReason}</p>
+                    {request.closeNote && <p className="mt-1">{request.closeNote}</p>}
+                    {request.closedAt && <p className="mt-1 text-xs text-gray-400">Closed {formatDate(request.closedAt)}</p>}
+                  </div>
+                )}
+
                 <div className="relative z-10 mt-4 flex flex-col gap-2 border-t border-gray-100 pt-3 dark:border-gray-800 sm:flex-row sm:flex-wrap sm:justify-end">
-                  {request.conversationId ? (
+                  {isClosed ? (
+                    request.conversationId ? (
+                      <Link href={`/dashboard/messages/${request.conversationId}`} className="w-full sm:w-auto">
+                        <Button variant="outline" size="sm" className="w-full gap-1.5 border-gray-200 text-gray-600 hover:bg-gray-50 sm:w-auto">
+                          <MessageCircle className="h-4 w-4" />
+                          View Chat
+                        </Button>
+                      </Link>
+                    ) : null
+                  ) : request.conversationId ? (
                     <Link href={`/dashboard/messages/${request.conversationId}`} className="w-full sm:w-auto">
                       <Button size="sm" className="w-full gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 sm:w-auto">
                         <MessageCircle className="h-4 w-4" />
@@ -129,7 +154,7 @@ export default async function MatchingRequestsPage() {
                       </Button>
                     </form>
                   )}
-                  {whatsappHref && (
+                  {!isClosed && whatsappHref && (
                     <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
                       <Button size="sm" className="w-full gap-1.5 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
                         <MessageCircle className="h-4 w-4" />
@@ -137,7 +162,7 @@ export default async function MatchingRequestsPage() {
                       </Button>
                     </a>
                   )}
-                  {request.contactEmail && (
+                  {!isClosed && request.contactEmail && (
                     <a href={`mailto:${request.contactEmail}`} className="w-full sm:w-auto">
                       <Button variant="outline" size="sm" className="w-full gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 sm:w-auto">
                         <Mail className="h-4 w-4" />
@@ -145,7 +170,7 @@ export default async function MatchingRequestsPage() {
                       </Button>
                     </a>
                   )}
-                  {request.contactPhone && (
+                  {!isClosed && request.contactPhone && (
                     <a href={`tel:${request.contactPhone}`} className="w-full sm:w-auto">
                       <Button variant="outline" size="sm" className="w-full gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 sm:w-auto">
                         <Phone className="h-4 w-4" />
