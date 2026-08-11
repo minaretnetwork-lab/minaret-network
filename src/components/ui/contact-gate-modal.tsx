@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { X, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,10 +18,29 @@ interface ContactGateModalProps {
 export function ContactGateModal({ professionalId, professionalName, trigger, mode = "contact", location = "" }: ContactGateModalProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [issue, setIssue] = useState("");
   const [issueError, setIssueError] = useState("");
   const redirectTo = encodeURIComponent(`/professionals/${professionalId}`);
   const isMessage = mode === "message";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
+    };
+  }, [open]);
 
   function storePendingChat() {
     if (!isMessage) return true;
@@ -62,9 +82,9 @@ export function ContactGateModal({ professionalId, professionalName, trigger, mo
         {trigger}
       </div>
 
-      {open && (
+      {mounted && open && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto p-4 bg-black/50 backdrop-blur-sm"
           onClick={(e) => {
             e.stopPropagation();
             if (e.target === e.currentTarget) setOpen(false);
@@ -134,7 +154,8 @@ export function ContactGateModal({ professionalId, professionalName, trigger, mo
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
