@@ -20,6 +20,13 @@ const BIO_MAX_LENGTH = 1000;
 
 const schema = z.object({
   mosqueId: z.string().optional(),
+  mosqueSuggestionName: z.string().optional(),
+  mosqueSuggestionCity: z.string().optional(),
+  mosqueSuggestionAddress: z.string().optional(),
+  mosqueSuggestionWebsite: z.string().url("Enter a valid website URL").optional().or(z.literal("")),
+  mosqueSuggestionChannelName: z.string().optional(),
+  mosqueSuggestionChannelLink: z.string().url("Enter a valid community link").optional().or(z.literal("")),
+  mosqueSuggestionNotes: z.string().optional(),
   categoryId: z.string().min(1, "Please select a category"),
   businessName: z.string().optional(),
   title: z.string().min(2, "Job title is required"),
@@ -34,6 +41,14 @@ const schema = z.object({
   whatsapp: z.string().optional(),
   availability: z.string().optional(),
   serviceAreaIds: z.array(z.string()).min(1, "Select at least one service area"),
+}).superRefine((data, ctx) => {
+  if (data.mosqueId === "unlisted" && !data.mosqueSuggestionName?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["mosqueSuggestionName"],
+      message: "Please enter the mosque name so admins can review it.",
+    });
+  }
 });
 
 type FormData = z.infer<typeof schema>;
@@ -177,6 +192,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   const selectedLanguages = watch("languages") ?? [];
   const selectedAreas = watch("serviceAreaIds") ?? [];
+  const selectedMosqueId = watch("mosqueId");
   const bioLength = watch("bio")?.length ?? 0;
   const bioCharactersRemaining = Math.max(BIO_MIN_LENGTH - bioLength, 0);
 
@@ -648,6 +664,50 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   ))}
                   <option value="unlisted">My mosque is not listed</option>
                 </select>
+                {selectedMosqueId === "unlisted" && (
+                  <div className="mt-4 rounded-xl border border-emerald-200 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-gray-950/30">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Recommend a mosque for admin review</p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Share what you know. Admins can use this to onboard the mosque and verify affiliation details.
+                    </p>
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <Label htmlFor="mosqueSuggestionName">Mosque name *</Label>
+                        <Input id="mosqueSuggestionName" {...register("mosqueSuggestionName")} className="mt-1.5" placeholder="e.g. Islamic Centre of..." />
+                        {errors.mosqueSuggestionName && <p className="text-xs text-red-600 mt-1">{errors.mosqueSuggestionName.message}</p>}
+                      </div>
+                      <div>
+                        <Label htmlFor="mosqueSuggestionCity">City / area</Label>
+                        <Input id="mosqueSuggestionCity" {...register("mosqueSuggestionCity")} className="mt-1.5" placeholder="e.g. Newmarket" />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label htmlFor="mosqueSuggestionAddress">Address <span className="text-gray-400 font-normal">(optional)</span></Label>
+                        <Input id="mosqueSuggestionAddress" {...register("mosqueSuggestionAddress")} className="mt-1.5" placeholder="Street address, if known" />
+                      </div>
+                      <div>
+                        <Label htmlFor="mosqueSuggestionWebsite">Website <span className="text-gray-400 font-normal">(optional)</span></Label>
+                        <Input id="mosqueSuggestionWebsite" type="url" {...register("mosqueSuggestionWebsite")} className="mt-1.5" placeholder="https://..." />
+                      </div>
+                      <div>
+                        <Label htmlFor="mosqueSuggestionChannelName">Community channel <span className="text-gray-400 font-normal">(optional)</span></Label>
+                        <Input id="mosqueSuggestionChannelName" {...register("mosqueSuggestionChannelName")} className="mt-1.5" placeholder="WhatsApp group, Telegram, email list..." />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label htmlFor="mosqueSuggestionChannelLink">Community link <span className="text-gray-400 font-normal">(optional)</span></Label>
+                        <Input id="mosqueSuggestionChannelLink" type="url" {...register("mosqueSuggestionChannelLink")} className="mt-1.5" placeholder="Invite link or website page, if available" />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label htmlFor="mosqueSuggestionNotes">Affiliation notes <span className="text-gray-400 font-normal">(optional)</span></Label>
+                        <Textarea id="mosqueSuggestionNotes" {...register("mosqueSuggestionNotes")} className="mt-1.5 resize-none" rows={3} placeholder="e.g. I attend regularly, I’m in their WhatsApp community, or who admin can contact to verify." />
+                      </div>
+                    </div>
+                    {(errors.mosqueSuggestionWebsite || errors.mosqueSuggestionChannelLink) && (
+                      <p className="mt-2 text-xs text-red-600">
+                        {errors.mosqueSuggestionWebsite?.message ?? errors.mosqueSuggestionChannelLink?.message}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <p className="text-xs text-gray-400 mt-2">
                   An admin will verify your affiliation before approving your listing. If your mosque isn&apos;t listed, your profile can still be approved — the affiliation badge will not appear until your mosque is onboarded.
                 </p>

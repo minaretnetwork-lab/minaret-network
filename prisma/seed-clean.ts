@@ -48,6 +48,7 @@ async function cleanPublicTables() {
     prisma.analyticsEvent.deleteMany(),
     prisma.message.deleteMany(),
     prisma.conversation.deleteMany(),
+    prisma.mosqueSuggestion.deleteMany(),
     prisma.categorySuggestion.deleteMany(),
     prisma.serviceRequest.deleteMany(),
     prisma.featuredWaitlist.deleteMany(),

@@ -22,6 +22,33 @@ export async function getMosques() {
   });
 }
 
+export async function getMosqueSuggestions() {
+  return prisma.mosqueSuggestion.findMany({
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      address: true,
+      website: true,
+      communityChannelType: true,
+      communityChannelName: true,
+      communityChannelLink: true,
+      notes: true,
+      status: true,
+      createdAt: true,
+      requestedBy: {
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+    take: 25,
+  });
+}
+
 export async function createMosque(data: {
   name: string;
   city?: string;

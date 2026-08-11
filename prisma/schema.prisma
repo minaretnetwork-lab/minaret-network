@@ -32,6 +32,7 @@ model Mosque {
   serviceAreas         ServiceArea[]
   requests             ServiceRequest[]
   categorySuggestions  CategorySuggestion[]
+  mosqueSuggestions    MosqueSuggestion[]
 
   @@map("mosques")
 }
@@ -59,6 +60,7 @@ model User {
   recommendations      Recommendation[]
   serviceRequests      ServiceRequest[]
   categorySuggestions  CategorySuggestion[]
+  mosqueSuggestions    MosqueSuggestion[]
   requesterConversations Conversation[] @relation("RequesterConversations")
   sentMessages           Message[]
 
@@ -464,6 +466,30 @@ model CategorySuggestion {
   reviewedAt    DateTime?
 
   @@map("category_suggestions")
+}
+
+model MosqueSuggestion {
+  id                    String    @id @default(cuid())
+  name                  String
+  city                  String?
+  address               String?
+  website               String?
+  communityChannelType  String?   @default("WhatsApp")
+  communityChannelName  String?
+  communityChannelLink  String?
+  notes                 String?
+  requestedById         String
+  requestedBy           User      @relation(fields: [requestedById], references: [id])
+  referenceMosqueId     String?
+  referenceMosque       Mosque?   @relation(fields: [referenceMosqueId], references: [id])
+  professionalId        String?
+  status                String    @default("PENDING")
+  adminNote             String?
+  createdAt             DateTime  @default(now())
+  reviewedAt            DateTime?
+
+  @@index([status, createdAt])
+  @@map("mosque_suggestions")
 }
 
 // Lightweight first-party analytics for the self-hosted experiment.

@@ -35,9 +35,14 @@ export async function POST(request: Request) {
     const storageListingId = professionalId ?? crypto.randomUUID();
 
     const rawMosqueId = formData.get("mosqueId") as string | null;
-    const mosqueId = (!rawMosqueId || rawMosqueId === "unlisted") ? null : rawMosqueId;
+    const mosqueIsUnlisted = rawMosqueId === "unlisted";
+    const mosqueId = (!rawMosqueId || mosqueIsUnlisted) ? null : rawMosqueId;
     const mosque = mosqueId ? await prisma.mosque.findUnique({ where: { id: mosqueId } }) : null;
     if (mosqueId && !mosque) return NextResponse.json({ ok: false, error: "Selected mosque not found." }, { status: 400 });
+    const mosqueSuggestionName = (formData.get("mosqueSuggestionName") as string | null)?.trim() ?? "";
+    if (mosqueIsUnlisted && mosqueSuggestionName.length < 2) {
+      return NextResponse.json({ ok: false, error: "Please enter the mosque name so admins can review it." }, { status: 400 });
+    }
 
     const categoryId = formData.get("categoryId") as string;
     if (!categoryId) return NextResponse.json({ ok: false, error: "Please select a category." }, { status: 400 });
@@ -92,6 +97,22 @@ export async function POST(request: Request) {
           serviceAreas: { set: serviceAreaIds.map((id) => ({ id })) },
         },
       });
+      if (mosqueIsUnlisted && mosqueSuggestionName) {
+        await prisma.mosqueSuggestion.create({
+          data: {
+            name: mosqueSuggestionName,
+            city: (formData.get("mosqueSuggestionCity") as string | null)?.trim() || null,
+            address: (formData.get("mosqueSuggestionAddress") as string | null)?.trim() || null,
+            website: (formData.get("mosqueSuggestionWebsite") as string | null)?.trim() || null,
+            communityChannelType: "WhatsApp",
+            communityChannelName: (formData.get("mosqueSuggestionChannelName") as string | null)?.trim() || null,
+            communityChannelLink: (formData.get("mosqueSuggestionChannelLink") as string | null)?.trim() || null,
+            notes: (formData.get("mosqueSuggestionNotes") as string | null)?.trim() || null,
+            requestedById: dbUser.id,
+            professionalId,
+          },
+        });
+      }
     } else {
       await prisma.professional.create({
         data: {
@@ -101,10 +122,27 @@ export async function POST(request: Request) {
           serviceAreas: { connect: serviceAreaIds.map((id) => ({ id })) },
         },
       });
+      if (mosqueIsUnlisted && mosqueSuggestionName) {
+        await prisma.mosqueSuggestion.create({
+          data: {
+            name: mosqueSuggestionName,
+            city: (formData.get("mosqueSuggestionCity") as string | null)?.trim() || null,
+            address: (formData.get("mosqueSuggestionAddress") as string | null)?.trim() || null,
+            website: (formData.get("mosqueSuggestionWebsite") as string | null)?.trim() || null,
+            communityChannelType: "WhatsApp",
+            communityChannelName: (formData.get("mosqueSuggestionChannelName") as string | null)?.trim() || null,
+            communityChannelLink: (formData.get("mosqueSuggestionChannelLink") as string | null)?.trim() || null,
+            notes: (formData.get("mosqueSuggestionNotes") as string | null)?.trim() || null,
+            requestedById: dbUser.id,
+            professionalId: storageListingId,
+          },
+        });
+      }
     }
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/professional");
+    revalidatePath("/admin/mosques");
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("POST /api/professionals/apply:", err);
