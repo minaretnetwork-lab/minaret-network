@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "./brand-logo";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
 
@@ -29,9 +30,7 @@ export function Navbar({ user }: NavbarProps) {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white font-bold text-sm">
-              <span style={{ fontFamily: "var(--font-lora)" }}>MN</span>
-            </div>
+            <BrandLogo className="h-9 w-9" />
             <div className="hidden sm:block">
               <span className="text-[15px] font-semibold text-white leading-none" style={{ fontFamily: "var(--font-lora)" }}>
                 Minaret Network
