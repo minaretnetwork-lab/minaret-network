@@ -22,7 +22,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  defaultValues: { firstName: string; lastName: string; phone: string; whatsapp: string; preferredContact?: "EMAIL" | "PHONE" | "WHATSAPP" };
+  defaultValues: { firstName: string; lastName: string; email: string; phone: string; whatsapp: string; preferredContact?: "EMAIL" | "PHONE" | "WHATSAPP" };
 }
 
 export function ProfileForm({ defaultValues }: Props) {
@@ -80,6 +80,18 @@ export function ProfileForm({ defaultValues }: Props) {
             <Input id="lastName" {...register("lastName")} className="mt-1.5" />
             {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName.message}</p>}
           </div>
+        </div>
+
+        <div>
+          <Label htmlFor="accountEmail">Login Email</Label>
+          <Input
+            id="accountEmail"
+            type="email"
+            value={defaultValues.email}
+            readOnly
+            className="mt-1.5 bg-gray-50 text-gray-600 dark:bg-gray-950 dark:text-gray-300"
+          />
+          <p className="mt-1 text-xs text-gray-400">This is the email used to sign in to your account.</p>
         </div>
 
         <div>

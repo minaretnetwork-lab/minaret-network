@@ -15,6 +15,7 @@ export default async function ProfilePage() {
         defaultValues={{
           firstName: user.firstName ?? "",
           lastName: user.lastName ?? "",
+          email: user.email,
           phone: user.phone ?? "",
           whatsapp: user.whatsapp ?? "",
           preferredContact: user.preferredContact ?? undefined,
