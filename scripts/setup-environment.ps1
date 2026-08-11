@@ -1,0 +1,293 @@
+[CmdletBinding()]
+param(
+  [Parameter(Mandatory = $true)]
+  [ValidateSet("production", "staging")]
+  [string]$Environment,
+
+  [ValidateSet("none", "clean", "fixtures")]
+  [string]$Seed = "none",
+
+  [switch]$SkipBuild,
+  [switch]$SkipTaskStart,
+  [switch]$SkipTaskRegister,
+  [switch]$ResetProductionData,
+  [string]$ConfirmText = ""
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+. (Join-Path $PSScriptRoot "experiment-common.ps1")
+
+function Get-EnvironmentSettings {
+  param([string]$Name)
+
+  if ($Name -eq "production") {
+    return [ordered]@{
+      Name = "production"
+      PublicOrigin = "https://minaretnetwork.ca"
+      SitePort = 3220
+      SupabaseWorkdir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+      SupabaseApiPort = 54321
+      SupabaseDbPort = 54322
+      SupabaseStudioPort = 54323
+      SupabaseMailPort = 54324
+      SupabaseShadowPort = 54320
+      SupabasePoolerPort = 54329
+      DistDir = ".next-production"
+      EnvFile = ".env.production.local"
+      TaskName = "Minaret Network Local Site"
+      ProjectId = "minaret-production"
+    }
+  }
+
+  $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+  return [ordered]@{
+    Name = "staging"
+    PublicOrigin = "https://staging.minaretnetwork.ca"
+    SitePort = 3221
+    SupabaseWorkdir = (Join-Path $workspace ".minaret-runtime\staging")
+    SupabaseApiPort = 54421
+    SupabaseDbPort = 54422
+    SupabaseStudioPort = 54423
+    SupabaseMailPort = 54424
+    SupabaseShadowPort = 54420
+    SupabasePoolerPort = 54429
+    DistDir = ".next-staging"
+    EnvFile = ".env.staging.local"
+    TaskName = "Minaret Network Staging Site"
+    ProjectId = "minaret-staging-local"
+  }
+}
+
+function Set-ProcessEnvFromMap {
+  param([System.Collections.IDictionary]$Values)
+  foreach ($key in $Values.Keys) {
+    [Environment]::SetEnvironmentVariable([string]$key, [string]$Values[$key], "Process")
+  }
+}
+
+function Initialize-StagingSupabaseWorkdir {
+  param([System.Collections.IDictionary]$Settings)
+
+  $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+  $sourceSupabase = Join-Path $workspace "supabase"
+  $targetRoot = [string]$Settings.SupabaseWorkdir
+  $targetSupabase = Join-Path $targetRoot "supabase"
+
+  if (-not (Test-Path -LiteralPath $targetSupabase)) {
+    New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
+    Copy-Item -LiteralPath $sourceSupabase -Destination $targetRoot -Recurse -Force
+  }
+
+  $configPath = Join-Path $targetSupabase "config.toml"
+  $config = [System.IO.File]::ReadAllText($configPath)
+  $config = $config -replace 'project_id = ".*?"', "project_id = `"$($Settings.ProjectId)`""
+  $config = $config -replace 'port = 54321', "port = $($Settings.SupabaseApiPort)"
+  $config = $config -replace 'port = 54322', "port = $($Settings.SupabaseDbPort)"
+  $config = $config -replace 'shadow_port = 54320', "shadow_port = $($Settings.SupabaseShadowPort)"
+  $config = $config -replace 'port = 54329', "port = $($Settings.SupabasePoolerPort)"
+  $config = $config -replace 'port = 54323', "port = $($Settings.SupabaseStudioPort)"
+  $config = $config -replace 'port = 54324', "port = $($Settings.SupabaseMailPort)"
+  $config = $config -replace '127\.0\.0\.1:3220', "127.0.0.1:$($Settings.SitePort)"
+  $config = $config -replace 'localhost:3220', "localhost:$($Settings.SitePort)"
+  $config = $config -replace 'https://www\.minaretnetwork\.ca', "https://www.staging.minaretnetwork.ca"
+  $config = $config -replace 'https://minaretnetwork\.ca', [string]$Settings.PublicOrigin
+  $config = $config -replace 'site_url = ".*?"', "site_url = `"$($Settings.PublicOrigin)`""
+  $config = $config -replace 'external_url = ".*?"', "external_url = `"$($Settings.PublicOrigin)/auth/v1`""
+  [System.IO.File]::WriteAllText($configPath, $config, [System.Text.UTF8Encoding]::new($false))
+}
+
+function Register-MinaretTask {
+  param([System.Collections.IDictionary]$Settings)
+
+  $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+  $scriptPath = Join-Path $workspace "scripts\start-site.ps1"
+  $argument = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -Environment $($Settings.Name)"
+  $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $argument -WorkingDirectory $workspace
+  $trigger = New-ScheduledTaskTrigger -AtLogOn
+  $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
+  $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero)
+
+  Register-ScheduledTask -TaskName ([string]$Settings.TaskName) -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -Description "Runs the Minaret Network $($Settings.Name) site on localhost." -Force | Out-Null
+}
+
+function Start-MinaretTransient {
+  param([System.Collections.IDictionary]$Settings)
+
+  $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+  $scriptPath = Join-Path $workspace "scripts\start-site.ps1"
+  Start-Process -FilePath "powershell.exe" -ArgumentList @(
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    $scriptPath,
+    "-Environment",
+    ([string]$Settings.Name)
+  ) -WorkingDirectory $workspace -WindowStyle Hidden | Out-Null
+}
+
+$workspace = Get-ExperimentWorkspace
+$settings = Get-EnvironmentSettings -Name $Environment
+$npxPath = Get-ExperimentNpxPath
+$dockerPath = Get-ExperimentDockerPath | Out-Null
+
+if ($Environment -eq "staging") {
+  Initialize-StagingSupabaseWorkdir -Settings $settings
+}
+elseif ($Seed -eq "fixtures") {
+  throw "Production cannot be fixture-seeded by this script."
+}
+
+if ($Environment -eq "production" -and $Seed -eq "clean") {
+  if (-not $ResetProductionData -or $ConfirmText -ne "RESET_PRODUCTION_DATABASE") {
+    throw "Clean production seeding is destructive. Rerun with -ResetProductionData -ConfirmText RESET_PRODUCTION_DATABASE."
+  }
+}
+
+Write-Host "Starting Supabase for $Environment..."
+$start = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @(
+  "supabase", "start",
+  "--workdir", ([string]$settings.SupabaseWorkdir),
+  "-x", "realtime,imgproxy,edge-runtime,logflare,vector,supavisor"
+)
+if ($start.ExitCode -ne 0) {
+  throw "Supabase failed to start for $Environment. Secret-bearing output was suppressed."
+}
+
+$status = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @(
+  "supabase", "status",
+  "--workdir", ([string]$settings.SupabaseWorkdir),
+  "-o", "env"
+)
+if ($status.ExitCode -ne 0) {
+  throw "Supabase did not report status for $Environment."
+}
+$supabase = ConvertFrom-SupabaseEnvOutput -Lines $status.Output
+
+$databaseUri = [Uri]$supabase["DB_URL"]
+$apiUri = [Uri]$supabase["API_URL"]
+if ($databaseUri.Host -notin @("127.0.0.1", "localhost") -or $databaseUri.Port -ne [int]$settings.SupabaseDbPort) {
+  throw "Safety check failed: $Environment database is not on expected loopback port $($settings.SupabaseDbPort)."
+}
+if ($apiUri.Host -notin @("127.0.0.1", "localhost") -or $apiUri.Port -ne [int]$settings.SupabaseApiPort) {
+  throw "Safety check failed: $Environment API is not on expected loopback port $($settings.SupabaseApiPort)."
+}
+
+$existingLocal = Get-ExperimentDotEnvMap -Path (Join-Path $workspace ".env.local")
+$existingEnv = Get-ExperimentDotEnvMap -Path (Join-Path $workspace ([string]$settings.EnvFile))
+$googleAuthEnabled = if ($existingEnv.ContainsKey("NEXT_PUBLIC_GOOGLE_AUTH_ENABLED")) { $existingEnv["NEXT_PUBLIC_GOOGLE_AUTH_ENABLED"] } elseif ($existingLocal.ContainsKey("NEXT_PUBLIC_GOOGLE_AUTH_ENABLED")) { $existingLocal["NEXT_PUBLIC_GOOGLE_AUTH_ENABLED"] } else { "false" }
+
+$managed = [ordered]@{
+  MINARET_ENVIRONMENT = [string]$settings.Name
+  MINARET_PORT = [string]$settings.SitePort
+  NEXT_DIST_DIR = [string]$settings.DistDir
+  DATABASE_URL = $supabase["DB_URL"]
+  DIRECT_URL = $supabase["DB_URL"]
+  NEXT_PUBLIC_SUPABASE_URL = [string]$settings.PublicOrigin
+  SUPABASE_INTERNAL_URL = $supabase["API_URL"]
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = $supabase["ANON_KEY"]
+  SUPABASE_SERVICE_ROLE_KEY = $supabase["SERVICE_ROLE_KEY"]
+  NEXT_PUBLIC_GOOGLE_AUTH_ENABLED = $googleAuthEnabled
+  NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG = "al-falah"
+  NEXT_PUBLIC_SITE_URL = [string]$settings.PublicOrigin
+  NOMINATIM_URL = "http://127.0.0.1:8088"
+}
+
+foreach ($optional in @("OPENAI_API_KEY", "SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET", "SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID")) {
+  if ($existingEnv.ContainsKey($optional)) {
+    $managed[$optional] = $existingEnv[$optional]
+  }
+  elseif ($existingLocal.ContainsKey($optional)) {
+    $managed[$optional] = $existingLocal[$optional]
+  }
+}
+
+if ($Environment -eq "staging") {
+  $experimentPassword = if ($existingEnv.ContainsKey("EXPERIMENT_USER_PASSWORD") -and $existingEnv["EXPERIMENT_USER_PASSWORD"].Length -ge 12) {
+    $existingEnv["EXPERIMENT_USER_PASSWORD"]
+  }
+  elseif ($existingLocal.ContainsKey("EXPERIMENT_USER_PASSWORD") -and $existingLocal["EXPERIMENT_USER_PASSWORD"].Length -ge 12) {
+    $existingLocal["EXPERIMENT_USER_PASSWORD"]
+  }
+  else {
+    New-ExperimentSecret
+  }
+  $managed["EXPERIMENT_USER_PASSWORD"] = $experimentPassword
+}
+
+$envPath = Join-Path $workspace ([string]$settings.EnvFile)
+Set-ExperimentDotEnvValues -Path $envPath -Values $managed
+Write-Host "Wrote $($settings.EnvFile) for $Environment (secrets omitted)."
+
+Set-ProcessEnvFromMap -Values $managed
+
+Write-Host "Applying Prisma schema to $Environment..."
+$dbPush = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("prisma", "db", "push")
+if ($dbPush.ExitCode -ne 0) {
+  throw "Prisma db push failed for $Environment. Output suppressed."
+}
+
+if ($Seed -eq "fixtures") {
+  Write-Host "Seeding staging fixtures..."
+  $seedResult = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("tsx", "prisma/seed-experiment.ts")
+  if ($seedResult.ExitCode -ne 0) {
+    throw "Fixture seed failed for $Environment. Output suppressed."
+  }
+}
+elseif ($Seed -eq "clean") {
+  Write-Host "Resetting and clean-seeding production data..."
+  $env:CONFIRM_CLEAN_DATABASE = "YES"
+  $seedResult = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("tsx", "prisma/seed-clean.ts")
+  if ($seedResult.ExitCode -ne 0) {
+    throw "Clean seed failed for $Environment. Output suppressed."
+  }
+}
+
+if (-not $SkipBuild) {
+  Write-Host "Building $Environment into $($settings.DistDir)..."
+  $env:NEXT_DIST_DIR = [string]$settings.DistDir
+  $build = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("next", "build")
+  if ($build.ExitCode -ne 0) {
+    throw "Build failed for $Environment. Output suppressed."
+  }
+}
+
+$taskRegistered = $false
+if (-not $SkipTaskRegister) {
+  try {
+    Register-MinaretTask -Settings $settings
+    $taskRegistered = $true
+  }
+  catch {
+    $existingTask = Get-ScheduledTask -TaskName ([string]$settings.TaskName) -ErrorAction SilentlyContinue
+    if ($existingTask) {
+      Write-Warning "Could not update scheduled task '$($settings.TaskName)', but an existing task is available: $($_.Exception.Message)"
+      $taskRegistered = $true
+    }
+    else {
+      Write-Warning "Could not create scheduled task '$($settings.TaskName)': $($_.Exception.Message)"
+    }
+  }
+}
+if (-not $SkipTaskStart) {
+  if ($taskRegistered) {
+    $running = Get-ScheduledTask -TaskName ([string]$settings.TaskName) -ErrorAction SilentlyContinue
+    if ($running -and $running.State -eq "Running") {
+      Stop-ScheduledTask -TaskName ([string]$settings.TaskName)
+      Start-Sleep -Seconds 2
+    }
+    Start-ScheduledTask -TaskName ([string]$settings.TaskName)
+  }
+  else {
+    Write-Warning "Starting $Environment as a transient background process. It will not auto-start on login until the scheduled task is created from an elevated PowerShell."
+    Start-MinaretTransient -Settings $settings
+  }
+}
+
+Write-Host "$Environment is ready."
+Write-Host "Local app:       http://127.0.0.1:$($settings.SitePort)"
+Write-Host "Supabase API:   http://127.0.0.1:$($settings.SupabaseApiPort)"
+Write-Host "Supabase Studio:http://127.0.0.1:$($settings.SupabaseStudioPort)"
+Write-Host "Public origin:  $($settings.PublicOrigin)"

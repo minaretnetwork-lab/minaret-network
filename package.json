@@ -19,7 +19,10 @@
     "experiment:publish": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-publish.ps1",
     "experiment:status": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-status.ps1",
     "experiment:stop": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-stop.ps1",
-    "experiment:backup": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-backup.ps1"
+    "experiment:backup": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-backup.ps1",
+    "env:setup:staging": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-environment.ps1 -Environment staging -Seed fixtures",
+    "env:setup:production": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-environment.ps1 -Environment production",
+    "env:reset:production": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-environment.ps1 -Environment production -Seed clean -ResetProductionData -ConfirmText RESET_PRODUCTION_DATABASE"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
