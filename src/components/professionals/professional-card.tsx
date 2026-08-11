@@ -56,6 +56,15 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+function ActionTooltip({ label }: { label: string }) {
+  return (
+    <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-950 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/action:opacity-100 group-focus-visible/action:opacity-100">
+      {label}
+      <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-gray-950" />
+    </span>
+  );
+}
+
 export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
   const router = useRouter();
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
@@ -270,10 +279,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 event.stopPropagation();
                 setMessageDialogOpen(true);
               }}
-              className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
-              title="Message"
+              className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
               aria-label={`Message ${name}`}
             >
+              <ActionTooltip label="Message" />
               <MessageCircle className="h-3.5 w-3.5" />
             </button>
           ) : (
@@ -284,10 +293,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               location={defaultLocation}
               trigger={
                 <div
-                  className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
-                  title="Message"
+                  className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                   aria-label={`Message ${name}`}
                 >
+                  <ActionTooltip label="Message" />
                   <MessageCircle className="h-3.5 w-3.5" />
                 </div>
               }
@@ -301,10 +310,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                   event.stopPropagation();
                   openExternalContact(buildWhatsAppUrl(whatsappPhone));
                 }}
-                className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
-                title="WhatsApp"
+                className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                 aria-label={`WhatsApp ${name}`}
               >
+                <ActionTooltip label="WhatsApp" />
                 <WhatsAppIcon className="h-4 w-4" />
               </button>
             ) : (
@@ -313,10 +322,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 professionalName={name}
                 trigger={
                   <div
-                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
-                    title="WhatsApp"
+                    className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                     aria-label={`WhatsApp ${name}`}
                   >
+                    <ActionTooltip label="WhatsApp" />
                     <WhatsAppIcon className="h-4 w-4" />
                   </div>
                 }
@@ -330,10 +339,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 event.stopPropagation();
                 openExternalContact(`mailto:${professional.email}`);
               }}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
-              title="Email"
+              className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
               aria-label={`Email ${name}`}
             >
+              <ActionTooltip label="Email" />
               <Mail className="h-3.5 w-3.5" />
             </button>
           )}
@@ -344,10 +353,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 event.stopPropagation();
                 openExternalContact(`tel:${professional.phone!.replace(/[^\d+]/g, "")}`);
               }}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
-              title="Call"
+              className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
               aria-label={`Call ${name}`}
             >
+              <ActionTooltip label="Call" />
               <Phone className="h-3.5 w-3.5" />
             </button>
           )}
