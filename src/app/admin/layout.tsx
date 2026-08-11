@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
-import { BrandLogo } from "@/components/layout/brand-logo";
 import {
   LayoutDashboard, Users, MessageSquare,
   FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound
@@ -35,7 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <BrandLogo className="h-7 w-7" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white font-bold text-xs">MN</div>
             </Link>
             <span className="text-sm font-semibold">Admin Panel</span>
             <span className="text-white/30 text-xs">|</span>

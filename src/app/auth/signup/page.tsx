@@ -8,7 +8,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BrandLogo } from "@/components/layout/brand-logo";
 import { signUp } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
 
@@ -60,7 +59,7 @@ export default function SignUpPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <BrandLogo className="h-10 w-10" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white font-bold">MN</div>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create your account</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Join Minaret Network</p>

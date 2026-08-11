@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { BrandLogo } from "./brand-logo";
 
 export function Footer() {
   return (
@@ -10,7 +9,9 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-5">
-              <BrandLogo className="h-9 w-9" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-sm">
+                <span style={{ fontFamily: "var(--font-lora)" }}>MN</span>
+              </div>
               <div>
                 <p className="font-semibold text-white text-sm leading-none" style={{ fontFamily: "var(--font-lora)" }}>Minaret Network</p>
                 <p className="text-[10px] text-white/40 leading-none mt-1 uppercase tracking-wide">Mosque Professionals</p>
