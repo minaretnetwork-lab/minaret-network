@@ -56,6 +56,14 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+function isInteractiveElement(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+
+  return Boolean(
+    target.closest("a, button, input, textarea, select, [role='button'], [data-modal-content]")
+  );
+}
+
 export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
   const router = useRouter();
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
@@ -120,6 +128,8 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
       tabIndex={0}
       onClick={() => router.push(profileUrl)}
       onKeyDown={(event) => {
+        if (isInteractiveElement(event.target)) return;
+
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           router.push(profileUrl);

@@ -73,6 +73,8 @@ export function ContactGateModal({ professionalId, professionalName, trigger, mo
           <div
             className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-xl relative animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            data-modal-content
           >
             <button
               onClick={() => setOpen(false)}
