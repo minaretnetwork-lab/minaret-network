@@ -56,14 +56,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-function isInteractiveElement(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false;
-
-  return Boolean(
-    target.closest("a, button, input, textarea, select, [role='button'], [data-modal-content]")
-  );
-}
-
 export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
   const router = useRouter();
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
@@ -124,21 +116,15 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
 
   return (
     <div
-      role="link"
-      tabIndex={0}
-      onClick={() => router.push(profileUrl)}
-      onKeyDown={(event) => {
-        if (isInteractiveElement(event.target)) return;
-
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          router.push(profileUrl);
-        }
-      }}
       className={`group relative cursor-pointer bg-white dark:bg-white/[0.03] border rounded-2xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}
     >
+      <Link
+        href={profileUrl}
+        aria-label={`View ${name}'s professional profile`}
+        className="absolute inset-0 z-10 rounded-2xl"
+      />
       {isSponsored && (
-        <div className="absolute top-3 right-3">
+        <div className="pointer-events-none absolute top-3 right-3 z-20">
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
             <Sparkles className="h-2.5 w-2.5" />
             Sponsored
@@ -156,7 +142,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
         </Avatar>
 
         <div className="min-w-0 flex-1 pt-0.5">
-          <Link href={profileUrl} className="block" onClick={(event) => event.stopPropagation()}>
+          <Link href={profileUrl} className="relative z-20 block">
             <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] leading-snug hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-lora)" }}>
               {name}
             </h3>
@@ -165,7 +151,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{professional.businessName}</p>
           )}
           <div className="flex items-center gap-1.5 mt-1.5">
-            <Link href={`/professionals?category=${category.slug}`} className="flex items-center gap-1.5 hover:underline" onClick={(event) => event.stopPropagation()}>
+            <Link href={`/professionals?category=${category.slug}`} className="relative z-20 flex items-center gap-1.5 hover:underline">
               <CategoryIcon slug={category.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
               <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{category.name}</span>
             </Link>
@@ -182,8 +168,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
             <div className="flex items-center gap-1 mt-1.5">
               <Link
                 href={`/professionals/${professional.id}#recommendations`}
-                className="flex items-center gap-1 hover:underline"
-                onClick={(e) => e.stopPropagation()}
+                className="relative z-20 flex items-center gap-1 hover:underline"
               >
                 <span className="text-xs font-semibold text-amber-600">{avgRating.toFixed(1)}</span>
                 <div className="flex items-center gap-0.5">
@@ -201,7 +186,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                   type="button"
                   onMouseEnter={() => setShowBreakdown(true)}
                   onMouseLeave={() => setShowBreakdown(false)}
-                  className="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="relative z-20 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   aria-label="Rating breakdown"
                 >
                   <ChevronDown className="h-3 w-3" />
@@ -233,8 +218,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                       Affiliated ·{" "}
                       <Link
                         href={`/professionals?mosque=${mosque.slug}`}
-                        className="hover:underline"
-                        onClick={(e) => e.stopPropagation()}
+                        className="relative z-20 hover:underline"
                       >
                         {mosque.name}
                       </Link>
@@ -275,7 +259,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           )}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="relative z-20 flex items-center gap-1.5">
           {isLoggedIn ? (
             <button
               type="button"
