@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { buildWhatsAppUrl } from "@/lib/utils";
+import type { Prisma } from "@prisma/client";
+import {
+  distanceBetweenServiceAreas,
+  findServiceAreaCoordinateByName,
+  findServiceAreaCoordinateBySlug,
+} from "@/lib/service-area-coordinates";
 
 export const dynamic = "force-dynamic";
 
@@ -182,7 +188,22 @@ export async function POST(request: Request) {
     mosque.serviceAreas.find((area) => locationLower.includes(area.name.toLowerCase()) || area.name.toLowerCase().includes(locationLower)) ??
     null;
 
-  const professionals = categoryIds.length > 0
+  const professionalInclude = {
+    user: { select: { firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
+    category: { select: { id: true, name: true, slug: true, icon: true } },
+    serviceAreas: { select: { id: true, name: true, slug: true } },
+    badges: { select: { type: true } },
+    recommendations: { where: { status: "APPROVED" }, select: { id: true } },
+  } satisfies Prisma.ProfessionalInclude;
+
+  const professionalOrderBy = [
+    { isSponsored: "desc" },
+    { isFeatured: "desc" },
+    { recommendations: { _count: "desc" } },
+    { profileViews: "desc" },
+  ] satisfies Prisma.ProfessionalOrderByWithRelationInput[];
+
+  const localProfessionals = categoryIds.length > 0
     ? await prisma.professional.findMany({
         where: {
           mosqueId: mosque.id,
@@ -190,27 +211,64 @@ export async function POST(request: Request) {
           categoryId: { in: categoryIds },
           ...(matchedArea ? { serviceAreas: { some: { id: matchedArea.id } } } : {}),
         },
-        include: {
-          user: { select: { firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
-          category: { select: { id: true, name: true, slug: true, icon: true } },
-          serviceAreas: { select: { id: true, name: true, slug: true } },
-          badges: { select: { type: true } },
-          recommendations: { where: { status: "APPROVED" }, select: { id: true } },
-        },
-        orderBy: [
-          { isSponsored: "desc" },
-          { isFeatured: "desc" },
-          { recommendations: { _count: "desc" } },
-          { profileViews: "desc" },
-        ],
+        include: professionalInclude,
+        orderBy: professionalOrderBy,
         take: 5,
       })
     : [];
+
+  let isLocationFallback = false;
+  let professionals = localProfessionals.map((professional) => ({
+    ...professional,
+    fallbackDistanceKm: null as number | null,
+  }));
+
+  const origin = matchedArea
+    ? findServiceAreaCoordinateBySlug(matchedArea.slug) ?? findServiceAreaCoordinateByName(matchedArea.name)
+    : findServiceAreaCoordinateByName(classification.location_text || location);
+
+  if (professionals.length === 0 && categoryIds.length > 0 && origin) {
+    isLocationFallback = true;
+    const fallbackProfessionals = await prisma.professional.findMany({
+      where: {
+        mosqueId: mosque.id,
+        status: "APPROVED",
+        categoryId: { in: categoryIds },
+      },
+      include: professionalInclude,
+      orderBy: professionalOrderBy,
+    });
+
+    professionals = fallbackProfessionals
+      .map((professional) => {
+        const nearest = professional.serviceAreas.reduce<number | null>((best, area) => {
+          const coordinate = findServiceAreaCoordinateBySlug(area.slug) ?? findServiceAreaCoordinateByName(area.name);
+          if (!coordinate) return best;
+          const distanceKm = distanceBetweenServiceAreas(origin, coordinate);
+          return best === null || distanceKm < best ? distanceKm : best;
+        }, null);
+
+        return {
+          ...professional,
+          fallbackDistanceKm: nearest === null ? null : Math.round(nearest * 10) / 10,
+        };
+      })
+      .sort((a, b) => {
+        const distanceA = a.fallbackDistanceKm ?? Number.POSITIVE_INFINITY;
+        const distanceB = b.fallbackDistanceKm ?? Number.POSITIVE_INFINITY;
+        if (distanceA !== distanceB) return distanceA - distanceB;
+        if (a.isSponsored !== b.isSponsored) return a.isSponsored ? -1 : 1;
+        if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+        return b.recommendations.length - a.recommendations.length;
+      })
+      .slice(0, 5);
+  }
 
   return NextResponse.json({
     classification,
     matchedCategory: matchedCategories[0] ?? null,
     matchedArea,
+    isLocationFallback,
     professionals: professionals.map((professional) => {
       const ownerName = nameForUser(professional.user);
       const businessName = professional.businessName || professional.title || ownerName;
@@ -226,6 +284,7 @@ export async function POST(request: Request) {
         recommendationCount: professional.recommendations.length,
         isFeatured: professional.isFeatured,
         isSponsored: professional.isSponsored,
+        distanceKm: professional.fallbackDistanceKm,
         profileUrl: `/professionals/${professional.id}`,
         whatsappUrl: whatsappPhone
           ? buildWhatsAppUrl(whatsappPhone, `Hi ${businessName}, I found your profile on Minaret Network.`)

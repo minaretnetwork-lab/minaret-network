@@ -4,7 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import type { SearchFilters } from "@/types";
+import {
+  distanceBetweenServiceAreas,
+  findServiceAreaCoordinateByName,
+  findServiceAreaCoordinateBySlug,
+} from "@/lib/service-area-coordinates";
 
 async function uploadToStorage(bucket: string, path: string, file: File): Promise<string> {
   const admin = createAdminClient();
@@ -70,20 +76,70 @@ export async function getProfessionals(
       ? [{ approvedAt: "desc" }]
       : [{ isSponsored: "desc" }, { recommendations: { _count: "desc" } }, { isFeatured: "desc" }];
 
-  return prisma.professional.findMany({
+  const include = {
+    user: { select: { id: true, firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
+    mosque: { select: { id: true, name: true, slug: true } },
+    category: { select: { id: true, name: true, slug: true, icon: true } },
+    serviceAreas: { select: { id: true, name: true, slug: true } },
+    badges: { select: { id: true, type: true, issuedAt: true } },
+    recommendations: { where: { status: "APPROVED" }, select: { id: true, status: true, rating: true } },
+    galleryImages: { select: { id: true, url: true, caption: true }, take: 6 },
+  } satisfies Prisma.ProfessionalInclude;
+
+  const professionals = await prisma.professional.findMany({
     where,
     orderBy,
-    include: {
-      user: { select: { id: true, firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
-      mosque: { select: { id: true, name: true, slug: true } },
-      category: { select: { id: true, name: true, slug: true, icon: true } },
-      serviceAreas: { select: { id: true, name: true, slug: true } },
-      badges: { select: { id: true, type: true, issuedAt: true } },
-      recommendations: { where: { status: "APPROVED" }, select: { id: true, status: true, rating: true } },
-      // sponsoredUntil included as scalar field automatically
-      galleryImages: { select: { id: true, url: true, caption: true }, take: 6 },
-    },
+    include,
   });
+
+  const locationWasRequested = Boolean(serviceAreaSlug || locationText);
+  if (professionals.length > 0 || !locationWasRequested) return professionals;
+
+  const origin =
+    findServiceAreaCoordinateBySlug(serviceAreaSlug) ??
+    findServiceAreaCoordinateByName(locationText);
+
+  if (!origin) return professionals;
+
+  const fallbackWhere = {
+    ...where,
+    serviceAreas: undefined,
+  };
+  delete fallbackWhere.serviceAreas;
+
+  const fallbackProfessionals = await prisma.professional.findMany({
+    where: fallbackWhere,
+    orderBy,
+    include,
+  });
+
+  return fallbackProfessionals
+    .map((professional) => {
+      const nearest = professional.serviceAreas.reduce<{
+        distanceKm: number;
+        areaName: string;
+      } | null>((best, area) => {
+        const coordinate = findServiceAreaCoordinateBySlug(area.slug) ?? findServiceAreaCoordinateByName(area.name);
+        if (!coordinate) return best;
+        const distanceKm = distanceBetweenServiceAreas(origin, coordinate);
+        return !best || distanceKm < best.distanceKm ? { distanceKm, areaName: area.name } : best;
+      }, null);
+
+      return {
+        ...professional,
+        fallbackDistanceKm: nearest ? Math.round(nearest.distanceKm * 10) / 10 : null,
+        fallbackDistanceArea: nearest?.areaName ?? null,
+        isLocationFallback: true,
+      };
+    })
+    .sort((a, b) => {
+      const distanceA = a.fallbackDistanceKm ?? Number.POSITIVE_INFINITY;
+      const distanceB = b.fallbackDistanceKm ?? Number.POSITIVE_INFINITY;
+      if (distanceA !== distanceB) return distanceA - distanceB;
+      if (a.isSponsored !== b.isSponsored) return a.isSponsored ? -1 : 1;
+      if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+      return b.recommendations.length - a.recommendations.length;
+    });
 }
 
 export async function getProfessionalById(id: string) {

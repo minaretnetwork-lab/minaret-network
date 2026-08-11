@@ -53,6 +53,9 @@ export interface ProfessionalWithRelations {
   badges: { id: string; type: BadgeType; issuedAt: Date }[];
   recommendations: { id: string; status: RecommendationStatus; rating: number }[];
   galleryImages: { id: string; url: string; caption: string | null }[];
+  isLocationFallback?: boolean;
+  fallbackDistanceKm?: number | null;
+  fallbackDistanceArea?: string | null;
 }
 
 export interface SearchFilters {

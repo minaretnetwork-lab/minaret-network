@@ -8,7 +8,7 @@ import { getProfessionals } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
-import type { SearchFilters as SearchFiltersType } from "@/types";
+import type { ProfessionalWithRelations, SearchFilters as SearchFiltersType } from "@/types";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | undefined }>;
@@ -19,9 +19,11 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
     getProfessionals(DEFAULT_MOSQUE_SLUG, filters),
     getCurrentUser().catch(() => null),
   ]);
+  const professionalRows = professionals as ProfessionalWithRelations[];
   const isLoggedIn = !!currentUser;
+  const isLocationFallback = professionalRows.some((p) => p.isLocationFallback);
 
-  if (professionals.length === 0) {
+  if (professionalRows.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="text-5xl mb-4">🔍</div>
@@ -33,14 +35,20 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
     );
   }
 
-  const sponsored = professionals.filter((p) => (p as never as { isSponsored: boolean }).isSponsored);
-  const organic = professionals.filter((p) => !(p as never as { isSponsored: boolean }).isSponsored);
+  const sponsored = professionalRows.filter((p) => p.isSponsored);
+  const organic = professionalRows.filter((p) => !p.isSponsored);
 
   return (
     <>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-        {professionals.length} professional{professionals.length !== 1 ? "s" : ""} found
+        {professionalRows.length} professional{professionalRows.length !== 1 ? "s" : ""} found
       </p>
+
+      {isLocationFallback && (
+        <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">
+          No exact local matches were found, so these are the closest matching professionals sorted by distance.
+        </div>
+      )}
 
       {sponsored.length > 0 && (
         <div className="mb-8">
@@ -50,7 +58,7 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {sponsored.map((p) => (
-              <ProfessionalCard key={p.id} professional={p as never} isLoggedIn={isLoggedIn} />
+              <ProfessionalCard key={p.id} professional={p} isLoggedIn={isLoggedIn} />
             ))}
           </div>
           {organic.length > 0 && (
@@ -65,7 +73,7 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
       {organic.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
           {organic.map((p) => (
-            <ProfessionalCard key={p.id} professional={p as never} isLoggedIn={isLoggedIn} />
+            <ProfessionalCard key={p.id} professional={p} isLoggedIn={isLoggedIn} />
           ))}
         </div>
       )}

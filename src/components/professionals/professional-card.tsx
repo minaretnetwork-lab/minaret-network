@@ -47,6 +47,7 @@ function RatingBreakdown({ recommendations }: { recommendations: { rating: numbe
 export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
   const isSponsored = (professional as typeof professional & { isSponsored?: boolean }).isSponsored === true;
+  const distanceKm = professional.fallbackDistanceKm;
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   const name =
@@ -195,6 +196,9 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               <MapPin className="h-3 w-3" />
               {serviceAreas.slice(0, 2).map((a) => a.name).join(", ")}
               {serviceAreas.length > 2 ? ` +${serviceAreas.length - 2}` : ""}
+              {typeof distanceKm === "number" && (
+                <span className="font-medium text-emerald-600">({distanceKm.toFixed(1)} km)</span>
+              )}
             </span>
           )}
         </div>

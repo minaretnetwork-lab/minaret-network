@@ -42,7 +42,7 @@ export const SERVICE_AREA_COORDINATES: ServiceAreaCoordinate[] = [
   { name: "Barrie", slug: "barrie", latitude: 44.3894, longitude: -79.6903 },
 ];
 
-function distanceInKilometres(
+export function distanceInKilometres(
   latitudeA: number,
   longitudeA: number,
   latitudeB: number,
@@ -59,6 +59,34 @@ function distanceInKilometres(
       Math.sin(longitudeDelta / 2) ** 2;
 
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+export function findServiceAreaCoordinateBySlug(slug: string | null | undefined) {
+  if (!slug) return null;
+  return SERVICE_AREA_COORDINATES.find((area) => area.slug === slug) ?? null;
+}
+
+export function findServiceAreaCoordinateByName(name: string | null | undefined) {
+  const normalized = name?.toLowerCase().trim();
+  if (!normalized) return null;
+
+  return (
+    SERVICE_AREA_COORDINATES.find((area) => area.name.toLowerCase() === normalized || area.slug === normalized) ??
+    SERVICE_AREA_COORDINATES.find((area) => normalized.includes(area.name.toLowerCase()) || area.name.toLowerCase().includes(normalized)) ??
+    null
+  );
+}
+
+export function distanceBetweenServiceAreas(
+  origin: ServiceAreaCoordinate,
+  destination: Pick<ServiceAreaCoordinate, "latitude" | "longitude">,
+) {
+  return distanceInKilometres(
+    origin.latitude,
+    origin.longitude,
+    destination.latitude,
+    destination.longitude,
+  );
 }
 
 export function findNearestServiceArea(latitude: number, longitude: number) {
