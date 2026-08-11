@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
+import { PendingChatRedirect } from "@/components/professionals/pending-chat-redirect";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getExistingConversationWithProfessional } from "@/lib/actions/messages";
@@ -51,6 +52,8 @@ export default async function ProfessionalProfilePage({ params }: Props) {
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-5xl">
+      {currentUser && <PendingChatRedirect professionalId={professional.id} />}
+
       {/* Back */}
       <Link
         href="/professionals"
