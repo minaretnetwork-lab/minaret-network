@@ -158,6 +158,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   // category combobox
   const [catSearch, setCatSearch] = useState("");
   const [catOpen, setCatOpen] = useState(false);
+  const [areaSearch, setAreaSearch] = useState("");
   const catRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -195,6 +196,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const selectedMosqueId = watch("mosqueId");
   const bioLength = watch("bio")?.length ?? 0;
   const bioCharactersRemaining = Math.max(BIO_MIN_LENGTH - bioLength, 0);
+  const normalizedAreaSearch = areaSearch.trim().toLowerCase();
+  const visibleServiceAreas = normalizedAreaSearch
+    ? serviceAreas.filter((area) => area.name.toLowerCase().includes(normalizedAreaSearch) || selectedAreas.includes(area.id))
+    : serviceAreas;
 
   function syncAvailability(schedules: Record<string, DaySchedule>, emergency: boolean) {
     setValue("availability", buildAvailabilityString(schedules, emergency));
@@ -518,9 +523,16 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               <div>
                 <Label>Service Areas *</Label>
                 <p className="text-xs text-gray-400 mt-0.5 mb-2">Select all areas you serve</p>
+                <Input
+                  type="search"
+                  value={areaSearch}
+                  onChange={(event) => setAreaSearch(event.target.value)}
+                  className="mb-3 max-w-sm"
+                  placeholder="Type a city or area to filter..."
+                />
                 {errors.serviceAreaIds && <p className="text-xs text-red-600 mb-1">{errors.serviceAreaIds.message}</p>}
                 <div className="flex flex-wrap gap-2">
-                  {serviceAreas.map((area) => (
+                  {visibleServiceAreas.map((area) => (
                     <button key={area.id} type="button" onClick={() => toggleArea(area.id)}
                       className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
                         selectedAreas.includes(area.id)
@@ -531,6 +543,9 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                     </button>
                   ))}
                 </div>
+                {visibleServiceAreas.length === 0 && (
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No service areas match that search.</p>
+                )}
               </div>
 
               {/* Availability */}
