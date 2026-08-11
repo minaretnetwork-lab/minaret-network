@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   ChevronLeft, Clock, MapPin, Phone, Mail, MessageCircle,
-  UserCheck, CalendarDays, Tag, FileText,
+  UserCheck, CalendarDays, Tag, FileText, Megaphone,
 } from "lucide-react";
-import { getServiceRequestById } from "@/lib/actions/service-requests";
+import { broadcastMyServiceRequest, getServiceRequestById } from "@/lib/actions/service-requests";
 import { getConversationsForMyRequest } from "@/lib/actions/messages";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { CloseRequestForm } from "@/components/dashboard/close-request-form";
@@ -129,6 +129,31 @@ export default async function RequestDetailPage({ params }: Props) {
           </p>
           <p className="text-sm text-emerald-600/70 mt-1">Click to view their full profile</p>
         </Link>
+      )}
+
+      {req.status === "OPEN" && req.assignedToId && (
+        <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5 text-sm text-amber-800 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-300">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 rounded-full bg-white p-2 text-amber-600 dark:bg-amber-950/40">
+              <Megaphone className="h-4 w-4" />
+            </span>
+            <div className="flex-1">
+              <p className="font-semibold text-amber-900 dark:text-amber-200">This request is private</p>
+              <p className="mt-1 leading-relaxed">
+                It is currently only assigned to {assignedName ?? "one professional"}. Broadcast it if you want matching professionals to see and respond to it.
+              </p>
+              <form action={broadcastMyServiceRequest.bind(null, req.id)} className="mt-4">
+                <button
+                  type="submit"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-amber-600 px-3 text-sm font-medium text-white transition hover:bg-amber-700"
+                >
+                  <Megaphone className="h-3.5 w-3.5" />
+                  Broadcast request
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       )}
 
       {conversations.length > 0 && (

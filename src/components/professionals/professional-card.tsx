@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Star, CheckCircle2, MessageCircle, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MapPin, Star, CheckCircle2, MessageCircle, Sparkles, ChevronDown, Mail, Phone, Send, Loader2 } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { ContactGateModal } from "@/components/ui/contact-gate-modal";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials, buildWhatsAppUrl } from "@/lib/utils";
 import type { ProfessionalWithRelations } from "@/types";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 interface ProfessionalCardProps {
   professional: ProfessionalWithRelations;
@@ -45,10 +49,15 @@ function RatingBreakdown({ recommendations }: { recommendations: { rating: numbe
 }
 
 export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
+  const router = useRouter();
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
   const isSponsored = (professional as typeof professional & { isSponsored?: boolean }).isSponsored === true;
   const distanceKm = professional.fallbackDistanceKm;
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messageIssue, setMessageIssue] = useState("");
+  const [messageError, setMessageError] = useState("");
+  const [messageLoading, setMessageLoading] = useState(false);
 
   const name =
     user.displayName ??
@@ -62,9 +71,53 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
     : null;
 
   const photoUrl = professional.photoUrl ?? user.avatarUrl;
+  const profileUrl = `/professionals/${professional.id}`;
+  const emailUrl = professional.email ? `mailto:${professional.email}` : null;
+  const callUrl = professional.phone ? `tel:${professional.phone.replace(/[^\d+]/g, "")}` : null;
+  const defaultLocation = serviceAreas[0]?.name ?? "";
+
+  async function startDirectMessage() {
+    const issue = messageIssue.trim();
+    if (issue.length < 8) {
+      setMessageError("Add a little detail so the professional knows what this is about.");
+      return;
+    }
+
+    setMessageLoading(true);
+    setMessageError("");
+    try {
+      const response = await fetch("/api/ai/start-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ professionalId: professional.id, issue, location: defaultLocation }),
+      });
+      const payload = await response.json();
+      if (response.status === 401) {
+        router.push(`/auth/login?redirectTo=${encodeURIComponent(profileUrl)}`);
+        return;
+      }
+      if (!response.ok) throw new Error(payload.error ?? "Could not start the chat.");
+      router.push(payload.chatUrl);
+    } catch (err) {
+      setMessageError(err instanceof Error ? err.message : "Could not start the chat.");
+    } finally {
+      setMessageLoading(false);
+    }
+  }
 
   return (
-    <div className={`group relative bg-white dark:bg-white/[0.03] border rounded-2xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}>
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(profileUrl)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          router.push(profileUrl);
+        }
+      }}
+      className={`group relative cursor-pointer bg-white dark:bg-white/[0.03] border rounded-2xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}
+    >
       {isSponsored && (
         <div className="absolute top-3 right-3">
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
@@ -84,7 +137,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
         </Avatar>
 
         <div className="min-w-0 flex-1 pt-0.5">
-          <Link href={`/professionals/${professional.id}`} className="block">
+          <Link href={profileUrl} className="block" onClick={(event) => event.stopPropagation()}>
             <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] leading-snug hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-lora)" }}>
               {name}
             </h3>
@@ -93,7 +146,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{professional.businessName}</p>
           )}
           <div className="flex items-center gap-1.5 mt-1.5">
-            <Link href={`/professionals?category=${category.slug}`} className="flex items-center gap-1.5 hover:underline">
+            <Link href={`/professionals?category=${category.slug}`} className="flex items-center gap-1.5 hover:underline" onClick={(event) => event.stopPropagation()}>
               <CategoryIcon slug={category.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
               <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{category.name}</span>
             </Link>
@@ -204,14 +257,46 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
         </div>
 
         <div className="flex items-center gap-1.5">
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setMessageDialogOpen(true);
+              }}
+              className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
+              title="Message"
+              aria-label={`Message ${name}`}
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+            </button>
+          ) : (
+            <ContactGateModal
+              professionalId={professional.id}
+              professionalName={name}
+              trigger={
+                <div
+                  className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
+                  title="Message"
+                  aria-label={`Message ${name}`}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                </div>
+              }
+            />
+          )}
           {professional.whatsapp && (
             isLoggedIn ? (
               <a
                 href={buildWhatsAppUrl(professional.whatsapp)}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(event) => event.stopPropagation()}
                 className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                 title="WhatsApp"
+                aria-label={`WhatsApp ${name}`}
               >
                 <MessageCircle className="h-3.5 w-3.5" />
               </a>
@@ -222,7 +307,9 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 trigger={
                   <div
                     className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
-                    title="Chat on WhatsApp"
+                    title="WhatsApp"
+                    aria-label={`WhatsApp ${name}`}
+                    onClick={(event) => event.stopPropagation()}
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                   </div>
@@ -230,14 +317,60 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               />
             )
           )}
-          <Link
-            href={`/professionals/${professional.id}`}
-            className="h-8 flex items-center gap-1 px-3 rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 text-xs font-medium transition-colors"
-          >
-            View <ArrowRight className="h-3 w-3" />
-          </Link>
+          {emailUrl && (
+            <a
+              href={emailUrl}
+              onClick={(event) => event.stopPropagation()}
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
+              title="Email"
+              aria-label={`Email ${name}`}
+            >
+              <Mail className="h-3.5 w-3.5" />
+            </a>
+          )}
+          {callUrl && (
+            <a
+              href={callUrl}
+              onClick={(event) => event.stopPropagation()}
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
+              title="Call"
+              aria-label={`Call ${name}`}
+            >
+              <Phone className="h-3.5 w-3.5" />
+            </a>
+          )}
         </div>
       </div>
+
+      <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
+        <DialogContent className="sm:max-w-md" onClick={(event) => event.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>Message {professional.businessName ?? name}</DialogTitle>
+            <DialogDescription>
+              What do you need help with? This opens a private request for this professional only.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={messageIssue}
+            onChange={(event) => {
+              setMessageIssue(event.target.value);
+              setMessageError("");
+            }}
+            placeholder="e.g. I need help with a leaking sink this week."
+            className="min-h-28"
+          />
+          {messageError && <p className="text-sm text-red-600">{messageError}</p>}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setMessageDialogOpen(false)} disabled={messageLoading}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={startDirectMessage} disabled={messageLoading} className="bg-emerald-600 text-white hover:bg-emerald-700">
+              {messageLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Start chat
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

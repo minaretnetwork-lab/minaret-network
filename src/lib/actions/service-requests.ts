@@ -131,11 +131,20 @@ export async function getMatchingServiceRequests(limit?: number) {
 
   const filters = buildProfessionalRequestFilters(dbUser.professionals);
   if (filters.length === 0) return [];
+  const professionalIds = dbUser.professionals.map((professional) => professional.id);
 
   const requests = await prisma.serviceRequest.findMany({
     where: {
       userId: { not: dbUser.id },
-      OR: filters,
+      AND: [
+        { OR: filters },
+        {
+          OR: [
+            { assignedToId: null },
+            { assignedToId: { in: professionalIds } },
+          ],
+        },
+      ],
     },
     include: {
       category: { select: { name: true, slug: true, icon: true } },
@@ -189,12 +198,21 @@ export async function getMatchingServiceRequestById(id: string) {
 
   const filters = buildProfessionalRequestFilters(dbUser.professionals);
   if (filters.length === 0) return null;
+  const professionalIds = dbUser.professionals.map((professional) => professional.id);
 
   const request = await prisma.serviceRequest.findFirst({
     where: {
       id,
       userId: { not: dbUser.id },
-      OR: filters,
+      AND: [
+        { OR: filters },
+        {
+          OR: [
+            { assignedToId: null },
+            { assignedToId: { in: professionalIds } },
+          ],
+        },
+      ],
     },
     include: {
       category: { select: { id: true, name: true, slug: true, icon: true } },
@@ -357,5 +375,35 @@ export async function reopenMyServiceRequest(id: string) {
   revalidatePath("/dashboard/requests");
   revalidatePath(`/dashboard/requests/${id}`);
   revalidatePath("/dashboard/messages");
+  revalidatePath("/dashboard/leads");
+}
+
+export async function broadcastMyServiceRequest(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser) throw new Error("User not found");
+
+  const request = await prisma.serviceRequest.findFirst({
+    where: { id, userId: dbUser.id },
+    select: { id: true, assignedToId: true, status: true },
+  });
+
+  if (!request) throw new Error("Request not found.");
+  if (!request.assignedToId) return;
+  if (request.status === "CLOSED" || request.status === "CANCELLED") {
+    throw new Error("Reopen this request before broadcasting it.");
+  }
+
+  await prisma.serviceRequest.update({
+    where: { id },
+    data: { assignedToId: null },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/requests");
+  revalidatePath(`/dashboard/requests/${id}`);
   revalidatePath("/dashboard/leads");
 }
