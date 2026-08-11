@@ -29,7 +29,8 @@ if ([string]::IsNullOrWhiteSpace($googleSecret)) {
 }
 
 $clientId = "1030105890262-70tati9hevbb4l3s0pv70oeq8l9ng1fr.apps.googleusercontent.com"
-$publicOrigin = "https://am5.tail033f8c.ts.net:8443"
+$publicOrigin = "https://minaretnetwork.ca"
+$tailscaleOrigin = "https://am5.tail033f8c.ts.net:8443"
 $allowList = @(
   "http://127.0.0.1:3220/auth/callback",
   "http://127.0.0.1:3220/auth/callback?next=/auth/update-password",
@@ -37,7 +38,13 @@ $allowList = @(
   "http://localhost:3220/auth/callback?next=/auth/update-password",
   "$publicOrigin/auth/callback",
   "$publicOrigin/auth/callback?next=/auth/update-password",
-  "$publicOrigin/auth/callback?next=/dashboard"
+  "$publicOrigin/auth/callback?next=/dashboard",
+  "https://www.minaretnetwork.ca/auth/callback",
+  "https://www.minaretnetwork.ca/auth/callback?next=/auth/update-password",
+  "https://www.minaretnetwork.ca/auth/callback?next=/dashboard",
+  "$tailscaleOrigin/auth/callback",
+  "$tailscaleOrigin/auth/callback?next=/auth/update-password",
+  "$tailscaleOrigin/auth/callback?next=/dashboard"
 ) -join ","
 
 $tempEnv = Join-Path ([System.IO.Path]::GetTempPath()) ("minaret-auth-" + [guid]::NewGuid().ToString("N") + ".env")
@@ -74,15 +81,18 @@ try {
   [System.IO.File]::WriteAllLines($tempEnv, $authEnv, [System.Text.UTF8Encoding]::new($false))
 
   docker rm -f supabase_auth_minaret-experiment 2>$null | Out-Null
-  docker run -d `
+  docker create `
     --name supabase_auth_minaret-experiment `
     --network supabase_network_minaret-experiment `
     --network-alias auth `
+    --restart unless-stopped `
     --label com.docker.compose.project=minaret-experiment `
     --label com.supabase.cli.project=minaret-experiment `
     --label "com.supabase.cli.workdir=$workspace" `
     --env-file $tempEnv `
     public.ecr.aws/supabase/gotrue:v2.194.0 | Out-Null
+
+  docker start supabase_auth_minaret-experiment | Out-Null
 }
 finally {
   if (Test-Path -LiteralPath $tempEnv) {

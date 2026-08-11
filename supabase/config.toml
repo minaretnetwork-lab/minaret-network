@@ -166,9 +166,9 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "https://am5.tail033f8c.ts.net:8443"
+site_url = "https://minaretnetwork.ca"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
-external_url = "https://am5.tail033f8c.ts.net:8443/auth/v1"
+external_url = "https://minaretnetwork.ca/auth/v1"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 additional_redirect_urls = [
   "http://127.0.0.1:3220/auth/callback",
@@ -177,6 +177,13 @@ additional_redirect_urls = [
   "http://localhost:3220/auth/callback?next=/auth/update-password",
   "https://am5.tail033f8c.ts.net:8443/auth/callback",
   "https://am5.tail033f8c.ts.net:8443/auth/callback?next=/auth/update-password",
+  "https://am5.tail033f8c.ts.net:8443/auth/callback?next=/dashboard",
+  "https://minaretnetwork.ca/auth/callback",
+  "https://minaretnetwork.ca/auth/callback?next=/auth/update-password",
+  "https://minaretnetwork.ca/auth/callback?next=/dashboard",
+  "https://www.minaretnetwork.ca/auth/callback",
+  "https://www.minaretnetwork.ca/auth/callback?next=/auth/update-password",
+  "https://www.minaretnetwork.ca/auth/callback?next=/dashboard",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
@@ -357,7 +364,7 @@ email_optional = false
 enabled = true
 client_id = "1030105890262-70tati9hevbb4l3s0pv70oeq8l9ng1fr.apps.googleusercontent.com"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
-redirect_uri = "https://am5.tail033f8c.ts.net:8443/auth/v1/callback"
+redirect_uri = "https://minaretnetwork.ca/auth/v1/callback"
 skip_nonce_check = false
 email_optional = false
 
