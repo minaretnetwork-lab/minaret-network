@@ -15,12 +15,15 @@ import { Camera, X, Building2, ChevronRight, ChevronLeft, Check, Lightbulb } fro
 import { PhoneInput } from "@/components/ui/phone-input";
 import { submitCategorySuggestion } from "@/lib/actions/category-suggestions";
 
+const BIO_MIN_LENGTH = 50;
+const BIO_MAX_LENGTH = 1000;
+
 const schema = z.object({
   mosqueId: z.string().optional(),
   categoryId: z.string().min(1, "Please select a category"),
   businessName: z.string().optional(),
   title: z.string().min(2, "Job title is required"),
-  bio: z.string().min(50, "Please write at least 50 characters").max(1000),
+  bio: z.string().min(BIO_MIN_LENGTH, `Please write at least ${BIO_MIN_LENGTH} characters`).max(BIO_MAX_LENGTH),
   yearsOfExperience: z.string().optional(),
   qualifications: z.string().optional(),
   licenses: z.string().optional(),
@@ -174,6 +177,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   const selectedLanguages = watch("languages") ?? [];
   const selectedAreas = watch("serviceAreaIds") ?? [];
+  const bioLength = watch("bio")?.length ?? 0;
+  const bioCharactersRemaining = Math.max(BIO_MIN_LENGTH - bioLength, 0);
 
   function syncAvailability(schedules: Record<string, DaySchedule>, emergency: boolean) {
     setValue("availability", buildAvailabilityString(schedules, emergency));
@@ -451,8 +456,19 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <Label htmlFor="bio">Bio / About *</Label>
                 <Textarea id="bio" {...register("bio")} className="mt-1.5 resize-none" rows={5}
                   placeholder="Describe your experience, expertise, and why you're a good fit for this community…" />
+                <div className="mt-1.5 flex flex-col gap-0.5 text-xs sm:flex-row sm:items-center sm:justify-between">
+                  {bioCharactersRemaining > 0 ? (
+                    <p className="text-amber-700 dark:text-amber-300">
+                      {bioCharactersRemaining} more character{bioCharactersRemaining === 1 ? "" : "s"} needed
+                    </p>
+                  ) : (
+                    <p className="text-green-700 dark:text-green-300">Minimum met</p>
+                  )}
+                  <p className={bioLength > BIO_MAX_LENGTH ? "text-red-600" : "text-gray-400"}>
+                    {bioLength}/{BIO_MAX_LENGTH} characters
+                  </p>
+                </div>
                 {errors.bio && <p className="text-xs text-red-600 mt-1">{errors.bio.message}</p>}
-                <p className="text-xs text-gray-400 mt-1">Minimum 50 characters · {watch("bio")?.length ?? 0}/1000</p>
               </div>
 
               <div>
