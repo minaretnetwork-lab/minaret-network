@@ -354,8 +354,8 @@ email_optional = false
 # Google remains externally hosted. Enable this after adding the OAuth client
 # ID below and setting SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET locally.
 [auth.external.google]
-enabled = false
-client_id = ""
+enabled = true
+client_id = "1030105890262-70tati9hevbb4l3s0pv70oeq8l9ng1fr.apps.googleusercontent.com"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = "https://am5.tail033f8c.ts.net:8443/auth/v1/callback"
 skip_nonce_check = false
