@@ -82,6 +82,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
   const profileUrl = `/professionals/${professional.id}`;
   const emailUrl = professional.email ? `mailto:${professional.email}` : null;
   const callUrl = professional.phone ? `tel:${professional.phone.replace(/[^\d+]/g, "")}` : null;
+  const whatsappPhone = professional.whatsapp || professional.phone;
   const defaultLocation = serviceAreas[0]?.name ?? "";
 
   async function startDirectMessage() {
@@ -294,10 +295,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               }
             />
           )}
-          {professional.whatsapp && (
+          {whatsappPhone && (
             isLoggedIn ? (
               <a
-                href={buildWhatsAppUrl(professional.whatsapp)}
+                href={buildWhatsAppUrl(whatsappPhone)}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(event) => event.stopPropagation()}
