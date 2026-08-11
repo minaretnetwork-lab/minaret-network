@@ -59,6 +59,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             alt=""
             fill
             preload
+            fetchPriority="high"
             quality={78}
             sizes="100vw"
             className="absolute inset-0 w-full h-full object-cover object-center"
