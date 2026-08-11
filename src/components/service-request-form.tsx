@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2, LogIn, UserPlus,
   ChevronLeft, ChevronRight,
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { CityAutocompleteInput } from "@/components/ui/city-autocomplete-input";
 import { submitServiceRequest } from "@/lib/actions/service-requests";
 import {
   cacheDetectedCity,
@@ -229,6 +230,7 @@ export function ServiceRequestForm({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [areaQuery, setAreaQuery] = useState("");
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [form, setForm] = useState<FormState>(mergedDraft?.form ?? emptyForm);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(parseDateValue(initialDraft?.form.preferredDate) ?? todayDate()));
@@ -249,6 +251,11 @@ export function ServiceRequestForm({
 
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState("");
+
+  useEffect(() => {
+    const selectedArea = serviceAreas.find((area) => area.id === form.serviceAreaId);
+    if (selectedArea) setAreaQuery(selectedArea.name);
+  }, [form.serviceAreaId, serviceAreas]);
 
   function selectDetectedArea(city: string) {
     const lower = city.toLowerCase();
@@ -520,6 +527,23 @@ export function ServiceRequestForm({
                 </button>
               </div>
               {locateError && <p className="text-xs text-amber-600 mb-1.5">{locateError}</p>}
+              <div className="mb-2">
+                <CityAutocompleteInput
+                  value={areaQuery}
+                  onChange={(value) => {
+                    setAreaQuery(value);
+                    const exact = serviceAreas.find((area) => area.name.toLowerCase() === value.trim().toLowerCase());
+                    set("serviceAreaId", exact?.id ?? "");
+                  }}
+                  onSelect={(suggestion) => {
+                    const selected = serviceAreas.find((area) => area.id === suggestion.id || area.name === suggestion.label);
+                    set("serviceAreaId", selected?.id ?? "");
+                  }}
+                  suggestions={serviceAreas.map((area) => ({ id: area.id, label: area.name }))}
+                  placeholder="Start typing your city or area..."
+                  inputClassName="h-12 rounded-xl border-gray-300 text-sm dark:border-gray-700"
+                />
+              </div>
               <div className="relative">
                 <select
                   value={form.serviceAreaId}
@@ -661,14 +685,14 @@ export function ServiceRequestForm({
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">{error}</p>
           )}
 
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setStep(3)} className="gap-1.5 border-gray-200">
+          <div className="grid grid-cols-[0.9fr_2.1fr] gap-3 sm:flex">
+            <Button variant="outline" onClick={() => setStep(3)} className="h-11 gap-1.5 border-gray-200 px-3 text-base sm:h-8 sm:px-2.5 sm:text-sm">
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex-1 bg-[#14532d] hover:bg-[#166534] text-white h-11 text-base font-medium gap-2"
+              className="h-11 bg-[#14532d] text-base font-medium text-white hover:bg-[#166534] sm:flex-1"
             >
               {submitting ? "Submitting…" : "Submit Request"}
               {!submitting && <ArrowRight className="h-4 w-4" />}
@@ -837,14 +861,14 @@ function StepButtons({ onBack, onNext, nextDisabled }: {
   nextDisabled?: boolean;
 }) {
   return (
-    <div className="flex gap-3 mt-6">
-      <Button variant="outline" onClick={onBack} className="gap-1.5 border-gray-200">
+    <div className="mt-6 grid grid-cols-[0.9fr_2.1fr] gap-3 sm:flex">
+      <Button variant="outline" onClick={onBack} className="h-11 gap-1.5 border-gray-200 px-3 text-base sm:h-8 sm:px-2.5 sm:text-sm">
         <ArrowLeft className="h-4 w-4" /> Back
       </Button>
       <Button
         onClick={onNext}
         disabled={nextDisabled}
-        className="flex-1 bg-[#14532d] hover:bg-[#166534] text-white gap-1.5 disabled:opacity-40"
+        className="h-11 bg-[#14532d] text-base text-white hover:bg-[#166534] disabled:opacity-40 sm:flex-1 sm:text-sm"
       >
         Continue <ArrowRight className="h-4 w-4" />
       </Button>

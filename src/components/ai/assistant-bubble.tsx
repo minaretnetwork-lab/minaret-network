@@ -7,7 +7,7 @@ import { flushSync } from "react-dom";
 import { Bot, BriefcaseBusiness, Loader2, LocateFixed, Mail, MapPin, MessageCircle, Phone, Send, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import { CityAutocompleteInput } from "@/components/ui/city-autocomplete-input";
 import {
   cacheDetectedCity,
   CITY_POSITION_OPTIONS,
@@ -443,11 +443,11 @@ export function AssistantBubble() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <Input
+                  <CityAutocompleteInput
                     value={location}
-                    onChange={(event) => setLocation(event.target.value)}
+                    onChange={setLocation}
                     placeholder="City or area, e.g. Keswick"
-                    className="h-11 bg-white text-base dark:bg-gray-950"
+                    inputClassName="h-11 text-base"
                   />
                   <button
                     type="button"

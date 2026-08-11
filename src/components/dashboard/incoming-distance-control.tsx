@@ -2,9 +2,9 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Loader2, LocateFixed, MapPin, X } from "lucide-react";
+import { Loader2, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CityAutocompleteInput } from "@/components/ui/city-autocomplete-input";
 import {
   cacheDetectedCity,
   CITY_POSITION_OPTIONS,
@@ -89,31 +89,13 @@ export function IncomingDistanceControl({ initialOrigin = "" }: { initialOrigin?
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-          <div className="relative sm:w-64">
-            <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
+          <div className="sm:w-64">
+            <CityAutocompleteInput
               value={origin}
-              onChange={(event) => setOrigin(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") updateOrigin(origin);
-              }}
+              onChange={setOrigin}
+              onSelect={(suggestion) => suggestion.label && updateOrigin(suggestion.label)}
               placeholder="City, e.g. Keswick"
-              className="h-10 bg-white pl-9 pr-9 dark:bg-gray-950"
             />
-            {origin && (
-              <button
-                type="button"
-                onClick={() => {
-                  setOrigin("");
-                  updateOrigin("");
-                  setError("");
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
-                aria-label="Clear distance location"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
           </div>
 
           <Button
