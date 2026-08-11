@@ -47,6 +47,34 @@ function LoginForm() {
     setValue(field, "", { shouldDirty: true, shouldValidate: false });
   }
 
+  async function completePendingChat() {
+    const pendingRaw = window.sessionStorage.getItem("minaret_ai_pending_chat");
+    if (!pendingRaw) return null;
+
+    try {
+      const pending = JSON.parse(pendingRaw) as {
+        professionalId?: string;
+        issue?: string;
+        location?: string;
+      };
+      if (!pending.professionalId || !pending.issue) return null;
+
+      const response = await fetch("/api/ai/start-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pending),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Could not start the chat.");
+      window.sessionStorage.removeItem("minaret_ai_pending_chat");
+      return typeof payload.chatUrl === "string" ? payload.chatUrl : null;
+    } catch (err) {
+      window.sessionStorage.removeItem("minaret_ai_pending_chat");
+      setError(err instanceof Error ? err.message : "Signed in, but could not start the chat.");
+      return null;
+    }
+  }
+
   async function onSubmit(data: FormData) {
     try {
       setError("");
@@ -56,7 +84,8 @@ function LoginForm() {
         password: data.password,
       });
       if (authError) throw new Error(authError.message);
-      router.push(redirectTo);
+      const pendingChatUrl = await completePendingChat();
+      router.push(pendingChatUrl ?? redirectTo);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");

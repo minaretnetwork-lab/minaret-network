@@ -4,16 +4,38 @@ import { useState } from "react";
 import Link from "next/link";
 import { X, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ContactGateModalProps {
   professionalId: string;
   professionalName: string;
   trigger: React.ReactNode;
+  mode?: "contact" | "message";
+  location?: string;
 }
 
-export function ContactGateModal({ professionalId, professionalName, trigger }: ContactGateModalProps) {
+export function ContactGateModal({ professionalId, professionalName, trigger, mode = "contact", location = "" }: ContactGateModalProps) {
   const [open, setOpen] = useState(false);
+  const [issue, setIssue] = useState("");
+  const [issueError, setIssueError] = useState("");
   const redirectTo = encodeURIComponent(`/professionals/${professionalId}`);
+  const isMessage = mode === "message";
+
+  function storePendingChat() {
+    if (!isMessage) return true;
+
+    const trimmedIssue = issue.trim();
+    if (trimmedIssue.length < 8) {
+      setIssueError("Add a few words about what you need help with first.");
+      return false;
+    }
+
+    window.sessionStorage.setItem(
+      "minaret_ai_pending_chat",
+      JSON.stringify({ professionalId, issue: trimmedIssue, location })
+    );
+    return true;
+  }
 
   return (
     <>
@@ -49,16 +71,45 @@ export function ContactGateModal({ professionalId, professionalName, trigger }: 
                 Connect with {professionalName}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-                Create a free account to contact professionals on Minaret Network.
+                {isMessage
+                  ? "Tell them what you need help with. After sign-in, we'll open the chat for you."
+                  : "Create a free account to contact professionals on Minaret Network."}
               </p>
 
+              {isMessage && (
+                <div className="mb-5 text-left">
+                  <Textarea
+                    value={issue}
+                    onChange={(event) => {
+                      setIssue(event.target.value);
+                      setIssueError("");
+                    }}
+                    placeholder="e.g. I need help setting up Wi‑Fi for our office."
+                    className="min-h-24"
+                  />
+                  {issueError && <p className="mt-2 text-xs text-red-600">{issueError}</p>}
+                </div>
+              )}
+
               <div className="space-y-2.5">
-                <Link href={`/auth/signup`} className="block">
+                <Link
+                  href={`/auth/signup`}
+                  className="block"
+                  onClick={(event) => {
+                    if (!storePendingChat()) event.preventDefault();
+                  }}
+                >
                   <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 font-medium">
                     Create a free account
                   </Button>
                 </Link>
-                <Link href={`/auth/login?redirectTo=${redirectTo}`} className="block">
+                <Link
+                  href={`/auth/login?redirectTo=${redirectTo}`}
+                  className="block"
+                  onClick={(event) => {
+                    if (!storePendingChat()) event.preventDefault();
+                  }}
+                >
                   <Button variant="outline" className="w-full h-11 border-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300">
                     I already have an account
                   </Button>

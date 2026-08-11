@@ -284,6 +284,8 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
             <ContactGateModal
               professionalId={professional.id}
               professionalName={name}
+              mode="message"
+              location={defaultLocation}
               trigger={
                 <div
                   className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
