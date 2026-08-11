@@ -17,7 +17,14 @@ export function ContactGateModal({ professionalId, professionalName, trigger }: 
 
   return (
     <>
-      <div onClick={() => setOpen(true)} className="cursor-pointer">
+      <div
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(true);
+        }}
+        className="cursor-pointer"
+      >
         {trigger}
       </div>
 

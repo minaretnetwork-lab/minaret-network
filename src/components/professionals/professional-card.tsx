@@ -48,6 +48,14 @@ function RatingBreakdown({ recommendations }: { recommendations: { rating: numbe
   );
 }
 
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 32 32" className={className} fill="currentColor">
+      <path d="M16.04 4C9.43 4 4.06 9.34 4.06 15.92c0 2.1.55 4.15 1.6 5.96L4 28l6.28-1.64a12.04 12.04 0 0 0 5.76 1.46C22.65 27.82 28 22.48 28 15.92S22.65 4 16.04 4Zm0 21.8c-1.82 0-3.6-.49-5.15-1.42l-.37-.22-3.73.98.99-3.62-.24-.37a9.75 9.75 0 0 1-1.49-5.23c0-5.46 4.48-9.9 9.99-9.9 5.5 0 9.98 4.44 9.98 9.9 0 5.45-4.48 9.88-9.98 9.88Zm5.48-7.4c-.3-.15-1.78-.87-2.05-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.96 1.17-.18.2-.35.22-.65.07-.3-.15-1.27-.46-2.42-1.48-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.14-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.68-1.63-.93-2.23-.25-.58-.5-.5-.68-.51h-.58c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.22 3.07c.15.2 2.1 3.18 5.08 4.46.7.3 1.26.48 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.78-.72 2.03-1.42.25-.7.25-1.3.18-1.42-.08-.13-.28-.2-.58-.35Z" />
+    </svg>
+  );
+}
+
 export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
   const router = useRouter();
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
@@ -280,7 +288,6 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                   className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                   title="Message"
                   aria-label={`Message ${name}`}
-                  onClick={(event) => event.stopPropagation()}
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                 </div>
@@ -298,7 +305,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 title="WhatsApp"
                 aria-label={`WhatsApp ${name}`}
               >
-                <MessageCircle className="h-3.5 w-3.5" />
+                <WhatsAppIcon className="h-4 w-4" />
               </a>
             ) : (
               <ContactGateModal
@@ -309,9 +316,8 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                     className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                     title="WhatsApp"
                     aria-label={`WhatsApp ${name}`}
-                    onClick={(event) => event.stopPropagation()}
                   >
-                    <MessageCircle className="h-3.5 w-3.5" />
+                    <WhatsAppIcon className="h-4 w-4" />
                   </div>
                 }
               />
