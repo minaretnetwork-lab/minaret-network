@@ -26,6 +26,13 @@ function requesterName(request: {
     "Requester";
 }
 
+function requestStatusStyle(status: string) {
+  if (status === "OPEN") return "bg-green-100 text-green-700";
+  if (status === "IN_PROGRESS") return "bg-blue-100 text-blue-700";
+  if (status === "CANCELLED") return "bg-red-100 text-red-700";
+  return "bg-gray-100 text-gray-600";
+}
+
 export default async function DashboardPage() {
   const [user, requests] = await Promise.all([
     getCurrentUser(),
@@ -213,9 +220,19 @@ export default async function DashboardPage() {
                       </p>
                       <p className="truncate text-xs text-gray-500 dark:text-gray-400">{req.description}</p>
                     </div>
-                    <span className="flex-shrink-0 text-xs text-gray-400">
-                      {formatDate(req.createdAt)}
-                    </span>
+                    <div className="flex flex-shrink-0 flex-col items-end gap-1">
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${requestStatusStyle(req.status)}`}>
+                        {req.status.replace("_", " ")}
+                      </span>
+                      {req.status === "CLOSED" && req.closeReason && (
+                        <span className="max-w-32 truncate text-xs text-gray-400" title={req.closeReason}>
+                          {req.closeReason}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400">
+                        {formatDate(req.createdAt)}
+                      </span>
+                    </div>
                   </Link>
                 ))}
               </div>
