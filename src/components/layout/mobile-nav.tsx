@@ -20,6 +20,7 @@ interface MobileNavProps {
 
 export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavProps) {
   const displayName = user?.displayName ?? user?.firstName ?? user?.email;
+  const [open, setOpen] = useState(false);
   const [messageNotification, setMessageNotification] = useState({
     count: user?.unreadMessageCount ?? 0,
     latestConversationId: user?.latestUnreadConversationId ?? null,
@@ -55,17 +56,25 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
     };
   }, [user]);
 
-  return (
-    <details className="lg:hidden group">
-      <summary
-        className="flex items-center justify-center h-10 w-10 rounded-lg text-white/80 hover:text-white hover:bg-white/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
-        style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent", listStyle: "none" }}
-      >
-        <Menu className="h-6 w-6 group-open:hidden" />
-        <X className="h-6 w-6 hidden group-open:block" />
-      </summary>
+  function closeMenu() {
+    setOpen(false);
+  }
 
-      <div className="fixed inset-x-0 top-16 z-50 bg-[#14532d] border-b border-white/10 shadow-lg">
+  return (
+    <div className="lg:hidden">
+      <button
+        type="button"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+        style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+      >
+        {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
+
+      {open && (
+      <div className="fixed inset-x-0 top-16 z-[90] bg-[#14532d] border-b border-white/10 shadow-lg">
         <div className="container mx-auto px-4 py-5 flex flex-col gap-1">
           {[
             { href: "/professionals", label: "Find Professionals" },
@@ -75,6 +84,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
             <Link
               key={link.href}
               href={link.href}
+              onClick={closeMenu}
               className="py-3 px-3 rounded-lg text-base font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors"
             >
               {link.label}
@@ -84,6 +94,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
           {isAdmin && (
             <Link
               href="/admin"
+              onClick={closeMenu}
               className="py-3 px-3 rounded-lg text-base font-medium text-white hover:bg-white/10 flex items-center gap-2 transition-colors"
             >
               <Shield className="h-4 w-4" /> Admin Panel
@@ -114,6 +125,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                   ...(isProfessional ? [{ href: "/dashboard/leads", label: "Incoming Requests" }] : []),
                 ].map((link) => (
                   <Link key={link.href} href={link.href}
+                    onClick={closeMenu}
                     className="flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">
                     <span className="flex-1">{link.label}</span>
                     {typeof link.badge === "number" && link.badge > 0 && (
@@ -125,6 +137,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                 ))}
                 {isAdmin && (
                   <Link href="/admin"
+                    onClick={closeMenu}
                     className="py-2.5 px-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors">
                     Admin Panel
                   </Link>
@@ -140,7 +153,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
               </>
             ) : (
               <>
-                <Link href="/auth/login">
+                <Link href="/auth/login" onClick={closeMenu}>
                   <Button
                     size="sm"
                     className="w-full border border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
@@ -148,7 +161,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                     Sign in
                   </Button>
                 </Link>
-                <Link href="/professionals/register">
+                <Link href="/professionals/register" onClick={closeMenu}>
                   <Button size="sm" className="w-full bg-white text-[#14532d] hover:bg-white/90 hover:text-[#14532d] font-medium">
                     Join as Professional
                   </Button>
@@ -158,6 +171,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
           </div>
         </div>
       </div>
-    </details>
+      )}
+    </div>
   );
 }
