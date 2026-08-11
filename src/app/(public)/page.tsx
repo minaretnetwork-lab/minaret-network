@@ -10,7 +10,6 @@ import { HeroSearch } from "@/components/home/hero-search";
 import { CategorySearch } from "@/components/home/category-search";
 import { CommunityCycle } from "@/components/home/community-cycle";
 import { FeaturedSection } from "@/components/featured/featured-section";
-import { SponsoredLogoCarousel } from "@/components/home/sponsored-logo-carousel";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
@@ -134,8 +133,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </section>
 
       {/* ── Sponsor Logo Carousel ───────────────────────────── */}
-      <SponsoredLogoCarousel />
-
       {/* ── Featured Businesses ──────────────────────────────── */}
       <FeaturedSection city={featuredCity} />
 
