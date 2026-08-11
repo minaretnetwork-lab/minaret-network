@@ -1,4 +1,4 @@
-import { getMosqueSuggestions, getMosques } from "@/lib/actions/mosques";
+import { approveMosqueSuggestion, getMosqueSuggestions, getMosques } from "@/lib/actions/mosques";
 import { MosqueManagement } from "@/components/admin/mosque-management";
 
 export const metadata = { title: "Manage Mosques" };
@@ -70,6 +70,22 @@ export default async function AdminMosquesPage() {
                     )}
                     {suggestion.notes && <p className="sm:col-span-2"><span className="text-gray-400">Notes:</span> {suggestion.notes}</p>}
                   </div>
+                  {suggestion.status === "PENDING" && (
+                    <form
+                      action={async () => {
+                        "use server";
+                        await approveMosqueSuggestion(suggestion.id);
+                      }}
+                      className="mt-4"
+                    >
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                      >
+                        Accept & add mosque
+                      </button>
+                    </form>
+                  )}
                 </article>
               );
             })}

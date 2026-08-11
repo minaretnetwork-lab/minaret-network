@@ -37,6 +37,7 @@ export async function getMosqueSuggestions() {
       notes: true,
       status: true,
       createdAt: true,
+      professionalId: true,
       requestedBy: {
         select: {
           firstName: true,
@@ -49,6 +50,26 @@ export async function getMosqueSuggestions() {
   });
 }
 
+function buildSlug(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+async function buildUniqueMosqueSlug(name: string) {
+  const base = buildSlug(name) || "mosque";
+  let slug = base;
+  let suffix = 2;
+
+  while (await prisma.mosque.findFirst({ where: { slug }, select: { id: true } })) {
+    slug = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+}
+
 export async function createMosque(data: {
   name: string;
   city?: string;
@@ -58,10 +79,7 @@ export async function createMosque(data: {
   communityChannelName?: string;
   communityChannelLink?: string;
 }) {
-  const slug = data.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+  const slug = await buildUniqueMosqueSlug(data.name);
 
   await prisma.mosque.create({
     data: {
@@ -77,6 +95,61 @@ export async function createMosque(data: {
   });
 
   revalidatePath("/admin/mosques");
+}
+
+export async function approveMosqueSuggestion(id: string) {
+  const suggestion = await prisma.mosqueSuggestion.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      address: true,
+      website: true,
+      communityChannelType: true,
+      communityChannelName: true,
+      communityChannelLink: true,
+      professionalId: true,
+      status: true,
+    },
+  });
+
+  if (!suggestion) throw new Error("Mosque recommendation not found.");
+  if (suggestion.status === "APPROVED") return;
+
+  const mosque = await prisma.mosque.create({
+    data: {
+      name: suggestion.name,
+      slug: await buildUniqueMosqueSlug(suggestion.name),
+      city: suggestion.city,
+      address: suggestion.address,
+      website: suggestion.website,
+      communityChannelType: suggestion.communityChannelType || "WhatsApp",
+      communityChannelName: suggestion.communityChannelName,
+      communityChannelLink: suggestion.communityChannelLink,
+      isActive: true,
+    },
+  });
+
+  if (suggestion.professionalId) {
+    await prisma.professional.updateMany({
+      where: { id: suggestion.professionalId },
+      data: { mosqueId: mosque.id },
+    });
+  }
+
+  await prisma.mosqueSuggestion.update({
+    where: { id },
+    data: {
+      status: "APPROVED",
+      referenceMosqueId: mosque.id,
+      reviewedAt: new Date(),
+    },
+  });
+
+  revalidatePath("/admin/mosques");
+  revalidatePath("/professionals");
+  revalidatePath("/professionals/register");
 }
 
 export async function updateMosque(
