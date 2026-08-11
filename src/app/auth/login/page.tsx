@@ -19,6 +19,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 function LoginForm() {
   const [error, setError] = useState("");
@@ -66,9 +67,10 @@ function LoginForm() {
     if (!googleAuthEnabled) return;
 
     const supabase = createClient();
+    const callbackOrigin = siteUrl ?? window.location.origin;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}` },
+      options: { redirectTo: `${callbackOrigin}/auth/callback?next=${redirectTo}` },
     });
   }
 
