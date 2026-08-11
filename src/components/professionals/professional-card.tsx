@@ -245,7 +245,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
       )}
 
       {/* Meta footer */}
-      <div className="flex items-center justify-between pt-1 mt-auto border-t border-border/60">
+      <div className="space-y-2 pt-3 mt-auto border-t border-border/60">
         <div className="flex flex-wrap gap-2 text-xs text-gray-400">
           {serviceAreas && serviceAreas.length > 0 && (
             <span className="flex items-center gap-1">
@@ -259,7 +259,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           )}
         </div>
 
-        <div className="relative z-20 flex items-center gap-1.5">
+        <div className="relative z-20 flex items-center justify-end gap-1.5">
           {isLoggedIn ? (
             <button
               type="button"
