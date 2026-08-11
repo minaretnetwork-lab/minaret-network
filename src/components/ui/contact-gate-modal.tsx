@@ -65,9 +65,15 @@ export function ContactGateModal({ professionalId, professionalName, trigger, mo
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (e.target === e.currentTarget) setOpen(false);
+          }}
         >
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-xl relative animate-in fade-in zoom-in-95 duration-150">
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-xl relative animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setOpen(false)}
               className="absolute top-4 right-4 h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
