@@ -20,12 +20,25 @@ const CONTACT_ICON: Record<string, React.ReactNode> = {
   WHATSAPP: <MessageCircle className="h-3 w-3" />,
 };
 
-export default async function MyRequestsPage() {
+type StatusFilter = "all" | "open" | "closed";
+
+interface MyRequestsPageProps {
+  searchParams?: Promise<{ status?: string }>;
+}
+
+export default async function MyRequestsPage({ searchParams }: MyRequestsPageProps) {
+  const params = await searchParams;
+  const statusFilter: StatusFilter =
+    params?.status === "open" || params?.status === "closed" ? params.status : "all";
   const requests = await getMyServiceRequests();
 
   const open   = requests.filter((r) => r.status === "OPEN").length;
-  const active = requests.filter((r) => r.status === "IN_PROGRESS").length;
   const closed = requests.filter((r) => ["CLOSED", "CANCELLED"].includes(r.status)).length;
+  const filteredRequests = requests.filter((request) => {
+    if (statusFilter === "open") return request.status === "OPEN";
+    if (statusFilter === "closed") return ["CLOSED", "CANCELLED"].includes(request.status);
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -45,10 +58,9 @@ export default async function MyRequestsPage() {
 
       {/* Stats strip */}
       {requests.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
-          <StatBox label="Open" value={open} color="text-green-600" />
-          <StatBox label="In Progress" value={active} color="text-blue-600" />
-          <StatBox label="Closed / Cancelled" value={closed} color="text-gray-500" />
+        <div className="grid grid-cols-2 gap-4">
+          <StatBox label="Open" value={open} color="text-green-600" href="/dashboard/requests?status=open" active={statusFilter === "open"} />
+          <StatBox label="Closed / Cancelled" value={closed} color="text-gray-500" href="/dashboard/requests?status=closed" active={statusFilter === "closed"} />
         </div>
       )}
 
@@ -65,7 +77,22 @@ export default async function MyRequestsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {requests.map((req) => {
+          {statusFilter !== "all" && (
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-900">
+              <span className="text-gray-600 dark:text-gray-400">
+                Showing {statusFilter === "open" ? "open" : "closed/cancelled"} requests
+              </span>
+              <Link href="/dashboard/requests" className="font-medium text-emerald-700 hover:underline">
+                Clear filter
+              </Link>
+            </div>
+          )}
+
+          {filteredRequests.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-400 dark:border-gray-800 dark:bg-gray-900">
+              No {statusFilter === "open" ? "open" : "closed/cancelled"} requests found.
+            </div>
+          ) : filteredRequests.map((req) => {
             const ui = STATUS_STYLES[req.status] ?? STATUS_STYLES.OPEN;
             const assignedName = req.assignedTo
               ? (req.assignedTo.user.displayName ??
@@ -135,11 +162,16 @@ export default async function MyRequestsPage() {
   );
 }
 
-function StatBox({ label, value, color }: { label: string; value: number; color: string }) {
+function StatBox({ label, value, color, href, active }: { label: string; value: number; color: string; href: string; active: boolean }) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 text-center">
+    <Link
+      href={href}
+      className={`block rounded-xl border bg-white p-4 text-center transition hover:border-emerald-300 hover:shadow-sm dark:bg-gray-900 ${
+        active ? "border-emerald-300 ring-2 ring-emerald-100 dark:border-emerald-700 dark:ring-emerald-900/30" : "border-gray-200 dark:border-gray-800"
+      }`}
+    >
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{label}</p>
-    </div>
+    </Link>
   );
 }
