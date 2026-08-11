@@ -233,3 +233,97 @@ export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: str
 
   return professionals;
 }
+
+export async function getUsersForAdmin(search?: string, role?: string) {
+  const trimmedSearch = search?.trim();
+  const where = {
+    ...(role && role !== "ALL" ? { role: role as never } : {}),
+    ...(trimmedSearch
+      ? {
+          OR: [
+            { email: { contains: trimmedSearch, mode: "insensitive" as const } },
+            { firstName: { contains: trimmedSearch, mode: "insensitive" as const } },
+            { lastName: { contains: trimmedSearch, mode: "insensitive" as const } },
+            { displayName: { contains: trimmedSearch, mode: "insensitive" as const } },
+            { phone: { contains: trimmedSearch, mode: "insensitive" as const } },
+            { whatsapp: { contains: trimmedSearch, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const users = await prisma.user.findMany({
+    where,
+    select: {
+      id: true,
+      supabaseId: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      displayName: true,
+      avatarUrl: true,
+      phone: true,
+      whatsapp: true,
+      preferredContact: true,
+      role: true,
+      isActive: true,
+      emailVerified: true,
+      createdAt: true,
+      updatedAt: true,
+      mosque: { select: { name: true } },
+      professionals: {
+        select: {
+          id: true,
+          businessName: true,
+          title: true,
+          status: true,
+          profileViews: true,
+          category: { select: { name: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+      },
+      serviceRequests: {
+        select: { id: true, status: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+      },
+      requesterConversations: {
+        select: { id: true, status: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+      },
+      sentMessages: {
+        select: { id: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+      _count: {
+        select: {
+          professionals: true,
+          serviceRequests: true,
+          requesterConversations: true,
+          sentMessages: true,
+          recommendations: true,
+          categorySuggestions: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 500,
+  });
+
+  return users.map((user) => {
+    const latestRequest = user.serviceRequests[0]?.updatedAt;
+    const latestConversation = user.requesterConversations[0]?.updatedAt;
+    const latestMessage = user.sentMessages[0]?.createdAt;
+    const lastActivityAt = [user.updatedAt, latestRequest, latestConversation, latestMessage]
+      .filter(Boolean)
+      .sort((a, b) => b!.getTime() - a!.getTime())[0] ?? user.updatedAt;
+
+    return {
+      ...user,
+      lastActivityAt,
+      professionals: user.professionals.slice(0, 3),
+      openRequests: user.serviceRequests.filter((request) => request.status === "OPEN" || request.status === "IN_PROGRESS").length,
+      openConversations: user.requesterConversations.filter((conversation) => conversation.status === "OPEN").length,
+    };
+  });
+}

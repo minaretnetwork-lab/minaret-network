@@ -3,13 +3,14 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, MessageSquare,
-  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck
+  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
   { href: "/admin/mosques", label: "Mosques", icon: <Building2 className="h-4 w-4" /> },
+  { href: "/admin/users", label: "Users", icon: <UserRound className="h-4 w-4" /> },
   { href: "/admin/professionals", label: "Professionals", icon: <Users className="h-4 w-4" /> },
   { href: "/admin/sponsored", label: "Sponsored", icon: <Sparkles className="h-4 w-4" /> },
   { href: "/admin/featured", label: "Featured Biz", icon: <Star className="h-4 w-4" /> },
