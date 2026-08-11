@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { X, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,7 @@ interface ContactGateModalProps {
 }
 
 export function ContactGateModal({ professionalId, professionalName, trigger, mode = "contact", location = "" }: ContactGateModalProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [issue, setIssue] = useState("");
   const [issueError, setIssueError] = useState("");
@@ -35,6 +36,17 @@ export function ContactGateModal({ professionalId, professionalName, trigger, mo
       JSON.stringify({ professionalId, issue: trimmedIssue, location })
     );
     return true;
+  }
+
+  function goToAuth(path: "login" | "signup") {
+    if (!storePendingChat()) return;
+
+    if (path === "login") {
+      router.push(`/auth/login?redirectTo=${redirectTo}`);
+      return;
+    }
+
+    router.push("/auth/signup");
   }
 
   return (
@@ -92,28 +104,21 @@ export function ContactGateModal({ professionalId, professionalName, trigger, mo
               )}
 
               <div className="space-y-2.5">
-                <Link
-                  href={`/auth/signup`}
-                  className="block"
-                  onClick={(event) => {
-                    if (!storePendingChat()) event.preventDefault();
-                  }}
+                <Button
+                  type="button"
+                  onClick={() => goToAuth("signup")}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 font-medium"
                 >
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 font-medium">
-                    Create a free account
-                  </Button>
-                </Link>
-                <Link
-                  href={`/auth/login?redirectTo=${redirectTo}`}
-                  className="block"
-                  onClick={(event) => {
-                    if (!storePendingChat()) event.preventDefault();
-                  }}
+                  Create a free account
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => goToAuth("login")}
+                  className="w-full h-11 border-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300"
                 >
-                  <Button variant="outline" className="w-full h-11 border-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300">
-                    I already have an account
-                  </Button>
-                </Link>
+                  I already have an account
+                </Button>
               </div>
 
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
