@@ -38,6 +38,8 @@ export default async function EditProfessionalPage({
         email: true,
         website: true,
         whatsapp: true,
+        businessAddress: true,
+        acceptsWalkIns: true,
         availability: true,
         photoUrl: true,
         logoUrl: true,

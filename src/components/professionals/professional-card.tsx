@@ -91,6 +91,9 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
   const profileUrl = `/professionals/${professional.id}`;
   const whatsappPhone = professional.whatsapp || professional.phone;
   const defaultLocation = serviceAreas[0]?.name ?? "";
+  const mapsUrl = professional.businessAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(professional.businessAddress)}`
+    : null;
 
   function openExternalContact(url: string) {
     window.location.href = url;
@@ -267,6 +270,18 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 <span className="font-medium text-emerald-600">({distanceKm.toFixed(1)} km)</span>
               )}
             </span>
+          )}
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              className="relative z-20 flex items-center gap-1 text-emerald-700 hover:underline dark:text-emerald-400"
+            >
+              <MapPin className="h-3 w-3" />
+              Business address{professional.acceptsWalkIns ? " · walk-ins" : ""}
+            </a>
           )}
         </div>
 

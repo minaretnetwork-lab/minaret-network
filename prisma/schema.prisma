@@ -137,6 +137,8 @@ model Professional {
   email             String?
   website           String?
   whatsapp          String?
+  businessAddress   String?
+  acceptsWalkIns    Boolean            @default(false)
   photoUrl          String?
   logoUrl           String?
   status            ProfessionalStatus @default(PENDING)

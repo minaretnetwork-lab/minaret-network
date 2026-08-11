@@ -79,6 +79,8 @@ export async function POST(request: Request) {
       email: formData.get("email") as string || null,
       website: formData.get("website") as string || null,
       whatsapp: formData.get("whatsapp") as string || null,
+      businessAddress: (formData.get("businessAddress") as string | null)?.trim() || null,
+      acceptsWalkIns: formData.get("acceptsWalkIns") === "true",
       availability: formData.get("availability") as string || null,
       status: "PENDING" as const,
     };

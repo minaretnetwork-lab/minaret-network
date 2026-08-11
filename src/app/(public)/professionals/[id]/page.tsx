@@ -45,6 +45,9 @@ export default async function ProfessionalProfilePage({ params }: Props) {
     [user.firstName, user.lastName].filter(Boolean).join(" ") ??
     user.email;
   const photoUrl = professional.photoUrl ?? user.avatarUrl;
+  const mapsUrl = professional.businessAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(professional.businessAddress)}`
+    : null;
 
   const approvedRecommendations = professional.recommendations.filter(
     (r) => r.status === "APPROVED"
@@ -185,6 +188,25 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                   <p className="text-gray-500 dark:text-gray-400">
                     {professional.serviceAreas.map((a) => a.name).join(", ")}
                   </p>
+                </div>
+              </div>
+            )}
+            {mapsUrl && (
+              <div className="flex items-start gap-2.5 text-sm">
+                <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Business Address</span>
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-gray-500 hover:text-green-700 hover:underline dark:text-gray-400"
+                  >
+                    {professional.businessAddress}
+                  </a>
+                  {professional.acceptsWalkIns && (
+                    <p className="mt-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">Walk-ins welcome</p>
+                  )}
                 </div>
               </div>
             )}

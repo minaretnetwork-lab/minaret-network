@@ -259,6 +259,8 @@ export async function submitProfessionalApplication(
         email: formData.get("email") as string || null,
         website: formData.get("website") as string || null,
         whatsapp: formData.get("whatsapp") as string || null,
+        businessAddress: (formData.get("businessAddress") as string | null)?.trim() || null,
+        acceptsWalkIns: formData.get("acceptsWalkIns") === "true",
         availability: formData.get("availability") as string || null,
         serviceAreas: { connect: serviceAreaIds.map((id) => ({ id })) },
       },

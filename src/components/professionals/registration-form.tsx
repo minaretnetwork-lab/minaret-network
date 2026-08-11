@@ -39,6 +39,9 @@ const schema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   website: z.string().url().optional().or(z.literal("")),
   whatsapp: z.string().optional(),
+  whatsappSameAsPhone: z.boolean().optional(),
+  businessAddress: z.string().optional(),
+  acceptsWalkIns: z.boolean().optional(),
   availability: z.string().optional(),
   serviceAreaIds: z.array(z.string()).min(1, "Select at least one service area"),
 }).superRefine((data, ctx) => {
@@ -71,6 +74,8 @@ export interface ProfessionalFormInitialData {
   email: string | null;
   website: string | null;
   whatsapp: string | null;
+  businessAddress: string | null;
+  acceptsWalkIns: boolean;
   availability: string | null;
   photoUrl: string | null;
   logoUrl: string | null;
@@ -160,6 +165,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const [catOpen, setCatOpen] = useState(false);
   const [areaSearch, setAreaSearch] = useState("");
   const catRef = useRef<HTMLDivElement>(null);
+  const whatsappInitiallySameAsPhone = Boolean(initialData?.phone && initialData.phone === initialData?.whatsapp);
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (catRef.current && !catRef.current.contains(e.target as Node)) setCatOpen(false);
@@ -186,6 +192,9 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       email: initialData?.email ?? "",
       website: initialData?.website ?? "",
       whatsapp: initialData?.whatsapp ?? "",
+      whatsappSameAsPhone: whatsappInitiallySameAsPhone,
+      businessAddress: initialData?.businessAddress ?? "",
+      acceptsWalkIns: initialData?.acceptsWalkIns ?? false,
       availability: initialData?.availability ?? "",
       serviceAreaIds: initialData?.serviceAreas.map((area) => area.id) ?? [],
     },
@@ -194,6 +203,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const selectedLanguages = watch("languages") ?? [];
   const selectedAreas = watch("serviceAreaIds") ?? [];
   const selectedMosqueId = watch("mosqueId");
+  const phoneValue = watch("phone") ?? "";
+  const whatsappSameAsPhone = watch("whatsappSameAsPhone") ?? false;
   const bioLength = watch("bio")?.length ?? 0;
   const bioCharactersRemaining = Math.max(BIO_MIN_LENGTH - bioLength, 0);
   const normalizedAreaSearch = areaSearch.trim().toLowerCase();
@@ -234,6 +245,16 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     setValue("serviceAreaIds", selectedAreas.includes(id)
       ? selectedAreas.filter((a) => a !== id)
       : [...selectedAreas, id]);
+  }
+
+  function handlePhoneValueChange(value: string) {
+    setValue("phone", value);
+    if (whatsappSameAsPhone) setValue("whatsapp", value);
+  }
+
+  function handleWhatsAppSameAsPhone(checked: boolean) {
+    setValue("whatsappSameAsPhone", checked);
+    if (checked) setValue("whatsapp", phoneValue);
   }
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -548,6 +569,30 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 )}
               </div>
 
+              <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+                <Label htmlFor="businessAddress">Main business address <span className="font-normal text-gray-400">(optional)</span></Label>
+                <p className="mt-0.5 text-xs text-gray-400">
+                  Add this if clients can visit your office, clinic, shop, or storefront. Leave it blank if you work from home or travel to clients.
+                </p>
+                <Input
+                  id="businessAddress"
+                  {...register("businessAddress")}
+                  className="mt-2"
+                  placeholder="e.g. 123 Main St, Newmarket, ON"
+                />
+                <label className="mt-3 flex cursor-pointer select-none items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <input
+                    type="checkbox"
+                    {...register("acceptsWalkIns")}
+                    className="mt-0.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>
+                    Accepts walk-ins
+                    <span className="block text-xs text-gray-400">People can visit this address without booking first.</span>
+                  </span>
+                </label>
+              </div>
+
               {/* Availability */}
               <div>
                 <Label>Availability</Label>
@@ -645,14 +690,23 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <div>
                   <Label htmlFor="phone">Phone</Label>
                   <div className="mt-1.5">
-                    <PhoneInput id="phone" value={watch("phone") ?? ""} onChange={(val) => setValue("phone", val)} />
+                    <PhoneInput id="phone" value={phoneValue} onChange={handlePhoneValueChange} />
                   </div>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="whatsapp">WhatsApp</Label>
-                  <div className="mt-1.5">
+                  <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <input
+                      type="checkbox"
+                      checked={whatsappSameAsPhone}
+                      onChange={(event) => handleWhatsAppSameAsPhone(event.target.checked)}
+                      className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    Same as phone
+                  </label>
+                  {!whatsappSameAsPhone && (
                     <PhoneInput value={watch("whatsapp") ?? ""} onChange={(val) => setValue("whatsapp", val)} />
-                  </div>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="email">Business Email</Label>

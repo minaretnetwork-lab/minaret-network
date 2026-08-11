@@ -23,6 +23,8 @@ export interface ProfessionalWithRelations {
   email: string | null;
   website: string | null;
   whatsapp: string | null;
+  businessAddress: string | null;
+  acceptsWalkIns: boolean;
   photoUrl: string | null;
   status: ProfessionalStatus;
   isVerified: boolean;
