@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search, Phone, Handshake, Star, Users,
   Building2, ShieldCheck, ArrowRight,
@@ -53,10 +54,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="relative flex flex-col bg-[#071a0e] min-h-[580px] lg:min-h-[640px]">
 
           {/* Background image */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/mosque8.jpg"
             alt=""
+            fill
+            preload
+            quality={78}
+            sizes="100vw"
             className="absolute inset-0 w-full h-full object-cover object-center"
             aria-hidden="true"
           />
