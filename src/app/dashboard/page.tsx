@@ -10,6 +10,22 @@ import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
 
+function requesterName(request: {
+  contactName: string | null;
+  user: {
+    displayName: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    email?: string | null;
+  };
+}) {
+  return request.contactName ||
+    request.user.displayName ||
+    [request.user.firstName, request.user.lastName].filter(Boolean).join(" ") ||
+    request.user.email ||
+    "Requester";
+}
+
 export default async function DashboardPage() {
   const [user, requests] = await Promise.all([
     getCurrentUser(),
@@ -191,6 +207,10 @@ export default async function DashboardPage() {
                           </span>
                         )}
                       </div>
+                      <p className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <User className="h-3 w-3" />
+                        Requested by {requesterName(req)}
+                      </p>
                       <p className="truncate text-xs text-gray-500 dark:text-gray-400">{req.description}</p>
                     </div>
                     <span className="flex-shrink-0 text-xs text-gray-400">
