@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Clock, Mail, MapPin, MessageCircle, Phone, Send } from "lucide-react";
+import { CalendarDays, Clock, Mail, MapPin, MessageCircle, Phone, Send, User } from "lucide-react";
 import { getMatchingServiceRequests } from "@/lib/actions/service-requests";
 import { startConversationForServiceRequest } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,13 @@ const STATUS_BADGE: Record<string, string> = {
 function personName(user?: { displayName: string | null; firstName: string | null; lastName: string | null } | null) {
   if (!user) return "Professional";
   return user.firstName || user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || "Professional";
+}
+
+function requesterName(request: {
+  contactName: string | null;
+  user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string | null };
+}) {
+  return request.contactName || request.user.displayName || [request.user.firstName, request.user.lastName].filter(Boolean).join(" ") || request.user.email || "Requester";
 }
 
 export default async function MatchingRequestsPage() {
@@ -56,6 +63,7 @@ export default async function MatchingRequestsPage() {
             const ownerName = personName(professional?.user);
             const businessName = professional?.businessName || professional?.title || request.category.name;
             const contactTitle = professional ? `${ownerName} at ${businessName}` : request.category.name;
+            const requester = requesterName(request);
             const isClosed = request.status === "CLOSED" || request.status === "CANCELLED";
             const whatsappHref = request.contactPhone
               ? buildWhatsAppUrl(
@@ -91,6 +99,10 @@ export default async function MatchingRequestsPage() {
                           </span>
                         )}
                       </div>
+                      <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <User className="h-3.5 w-3.5" />
+                        Requested by {requester}
+                      </p>
                       <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                         {request.description}
                       </p>

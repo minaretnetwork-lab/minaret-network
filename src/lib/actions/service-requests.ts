@@ -140,6 +140,7 @@ export async function getMatchingServiceRequests(limit?: number) {
     include: {
       category: { select: { name: true, slug: true, icon: true } },
       serviceArea: { select: { id: true, name: true } },
+      user: { select: { displayName: true, firstName: true, lastName: true, email: true } },
       conversations: {
         where: { professional: { userId: dbUser.id } },
         select: {
