@@ -11,6 +11,7 @@ import {
   findServiceAreaCoordinateByName,
   findServiceAreaCoordinateBySlug,
 } from "@/lib/service-area-coordinates";
+import { normalizePublicAssetUrl } from "@/lib/public-asset-url";
 
 async function uploadToStorage(bucket: string, path: string, file: File): Promise<string> {
   const admin = createAdminClient();
@@ -25,7 +26,17 @@ async function uploadToStorage(bucket: string, path: string, file: File): Promis
     .upload(path, file, { upsert: true, contentType: file.type });
   if (uploadErr) throw uploadErr;
   const { data } = admin.storage.from(bucket).getPublicUrl(path);
-  return `${data.publicUrl}?t=${Date.now()}`;
+  return `${normalizePublicAssetUrl(data.publicUrl)}?t=${Date.now()}`;
+}
+
+function normalizeProfessionalAssets<T extends { photoUrl: string | null; logoUrl?: string | null }>(professional: T): T {
+  return {
+    ...professional,
+    photoUrl: normalizePublicAssetUrl(professional.photoUrl),
+    ...(Object.hasOwn(professional, "logoUrl") && {
+      logoUrl: normalizePublicAssetUrl(professional.logoUrl),
+    }),
+  };
 }
 
 export async function getProfessionals(
@@ -91,15 +102,16 @@ export async function getProfessionals(
     orderBy,
     include,
   });
+  const normalizedProfessionals = professionals.map(normalizeProfessionalAssets);
 
   const locationWasRequested = Boolean(serviceAreaSlug || locationText);
-  if (professionals.length > 0 || !locationWasRequested) return professionals;
+  if (normalizedProfessionals.length > 0 || !locationWasRequested) return normalizedProfessionals;
 
   const origin =
     findServiceAreaCoordinateBySlug(serviceAreaSlug) ??
     findServiceAreaCoordinateByName(locationText);
 
-  if (!origin) return professionals;
+  if (!origin) return normalizedProfessionals;
 
   const fallbackWhere = {
     ...where,
@@ -114,6 +126,7 @@ export async function getProfessionals(
   });
 
   return fallbackProfessionals
+    .map(normalizeProfessionalAssets)
     .map((professional) => {
       const nearest = professional.serviceAreas.reduce<{
         distanceKm: number;
@@ -143,7 +156,7 @@ export async function getProfessionals(
 }
 
 export async function getProfessionalById(id: string) {
-  return prisma.professional.findUnique({
+  const professional = await prisma.professional.findUnique({
     where: { id },
     include: {
       user: { select: { id: true, firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
@@ -160,13 +173,15 @@ export async function getProfessionalById(id: string) {
       credentials: { where: { isVerified: true } },
     },
   });
+
+  return professional ? normalizeProfessionalAssets(professional) : null;
 }
 
 export async function getFeaturedProfessionals(mosqueSlug: string, limit = 6) {
   const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
   if (!mosque) return [];
 
-  return prisma.professional.findMany({
+  const professionals = await prisma.professional.findMany({
     where: { mosqueId: mosque.id, status: "APPROVED", isFeatured: true },
     take: limit,
     include: {
@@ -178,6 +193,8 @@ export async function getFeaturedProfessionals(mosqueSlug: string, limit = 6) {
       recommendations: { where: { status: "APPROVED" }, select: { id: true } },
     },
   });
+
+  return professionals.map(normalizeProfessionalAssets);
 }
 
 export async function incrementProfileView(professionalId: string) {

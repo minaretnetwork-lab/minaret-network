@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { normalizePublicAssetUrl } from "@/lib/public-asset-url";
 
 async function uploadToStorage(bucket: string, path: string, file: File): Promise<string> {
   const admin = createAdminClient();
@@ -17,7 +18,7 @@ async function uploadToStorage(bucket: string, path: string, file: File): Promis
     .upload(path, file, { upsert: true, contentType: file.type });
   if (uploadErr) throw uploadErr;
   const { data } = admin.storage.from(bucket).getPublicUrl(path);
-  return `${data.publicUrl}?t=${Date.now()}`;
+  return `${normalizePublicAssetUrl(data.publicUrl)}?t=${Date.now()}`;
 }
 
 export async function POST(request: Request) {

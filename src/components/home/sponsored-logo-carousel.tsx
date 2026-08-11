@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { normalizePublicAssetUrl } from "@/lib/public-asset-url";
 
 async function getSponsoredLogos() {
   return prisma.professional.findMany({
@@ -26,7 +27,7 @@ export async function SponsoredLogoCarousel() {
 
   const sponsorTiles = sponsors.map((s) => {
     const name = s.businessName || [s.user.firstName, s.user.lastName].filter(Boolean).join(" ") || s.title || "Business";
-    return { ...s, name };
+    return { ...s, logoUrl: normalizePublicAssetUrl(s.logoUrl), name };
   });
 
   if (sponsorTiles.length === 1) {
@@ -48,7 +49,7 @@ export async function SponsoredLogoCarousel() {
   const items = sponsors.length < 6 ? [...sponsors, ...sponsors, ...sponsors] : sponsors;
   const doubled = [...items, ...items].map((s) => {
     const name = s.businessName || [s.user.firstName, s.user.lastName].filter(Boolean).join(" ") || s.title || "Business";
-    return { ...s, name };
+    return { ...s, logoUrl: normalizePublicAssetUrl(s.logoUrl), name };
   });
 
   const speed = Math.max(20, items.length * 4);
