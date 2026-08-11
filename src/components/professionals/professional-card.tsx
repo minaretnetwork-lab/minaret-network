@@ -80,10 +80,12 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
 
   const photoUrl = professional.photoUrl ?? user.avatarUrl;
   const profileUrl = `/professionals/${professional.id}`;
-  const emailUrl = professional.email ? `mailto:${professional.email}` : null;
-  const callUrl = professional.phone ? `tel:${professional.phone.replace(/[^\d+]/g, "")}` : null;
   const whatsappPhone = professional.whatsapp || professional.phone;
   const defaultLocation = serviceAreas[0]?.name ?? "";
+
+  function openExternalContact(url: string) {
+    window.location.href = url;
+  }
 
   async function startDirectMessage() {
     const issue = messageIssue.trim();
@@ -293,17 +295,18 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           )}
           {whatsappPhone && (
             isLoggedIn ? (
-              <a
-                href={buildWhatsAppUrl(whatsappPhone)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(event) => event.stopPropagation()}
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  openExternalContact(buildWhatsAppUrl(whatsappPhone));
+                }}
                 className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                 title="WhatsApp"
                 aria-label={`WhatsApp ${name}`}
               >
                 <WhatsAppIcon className="h-4 w-4" />
-              </a>
+              </button>
             ) : (
               <ContactGateModal
                 professionalId={professional.id}
@@ -320,27 +323,33 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               />
             )
           )}
-          {emailUrl && (
-            <a
-              href={emailUrl}
-              onClick={(event) => event.stopPropagation()}
+          {professional.email && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                openExternalContact(`mailto:${professional.email}`);
+              }}
               className="h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
               title="Email"
               aria-label={`Email ${name}`}
             >
               <Mail className="h-3.5 w-3.5" />
-            </a>
+            </button>
           )}
-          {callUrl && (
-            <a
-              href={callUrl}
-              onClick={(event) => event.stopPropagation()}
+          {professional.phone && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                openExternalContact(`tel:${professional.phone!.replace(/[^\d+]/g, "")}`);
+              }}
               className="h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
               title="Call"
               aria-label={`Call ${name}`}
             >
               <Phone className="h-3.5 w-3.5" />
-            </a>
+            </button>
           )}
         </div>
       </div>
