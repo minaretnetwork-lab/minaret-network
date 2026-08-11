@@ -2,11 +2,15 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/lora";
 import { Suspense } from "react";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { FlashToast } from "@/components/flash-toast";
 import { LazyIdleTimeout } from "@/components/lazy-idle-timeout";
 import { LazyAssistantBubble } from "@/components/ai/lazy-assistant-bubble";
 import "./globals.css";
+
+const GA_MEASUREMENT_ID = "G-6NWWGPL859";
+const enableGoogleAnalytics = process.env.NEXT_PUBLIC_SITE_URL === "https://minaretnetwork.ca";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -41,6 +45,22 @@ export default function RootLayout({
         <Suspense>
           <FlashToast />
         </Suspense>
+        {enableGoogleAnalytics && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}');
+              `}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   );
