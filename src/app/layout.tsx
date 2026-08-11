@@ -4,7 +4,7 @@ import "@fontsource-variable/lora";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { FlashToast } from "@/components/flash-toast";
-import { IdleTimeout } from "@/components/idle-timeout";
+import { LazyIdleTimeout } from "@/components/lazy-idle-timeout";
 import { LazyAssistantBubble } from "@/components/ai/lazy-assistant-bubble";
 import "./globals.css";
 
@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
         <LazyAssistantBubble />
-        <IdleTimeout />
+        <LazyIdleTimeout />
         <Toaster position="bottom-right" />
         <Suspense>
           <FlashToast />
