@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
+import { getAdminStats } from "@/lib/actions/admin";
+import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import {
   LayoutDashboard, Users, MessageSquare,
   FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound
@@ -27,6 +29,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/dashboard");
   }
   const isSuperAdmin = user.role === "SUPER_ADMIN";
+  const stats = await getAdminStats(DEFAULT_MOSQUE_SLUG);
+  const pendingProfessionalReviews = stats?.pendingProfessionalReviews ?? stats?.pendingProfessionals ?? 0;
+  const pendingRecommendations = stats?.pendingRecommendations ?? 0;
+
+  function badgeForHref(href: string) {
+    if (href === "/admin/professionals") return pendingProfessionalReviews;
+    if (href === "/admin/recommendations") return pendingRecommendations;
+    return 0;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -59,14 +70,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <aside className="w-52 flex-shrink-0 hidden md:block">
           <nav className="space-y-1">
             {navLinks.map((link) => (
-              <Link
+              <LinkWithBadge
                 key={link.href}
                 href={link.href}
+                icon={link.icon}
+                label={link.label}
+                badge={badgeForHref(link.href)}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/10 hover:text-green-700 dark:hover:text-green-400 transition-colors"
-              >
-                {link.icon}
-                {link.label}
-              </Link>
+              />
             ))}
             {isSuperAdmin && (
               <Link
@@ -83,14 +94,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <main className="flex-1 min-w-0">
           <nav className="mb-6 grid grid-cols-2 gap-2 md:hidden" aria-label="Admin sections">
             {navLinks.map((link) => (
-              <Link
+              <LinkWithBadge
                 key={link.href}
                 href={link.href}
+                icon={<span className="text-emerald-700">{link.icon}</span>}
+                label={link.label}
+                badge={badgeForHref(link.href)}
                 className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
-              >
-                <span className="text-emerald-700">{link.icon}</span>
-                <span className="min-w-0 truncate">{link.label}</span>
-              </Link>
+              />
             ))}
             {isSuperAdmin && (
               <Link
@@ -106,5 +117,31 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </main>
       </div>
     </div>
+  );
+}
+
+function LinkWithBadge({
+  href,
+  icon,
+  label,
+  badge,
+  className,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  badge: number;
+  className: string;
+}) {
+  return (
+    <Link href={href} className={className}>
+      {icon}
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {badge > 0 && (
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold leading-none text-white">
+          {badge > 9 ? "9+" : badge}
+        </span>
+      )}
+    </Link>
   );
 }

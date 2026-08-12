@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
 
   const tiles = [
     { label: "Approved Professionals", value: stats?.approvedProfessionals ?? 0, icon: <CheckCircle className="h-5 w-5 text-green-600" />, href: "/admin/professionals?status=APPROVED", color: "bg-green-50 dark:bg-green-900/20" },
-    { label: "Pending Approvals", value: stats?.pendingProfessionals ?? 0, icon: <Clock className="h-5 w-5 text-amber-600" />, href: "/admin/professionals?status=PENDING", color: "bg-amber-50 dark:bg-amber-900/20" },
+    { label: "Pending Approvals", value: stats?.pendingProfessionalReviews ?? stats?.pendingProfessionals ?? 0, icon: <Clock className="h-5 w-5 text-amber-600" />, href: "/admin/professionals?status=PENDING", color: "bg-amber-50 dark:bg-amber-900/20" },
     { label: "Total Members", value: stats?.totalMembers ?? 0, icon: <Users className="h-5 w-5 text-blue-600" />, href: "/admin/users", color: "bg-blue-50 dark:bg-blue-900/20" },
     { label: "Open Requests", value: stats?.openRequests ?? 0, icon: <FileText className="h-5 w-5 text-purple-600" />, href: "/admin/requests", color: "bg-purple-50 dark:bg-purple-900/20" },
     { label: "Pending Reviews", value: stats?.pendingRecommendations ?? 0, icon: <MessageSquare className="h-5 w-5 text-rose-600" />, href: "/admin/recommendations", color: "bg-rose-50 dark:bg-rose-900/20" },
@@ -52,14 +52,14 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      {(stats?.pendingProfessionals ?? 0) > 0 && (
+      {((stats?.pendingProfessionalReviews ?? stats?.pendingProfessionals) ?? 0) > 0 && (
         <Card className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10">
           <CardContent className="p-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-amber-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-amber-900 dark:text-amber-300">
-                  {stats!.pendingProfessionals} application{stats!.pendingProfessionals !== 1 ? "s" : ""} awaiting review
+                  {stats!.pendingProfessionalReviews ?? stats!.pendingProfessionals} professional review{(stats!.pendingProfessionalReviews ?? stats!.pendingProfessionals) !== 1 ? "s" : ""} awaiting approval
                 </p>
                 <p className="text-xs text-amber-700 dark:text-amber-400">
                   Review and approve or reject pending professional applications
