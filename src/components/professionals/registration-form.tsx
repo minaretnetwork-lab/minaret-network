@@ -18,6 +18,9 @@ import { submitCategorySuggestion } from "@/lib/actions/category-suggestions";
 
 const BIO_MIN_LENGTH = 50;
 const BIO_MAX_LENGTH = 1000;
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const TARGET_IMAGE_BYTES = 1.5 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
 
 const schema = z.object({
   mosqueId: z.string().optional(),
@@ -106,6 +109,45 @@ const PRESETS = [
 ];
 
 type DaySchedule = { from: string; to: string };
+
+async function prepareImageForUpload(file: File, label: string) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    throw new Error(`${label} must be a JPG, PNG, or WebP image.`);
+  }
+
+  if (file.size <= TARGET_IMAGE_BYTES) return file;
+
+  const imageUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error(`We couldn't read that ${label.toLowerCase()}. Please try a smaller JPG or PNG.`));
+      img.src = imageUrl;
+    });
+
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, "image/jpeg", 0.82);
+    });
+    if (!blob || blob.size >= file.size) return file;
+
+    return new File(
+      [blob],
+      file.name.replace(/\.[^.]+$/, "") + ".jpg",
+      { type: "image/jpeg", lastModified: Date.now() },
+    );
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
 
 function buildAvailabilityString(schedules: Record<string, DaySchedule>, emergency: boolean) {
   const ordered = DAYS.filter((d) => d in schedules);
@@ -258,17 +300,27 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     if (checked) setValue("whatsapp", phoneValue);
   }
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("Image must be under 5 MB."); return; }
-    setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file));
+    try {
+      const prepared = await prepareImageForUpload(file, "Profile photo");
+      if (prepared.size > MAX_UPLOAD_BYTES) { alert("Profile photo must be under 5 MB. Please choose a smaller image."); return; }
+      setPhotoFile(prepared); setPhotoPreview(URL.createObjectURL(prepared));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not prepare that profile photo.");
+    }
   }
-  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("Logo must be under 5 MB."); return; }
-    setLogoFile(file); setLogoPreview(URL.createObjectURL(file));
+    try {
+      const prepared = await prepareImageForUpload(file, "Business logo");
+      if (prepared.size > MAX_UPLOAD_BYTES) { alert("Business logo must be under 5 MB. Please choose a smaller image."); return; }
+      setLogoFile(prepared); setLogoPreview(URL.createObjectURL(prepared));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not prepare that business logo.");
+    }
   }
 
   function lockAndScroll(changeFn: () => void) {
@@ -306,7 +358,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       if (logoFile) fd.append("logo", logoFile);
       if (initialData?.id) fd.append("professionalId", initialData.id);
       const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
-      const result: { ok: boolean; error?: string } = await res.json();
+      const contentType = res.headers.get("content-type") ?? "";
+      const result: { ok: boolean; error?: string } = contentType.includes("application/json")
+        ? await res.json()
+        : { ok: false, error: `The server returned an unexpected response (${res.status}). Please try again.` };
       if (!result.ok) {
         setErrorMsg(result.error ?? "Something went wrong. Please try again.");
         setSubmitStatus("error");
@@ -314,7 +369,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         setSubmitStatus("success");
       }
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      const message = err instanceof TypeError && err.message.toLowerCase().includes("fetch")
+        ? "The upload did not reach the server. Please try again on a steadier connection, or remove/reselect the photo or logo and submit again."
+        : err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setErrorMsg(message);
       setSubmitStatus("error");
     }
   }

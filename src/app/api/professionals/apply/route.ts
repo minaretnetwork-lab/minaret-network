@@ -5,6 +5,18 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { normalizePublicAssetUrl } from "@/lib/public-asset-url";
 
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function validateImageUpload(file: File, label: string) {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error(`${label} must be a JPG, PNG, or WebP image.`);
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error(`${label} must be under 5 MB.`);
+  }
+}
+
 async function uploadToStorage(bucket: string, path: string, file: File): Promise<string> {
   const admin = createAdminClient();
   const { error: bucketErr } = await admin.storage.createBucket(bucket, {
@@ -22,6 +34,7 @@ async function uploadToStorage(bucket: string, path: string, file: File): Promis
 }
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -55,11 +68,27 @@ export async function POST(request: Request) {
     let photoUrl: string | null = null;
     let logoUrl: string | null = null;
     if (photoFile && photoFile.size > 0) {
+      validateImageUpload(photoFile, "Profile photo");
       const ext = photoFile.name.split(".").pop() ?? "jpg";
+      console.info("POST /api/professionals/apply upload", {
+        userId: dbUser.id,
+        professionalId: storageListingId,
+        type: "photo",
+        size: photoFile.size,
+        mime: photoFile.type,
+      });
       photoUrl = await uploadToStorage("professional-photos", `${dbUser.id}/${storageListingId}/photo.${ext}`, photoFile);
     }
     if (logoFile && logoFile.size > 0) {
+      validateImageUpload(logoFile, "Business logo");
       const ext = logoFile.name.split(".").pop() ?? "png";
+      console.info("POST /api/professionals/apply upload", {
+        userId: dbUser.id,
+        professionalId: storageListingId,
+        type: "logo",
+        size: logoFile.size,
+        mime: logoFile.type,
+      });
       logoUrl = await uploadToStorage("professional-logos", `${dbUser.id}/${storageListingId}/logo.${ext}`, logoFile);
     }
 
@@ -145,6 +174,13 @@ export async function POST(request: Request) {
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/professional");
     revalidatePath("/admin/mosques");
+    console.info("POST /api/professionals/apply success", {
+      userId: dbUser.id,
+      professionalId: storageListingId,
+      hasPhoto: Boolean(photoUrl),
+      hasLogo: Boolean(logoUrl),
+      durationMs: Date.now() - startedAt,
+    });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("POST /api/professionals/apply:", err);
