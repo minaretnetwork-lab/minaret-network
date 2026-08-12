@@ -27,6 +27,151 @@ export async function suspendProfessional(id: string) {
   revalidatePath("/admin/professionals");
 }
 
+async function getSponsoredPricingTier(categoryId: string, serviceAreaId: string) {
+  const exact = await prisma.sponsoredPricingTier.findFirst({
+    where: { categoryId, serviceAreaId, isActive: true },
+  });
+  if (exact) return exact;
+
+  const categoryOnly = await prisma.sponsoredPricingTier.findFirst({
+    where: { categoryId, serviceAreaId: null, isActive: true },
+  });
+  if (categoryOnly) return categoryOnly;
+
+  return prisma.sponsoredPricingTier.findFirst({
+    where: { categoryId: null, serviceAreaId: null, isActive: true },
+  });
+}
+
+async function getFeaturedPricingTier(city: string) {
+  const cityTier = await prisma.featuredPricingTier.findFirst({
+    where: { city, isActive: true },
+  });
+  if (cityTier) return cityTier;
+
+  return prisma.featuredPricingTier.findFirst({
+    where: { city: null, isActive: true },
+  });
+}
+
+function revalidateAdminPromotionPaths() {
+  revalidatePath("/");
+  revalidatePath("/professionals");
+  revalidatePath("/admin/professionals");
+  revalidatePath("/admin/sponsored");
+  revalidatePath("/admin/featured");
+}
+
+export async function makeProfessionalSponsored(professionalId: string) {
+  const professional = await prisma.professional.findUnique({
+    where: { id: professionalId },
+    include: {
+      category: { select: { name: true } },
+      serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
+    },
+  });
+
+  if (!professional) throw new Error("Professional not found.");
+  if (professional.status !== "APPROVED") throw new Error("Only approved professionals can be sponsored.");
+
+  const serviceArea = professional.serviceAreas[0];
+  if (!serviceArea) throw new Error("This professional needs at least one service area before they can be sponsored.");
+
+  const existing = await prisma.sponsoredListing.findFirst({
+    where: {
+      professionalId,
+      categoryId: professional.categoryId,
+      serviceAreaId: serviceArea.id,
+      status: "ACTIVE",
+    },
+  });
+
+  if (existing) {
+    await prisma.professional.update({ where: { id: professionalId }, data: { isSponsored: true } });
+    revalidateAdminPromotionPaths();
+    return;
+  }
+
+  const tier = await getSponsoredPricingTier(professional.categoryId, serviceArea.id);
+  const maxSlots = tier?.maxSlots ?? 2;
+  const activeCount = await prisma.sponsoredListing.count({
+    where: { categoryId: professional.categoryId, serviceAreaId: serviceArea.id, status: "ACTIVE" },
+  });
+
+  if (activeCount >= maxSlots) {
+    throw new Error(`Sponsored slots are full for ${professional.category.name} in ${serviceArea.name}.`);
+  }
+
+  await prisma.$transaction([
+    prisma.sponsoredListing.create({
+      data: {
+        professionalId,
+        categoryId: professional.categoryId,
+        serviceAreaId: serviceArea.id,
+        pricingTierId: tier?.id ?? null,
+        priceMonthly: Number(tier?.priceMonthly ?? 49),
+        status: "ACTIVE",
+        startDate: new Date(),
+        adminNote: "Activated directly by admin.",
+      },
+    }),
+    prisma.professional.update({ where: { id: professionalId }, data: { isSponsored: true } }),
+  ]);
+
+  revalidateAdminPromotionPaths();
+}
+
+export async function makeProfessionalFeatured(professionalId: string) {
+  const professional = await prisma.professional.findUnique({
+    where: { id: professionalId },
+    include: { serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } } },
+  });
+
+  if (!professional) throw new Error("Professional not found.");
+  if (professional.status !== "APPROVED") throw new Error("Only approved professionals can be featured.");
+
+  const serviceArea = professional.serviceAreas[0];
+  if (!serviceArea) throw new Error("This professional needs at least one service area before they can be featured.");
+
+  const city = serviceArea.name;
+  const existing = await prisma.featuredListing.findFirst({
+    where: { professionalId, city, status: "ACTIVE" },
+  });
+
+  if (existing) {
+    await prisma.professional.update({ where: { id: professionalId }, data: { isFeatured: true } });
+    revalidateAdminPromotionPaths();
+    return;
+  }
+
+  const tier = await getFeaturedPricingTier(city);
+  const maxSlots = tier?.maxSlots ?? 6;
+  const activeCount = await prisma.featuredListing.count({
+    where: { city, status: "ACTIVE" },
+  });
+
+  if (activeCount >= maxSlots) {
+    throw new Error(`Featured slots are full for ${city}.`);
+  }
+
+  await prisma.$transaction([
+    prisma.featuredListing.create({
+      data: {
+        professionalId,
+        city,
+        pricingTierId: tier?.id ?? null,
+        priceMonthly: Number(tier?.priceMonthly ?? 99),
+        status: "ACTIVE",
+        startDate: new Date(),
+        adminNote: "Activated directly by admin.",
+      },
+    }),
+    prisma.professional.update({ where: { id: professionalId }, data: { isFeatured: true } }),
+  ]);
+
+  revalidateAdminPromotionPaths();
+}
+
 export async function awardBadge(professionalId: string, type: string) {
   await prisma.verificationBadge.upsert({
     where: { professionalId_type: { professionalId, type: type as never } },
@@ -224,6 +369,7 @@ export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: str
       user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true } },
       mosque: { select: { name: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
       category: { select: { id: true, name: true, slug: true } },
+      serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
       badges: true,
       recommendations: { where: { status: "APPROVED" }, select: { id: true } },
       credentials: { select: { id: true, name: true, isVerified: true } },

@@ -2,14 +2,23 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { approveProfessional, rejectProfessional, suspendProfessional, awardBadge, revokeBadge } from "@/lib/actions/admin";
-import { CheckCircle, XCircle, AlertCircle, ExternalLink, Check, Plus, Sparkles } from "lucide-react";
+import {
+  approveProfessional,
+  rejectProfessional,
+  suspendProfessional,
+  awardBadge,
+  revokeBadge,
+  makeProfessionalSponsored,
+  makeProfessionalFeatured,
+} from "@/lib/actions/admin";
+import { CheckCircle, XCircle, AlertCircle, ExternalLink, Check, Plus, Sparkles, Star } from "lucide-react";
 
 type Professional = {
   id: string;
   status: string;
   submittedAt: Date;
   isSponsored: boolean;
+  isFeatured: boolean;
   user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string };
   mosque: {
     name: string;
@@ -18,6 +27,7 @@ type Professional = {
     communityChannelLink: string | null;
   } | null;
   category: { id: string; name: string; slug: string };
+  serviceAreas: { id: string; name: string }[];
   badges: { type: string }[];
   recommendations: { id: string }[];
   credentials: { id: string; name: string; isVerified: boolean }[];
@@ -36,11 +46,13 @@ interface Props {
 
 export function AdminProfessionalTable({ professionals }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
   async function handleApprove(id: string) {
     setLoading(id + "-approve");
+    setError(null);
     await approveProfessional(id);
     setLoading(null);
   }
@@ -48,6 +60,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
   async function handleReject(id: string) {
     if (!rejectReason.trim()) return;
     setLoading(id + "-reject");
+    setError(null);
     await rejectProfessional(id, rejectReason);
     setRejectId(null);
     setRejectReason("");
@@ -56,18 +69,44 @@ export function AdminProfessionalTable({ professionals }: Props) {
 
   async function handleSuspend(id: string) {
     setLoading(id + "-suspend");
+    setError(null);
     await suspendProfessional(id);
     setLoading(null);
   }
 
   async function handleToggleBadge(professionalId: string, type: string, hasBadge: boolean) {
     setLoading(professionalId + "-badge-" + type);
+    setError(null);
     if (hasBadge) {
       await revokeBadge(professionalId, type);
     } else {
       await awardBadge(professionalId, type);
     }
     setLoading(null);
+  }
+
+  async function handleMakeSponsored(professionalId: string) {
+    setLoading(professionalId + "-make-sponsored");
+    setError(null);
+    try {
+      await makeProfessionalSponsored(professionalId);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not make this professional sponsored.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handleMakeFeatured(professionalId: string) {
+    setLoading(professionalId + "-make-featured");
+    setError(null);
+    try {
+      await makeProfessionalFeatured(professionalId);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not make this professional featured.");
+    } finally {
+      setLoading(null);
+    }
   }
 
   if (professionals.length === 0) {
@@ -80,6 +119,11 @@ export function AdminProfessionalTable({ professionals }: Props) {
 
   return (
     <div className="space-y-4">
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
       {professionals.map((p) => {
         const name = p.user.displayName ?? [p.user.firstName, p.user.lastName].filter(Boolean).join(" ") ?? p.user.email;
         const hasMosqueAffiliated = p.badges.some((b) => b.type === "MOSQUE_AFFILIATED");
@@ -163,8 +207,13 @@ export function AdminProfessionalTable({ professionals }: Props) {
                 </div>
 
                 {p.isSponsored && (
-                  <div className="mt-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     <span className="text-xs text-violet-700 font-medium flex items-center gap-1"><Sparkles className="h-3 w-3" /> Sponsored listing active</span>
+                  </div>
+                )}
+                {p.isFeatured && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="text-xs text-amber-700 font-medium flex items-center gap-1"><Star className="h-3 w-3" /> Featured business active</span>
                   </div>
                 )}
               </div>
@@ -195,16 +244,44 @@ export function AdminProfessionalTable({ professionals }: Props) {
                   </>
                 )}
                 {p.status === "APPROVED" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleSuspend(p.id)}
-                    disabled={!!loading}
-                    className="border-amber-200 text-amber-700 hover:bg-amber-50 gap-1.5"
-                  >
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    Suspend
-                  </Button>
+                  <>
+                    {!p.isSponsored && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMakeSponsored(p.id)}
+                        disabled={!!loading || p.serviceAreas.length === 0}
+                        title={p.serviceAreas.length === 0 ? "Add at least one service area before sponsoring this listing." : "Make this listing sponsored"}
+                        className="border-violet-200 text-violet-700 hover:bg-violet-50 gap-1.5"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Make Sponsored
+                      </Button>
+                    )}
+                    {!p.isFeatured && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMakeFeatured(p.id)}
+                        disabled={!!loading || p.serviceAreas.length === 0}
+                        title={p.serviceAreas.length === 0 ? "Add at least one service area before featuring this listing." : "Make this listing featured"}
+                        className="border-amber-200 text-amber-700 hover:bg-amber-50 gap-1.5"
+                      >
+                        <Star className="h-3.5 w-3.5" />
+                        Make Featured
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSuspend(p.id)}
+                      disabled={!!loading}
+                      className="border-amber-200 text-amber-700 hover:bg-amber-50 gap-1.5"
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      Suspend
+                    </Button>
+                  </>
                 )}
                 {(p.status === "REJECTED" || p.status === "SUSPENDED") && (
                   <Button
