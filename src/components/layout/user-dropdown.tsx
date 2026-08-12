@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, User, FileText, Sparkles, Star, Shield, LogOut, ChevronDown, Send, MessageCircle, Search, Tags, ClipboardList } from "lucide-react";
+import { LayoutDashboard, User, FileText, Sparkles, Star, Shield, LogOut, ChevronDown, Send, MessageCircle, Search, Tags, ClipboardList, BriefcaseBusiness } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
 
@@ -74,6 +74,7 @@ export function UserDropdown({
     { href: "/dashboard", label: "My Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: "/dashboard/profile", label: "My Profile", icon: <User className="h-4 w-4" /> },
     { href: "/dashboard/requests", label: "My Requests", icon: <FileText className="h-4 w-4" /> },
+    { href: "/dashboard/professional", label: "Professional Profiles", icon: <BriefcaseBusiness className="h-4 w-4" /> },
     {
       href: messageHref,
       label: "Messages",
