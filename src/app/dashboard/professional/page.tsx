@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { DeleteProfessionalListingButton } from "@/components/dashboard/delete-professional-listing-button";
 import { formatDate } from "@/lib/utils";
-import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User, Plus, Megaphone, Lock } from "lucide-react";
+import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User, Plus, Megaphone } from "lucide-react";
 import type { BadgeType } from "@/types";
 import { withdrawProfessionalApplication } from "@/lib/actions/professionals";
 
@@ -59,6 +59,11 @@ export default async function ProfessionalDashboardPage() {
       recommendations: { where: { status: "APPROVED" } },
       galleryImages: true,
       credentials: true,
+      editDrafts: {
+        where: { status: "PENDING" },
+        orderBy: { submittedAt: "desc" },
+        take: 1,
+      },
       sponsoredListings: {
         include: {
           category: { select: { name: true, slug: true, icon: true } },
@@ -207,18 +212,22 @@ export default async function ProfessionalDashboardPage() {
             </Button>
           </form>
         )}
-        {professional.status !== "PENDING" && !professional.isFeatured && (
+        {professional.status !== "PENDING" && (
           <Link href={`/professionals/${professional.id}/edit`}>
             <Button variant="outline" size="sm" className="border-green-300 text-green-700 hover:bg-green-50">
               {professional.status === "WITHDRAWN" ? "Edit & resubmit" : "Edit Listing"}
             </Button>
           </Link>
         )}
-        {professional.isFeatured && (
-          <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            <Lock className="h-4 w-4 flex-shrink-0" />
-            Featured listings are locked while featured. Contact admin if you need changes.
-          </div>
+        {professional.isFeatured && professional.editDrafts.length === 0 && (
+          <p className="flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Featured profile edits go to admin review while your current public profile stays live.
+          </p>
+        )}
+        {professional.editDrafts.length > 0 && (
+          <p className="flex items-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+            You have edits waiting for admin review. Your current public profile remains live.
+          </p>
         )}
         <DeleteProfessionalListingButton
           professionalId={professional.id}

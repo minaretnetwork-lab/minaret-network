@@ -9,6 +9,7 @@ const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>
   mosque: { select: { name: true, city: true, address: true, website: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
   category: { select: { id: true, name: true, slug: true, icon: true } },
   serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
+  editDrafts: { where: { status: "PENDING" }, orderBy: { submittedAt: "desc" }, take: 1 },
   badges: true,
   recommendations: {
     where: { status: "APPROVED" },
@@ -22,6 +23,29 @@ const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>
 export type ProfessionalForAdmin = Prisma.ProfessionalGetPayload<{ include: typeof professionalForAdminInclude }>;
 
 export async function approveProfessional(id: string) {
+  const pendingDraft = await prisma.professionalEditDraft.findFirst({
+    where: { professionalId: id, status: "PENDING" },
+    select: { id: true, data: true, serviceAreaIds: true },
+  });
+
+  if (pendingDraft) {
+    await prisma.$transaction([
+      prisma.professional.update({
+        where: { id },
+        data: professionalDataFromDraft(pendingDraft),
+      }),
+      prisma.professionalEditDraft.update({
+        where: { id: pendingDraft.id },
+        data: { status: "APPROVED", reviewedAt: new Date(), adminNote: null },
+      }),
+    ]);
+    revalidatePath("/admin/professionals");
+    revalidatePath(`/admin/professionals/${id}`);
+    revalidatePath(`/professionals/${id}`);
+    revalidatePath("/");
+    return;
+  }
+
   await prisma.professional.update({
     where: { id },
     data: { status: "APPROVED", approvedAt: new Date(), rejectionReason: null },
@@ -30,6 +54,21 @@ export async function approveProfessional(id: string) {
 }
 
 export async function rejectProfessional(id: string, reason: string) {
+  const pendingDraft = await prisma.professionalEditDraft.findFirst({
+    where: { professionalId: id, status: "PENDING" },
+    select: { id: true },
+  });
+
+  if (pendingDraft) {
+    await prisma.professionalEditDraft.update({
+      where: { id: pendingDraft.id },
+      data: { status: "REJECTED", adminNote: reason, reviewedAt: new Date() },
+    });
+    revalidatePath("/admin/professionals");
+    revalidatePath(`/admin/professionals/${id}`);
+    return;
+  }
+
   await prisma.professional.update({
     where: { id },
     data: { status: "REJECTED", rejectionReason: reason },
@@ -50,6 +89,45 @@ export async function getProfessionalForAdmin(id: string): Promise<ProfessionalF
     where: { id },
     include: professionalForAdminInclude,
   });
+}
+
+function asNullableString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function asStringArray(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function professionalDataFromDraft(draft: { data: Prisma.JsonValue; serviceAreaIds: string[] }) {
+  const data = draft.data && typeof draft.data === "object" && !Array.isArray(draft.data)
+    ? draft.data as Record<string, unknown>
+    : {};
+
+  return {
+    mosqueId: asNullableString(data.mosqueId),
+    categoryId: typeof data.categoryId === "string" ? data.categoryId : undefined,
+    photoUrl: asNullableString(data.photoUrl),
+    logoUrl: asNullableString(data.logoUrl),
+    businessName: asNullableString(data.businessName),
+    title: asNullableString(data.title),
+    bio: asNullableString(data.bio),
+    yearsOfExperience: typeof data.yearsOfExperience === "number" ? data.yearsOfExperience : null,
+    qualifications: asNullableString(data.qualifications),
+    licenses: asNullableString(data.licenses),
+    languages: asStringArray(data.languages),
+    phone: asNullableString(data.phone),
+    email: asNullableString(data.email),
+    website: asNullableString(data.website),
+    whatsapp: asNullableString(data.whatsapp),
+    businessAddress: asNullableString(data.businessAddress),
+    acceptsWalkIns: data.acceptsWalkIns === true,
+    availability: asNullableString(data.availability),
+    status: "APPROVED" as const,
+    approvedAt: new Date(),
+    rejectionReason: null,
+    serviceAreas: { set: draft.serviceAreaIds.map((areaId) => ({ id: areaId })) },
+  };
 }
 
 async function getSponsoredPricingTier(categoryId: string, serviceAreaId: string) {
@@ -389,17 +467,22 @@ export async function getAdminAnalytics() {
 
 export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: string) {
   const professionals = await prisma.professional.findMany({
-    where: status ? { status: status as never } : { status: { not: "WITHDRAWN" } },
+    where: status
+      ? status === "PENDING"
+        ? { OR: [{ status: "PENDING" }, { editDrafts: { some: { status: "PENDING" } } }] }
+        : { status: status as never }
+      : { status: { not: "WITHDRAWN" } },
     include: {
       user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true } },
       mosque: { select: { name: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
       category: { select: { id: true, name: true, slug: true } },
       serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
+      editDrafts: { where: { status: "PENDING" }, orderBy: { submittedAt: "desc" }, take: 1 },
       badges: true,
       recommendations: { where: { status: "APPROVED" }, select: { id: true } },
       credentials: { select: { id: true, name: true, isVerified: true } },
     },
-    orderBy: { submittedAt: "desc" },
+    orderBy: [{ submittedAt: "desc" }, { updatedAt: "desc" }],
   });
 
   return professionals;

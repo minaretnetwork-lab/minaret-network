@@ -166,6 +166,7 @@ model Professional {
   featuredListings  FeaturedListing[]
   featuredWaitlist  FeaturedWaitlist[]
   conversations     Conversation[]
+  editDrafts         ProfessionalEditDraft[]
 
   @@map("professionals")
 }
@@ -182,6 +183,29 @@ enum ProfessionalStatus {
   APPROVED
   REJECTED
   SUSPENDED
+}
+
+model ProfessionalEditDraft {
+  id             String                      @id @default(cuid())
+  professionalId String
+  professional   Professional                @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  data           Json
+  serviceAreaIds String[]                    @default([])
+  status         ProfessionalEditDraftStatus @default(PENDING)
+  adminNote      String?
+  submittedAt    DateTime                    @default(now())
+  reviewedAt     DateTime?
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+
+  @@index([professionalId, status])
+  @@map("professional_edit_drafts")
+}
+
+enum ProfessionalEditDraftStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model VerificationBadge {

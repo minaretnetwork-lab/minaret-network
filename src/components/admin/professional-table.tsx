@@ -29,6 +29,7 @@ type Professional = {
   } | null;
   category: { id: string; name: string; slug: string };
   serviceAreas: { id: string; name: string }[];
+  editDrafts: { id: string; submittedAt: Date }[];
   badges: { type: string }[];
   recommendations: { id: string }[];
   credentials: { id: string; name: string; isVerified: boolean }[];
@@ -134,6 +135,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
         const channelType = p.mosque?.communityChannelType ?? "WhatsApp";
         const channelName = p.mosque?.communityChannelName;
         const channelLink = p.mosque?.communityChannelLink;
+        const hasPendingEdit = p.editDrafts.length > 0;
 
         return (
           <div
@@ -156,6 +158,11 @@ export function AdminProfessionalTable({ professionals }: Props) {
                   <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_BADGE[p.status] ?? ""}`}>
                     {p.status}
                   </span>
+                  {hasPendingEdit && (
+                    <span className="rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                      PENDING EDITS
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{p.user.email}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">

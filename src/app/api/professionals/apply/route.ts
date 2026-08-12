@@ -129,13 +129,41 @@ export async function POST(request: Request) {
       });
       if (!existing) return NextResponse.json({ ok: false, error: "Listing not found." }, { status: 404 });
       if (existing.isFeatured || existing.featuredListings.length > 0) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "Featured listings are locked while featured. Please contact admin if you need changes.",
-          },
-          { status: 403 },
-        );
+        const pendingDraft = await prisma.professionalEditDraft.findFirst({
+          where: { professionalId, status: "PENDING" },
+          select: { id: true },
+        });
+
+        if (pendingDraft) {
+          await prisma.professionalEditDraft.update({
+            where: { id: pendingDraft.id },
+            data: {
+              data,
+              serviceAreaIds,
+              adminNote: null,
+              submittedAt: new Date(),
+            },
+          });
+        } else {
+          await prisma.professionalEditDraft.create({
+            data: {
+              professionalId,
+              data,
+              serviceAreaIds,
+            },
+          });
+        }
+
+        revalidatePath("/dashboard");
+        revalidatePath("/dashboard/professional");
+        revalidatePath("/admin/professionals");
+        revalidatePath(`/admin/professionals/${professionalId}`);
+        console.info("POST /api/professionals/apply featured draft saved", {
+          userId: dbUser.id,
+          professionalId,
+          durationMs: Date.now() - startedAt,
+        });
+        return NextResponse.json({ ok: true });
       }
 
       await prisma.professional.update({

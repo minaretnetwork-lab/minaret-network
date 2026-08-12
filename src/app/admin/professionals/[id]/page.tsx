@@ -45,6 +45,7 @@ export default async function AdminProfessionalDetailPage({
     [professional.user.firstName, professional.user.lastName].filter(Boolean).join(" ") ??
     professional.user.email;
   const status = STATUS_UI[professional.status] ?? STATUS_UI.PENDING;
+  const pendingDraft = professional.editDrafts[0] ?? null;
   const mapsUrl = professional.businessAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(professional.businessAddress)}`
     : null;
@@ -102,11 +103,11 @@ export default async function AdminProfessionalDetailPage({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {professional.status !== "APPROVED" && professional.status !== "WITHDRAWN" && (
+            {(pendingDraft || (professional.status !== "APPROVED" && professional.status !== "WITHDRAWN")) && (
               <form action={approveAction}>
                 <Button type="submit" className="gap-1.5 bg-green-600 text-white hover:bg-green-700">
                   <CheckCircle className="h-4 w-4" />
-                  Approve
+                  {pendingDraft ? "Approve edits" : "Approve"}
                 </Button>
               </form>
             )}
@@ -124,6 +125,27 @@ export default async function AdminProfessionalDetailPage({
 
       <div className="grid gap-6 lg:grid-cols-[1.35fr_0.85fr]">
         <section className="space-y-6">
+          {pendingDraft && (
+            <Card title="Pending edits" icon={<Clock className="h-4 w-4" />}>
+              <p className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                This profile is currently live. These edits are waiting for review; approving them will update the public profile.
+              </p>
+              <DraftInfo label="Title" draft={pendingDraft.data} field="title" />
+              <DraftInfo label="Business" draft={pendingDraft.data} field="businessName" />
+              <DraftInfo label="Bio" draft={pendingDraft.data} field="bio" multiline />
+              <DraftInfo label="Years of experience" draft={pendingDraft.data} field="yearsOfExperience" />
+              <DraftInfo label="Qualifications" draft={pendingDraft.data} field="qualifications" multiline />
+              <DraftInfo label="Licenses" draft={pendingDraft.data} field="licenses" multiline />
+              <DraftInfo label="Phone" draft={pendingDraft.data} field="phone" />
+              <DraftInfo label="Email" draft={pendingDraft.data} field="email" />
+              <DraftInfo label="Website" draft={pendingDraft.data} field="website" />
+              <DraftInfo label="WhatsApp" draft={pendingDraft.data} field="whatsapp" />
+              <DraftInfo label="Business address" draft={pendingDraft.data} field="businessAddress" multiline />
+              <DraftInfo label="Availability" draft={pendingDraft.data} field="availability" multiline />
+              <Info label="Service areas selected" value={String(pendingDraft.serviceAreaIds.length)} />
+            </Card>
+          )}
+
           <Card title="Application details" icon={<User className="h-4 w-4" />}>
             <Info label="Title" value={professional.title} />
             <Info label="Business" value={professional.businessName} />
@@ -157,8 +179,8 @@ export default async function AdminProfessionalDetailPage({
             />
           </Card>
 
-          {professional.status === "PENDING" && (
-            <Card title="Reject application" icon={<XCircle className="h-4 w-4" />}>
+          {(professional.status === "PENDING" || pendingDraft) && (
+            <Card title={pendingDraft ? "Reject edits" : "Reject application"} icon={<XCircle className="h-4 w-4" />}>
               <form action={rejectAction} className="space-y-3">
                 <textarea
                   name="reason"
@@ -168,7 +190,7 @@ export default async function AdminProfessionalDetailPage({
                   className="w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 dark:border-gray-700 dark:bg-gray-900"
                 />
                 <Button type="submit" className="bg-red-600 text-white hover:bg-red-700">
-                  Reject application
+                  {pendingDraft ? "Reject edits" : "Reject application"}
                 </Button>
               </form>
             </Card>
@@ -252,6 +274,29 @@ function Info({
       </dd>
     </div>
   );
+}
+
+function getDraftValue(draft: unknown, field: string) {
+  if (!draft || typeof draft !== "object" || Array.isArray(draft)) return null;
+  const value = (draft as Record<string, unknown>)[field];
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (value === null || value === undefined || value === "") return null;
+  return String(value);
+}
+
+function DraftInfo({
+  label,
+  draft,
+  field,
+  multiline = false,
+}: {
+  label: string;
+  draft: unknown;
+  field: string;
+  multiline?: boolean;
+}) {
+  return <Info label={label} value={getDraftValue(draft, field)} multiline={multiline} />;
 }
 
 function ImagePreview({ label, src }: { label: string; src: string | null }) {
