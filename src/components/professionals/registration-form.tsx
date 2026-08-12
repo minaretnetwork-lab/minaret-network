@@ -177,6 +177,12 @@ async function prepareImageForUpload(file: File, label: string) {
   }
 }
 
+function validatePreparedUpload(file: File, label: string) {
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error(`${label} is still too large after shrinking. Please choose a smaller image under 5 MB.`);
+  }
+}
+
 function buildAvailabilityString(schedules: Record<string, DaySchedule>, emergency: boolean) {
   const ordered = DAYS.filter((d) => d in schedules);
   if (ordered.length === 0) return "";
@@ -436,8 +442,16 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         if (Array.isArray(value)) value.forEach((v) => fd.append(key, v));
         else if (value !== undefined && value !== "") fd.append(key, String(value));
       });
-      if (photoFile) fd.append("photo", photoFile);
-      if (logoFile) fd.append("logo", logoFile);
+      if (photoFile) {
+        const preparedPhoto = await prepareImageForUpload(photoFile, "Profile photo");
+        validatePreparedUpload(preparedPhoto, "Profile photo");
+        fd.append("photo", preparedPhoto);
+      }
+      if (logoFile) {
+        const preparedLogo = await prepareImageForUpload(logoFile, "Business logo");
+        validatePreparedUpload(preparedLogo, "Business logo");
+        fd.append("logo", preparedLogo);
+      }
       if (initialData?.id) fd.append("professionalId", initialData.id);
       const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
       const contentType = res.headers.get("content-type") ?? "";
