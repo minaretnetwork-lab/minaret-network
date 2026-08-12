@@ -18,11 +18,22 @@ interface MobileNavProps {
   } | null;
 }
 
+type NotificationPayload = {
+  count: number;
+  totalCount?: number;
+  messagesCount?: number;
+  adminCount?: number;
+  latestConversationId: string | null;
+};
+
 export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavProps) {
   const displayName = user?.displayName ?? user?.firstName ?? user?.email;
   const [open, setOpen] = useState(false);
   const [messageNotification, setMessageNotification] = useState({
     count: user?.unreadMessageCount ?? 0,
+    totalCount: user?.unreadMessageCount ?? 0,
+    messagesCount: user?.unreadMessageCount ?? 0,
+    adminCount: 0,
     latestConversationId: user?.latestUnreadConversationId ?? null,
   });
   const messageHref = messageNotification.latestConversationId
@@ -39,8 +50,16 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
         const response = await fetch("/api/dashboard/messages/unread", { cache: "no-store" });
         if (!response.ok) return;
 
-        const payload = await response.json() as { count: number; latestConversationId: string | null };
-        if (!cancelled) setMessageNotification(payload);
+        const payload = await response.json() as NotificationPayload;
+        if (!cancelled) {
+          setMessageNotification({
+            count: payload.messagesCount ?? payload.count,
+            totalCount: payload.totalCount ?? payload.count,
+            messagesCount: payload.messagesCount ?? payload.count,
+            adminCount: payload.adminCount ?? 0,
+            latestConversationId: payload.latestConversationId,
+          });
+        }
       } catch {
         // Keep the last known badge state if the network blips.
       }
@@ -109,9 +128,9 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                     <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold">
                       {(displayName?.[0] ?? "U").toUpperCase()}
                     </div>
-                    {messageNotification.count > 0 && (
+                    {messageNotification.totalCount > 0 && (
                       <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#14532d]">
-                        {messageNotification.count > 9 ? "9+" : messageNotification.count}
+                        {messageNotification.totalCount > 9 ? "9+" : messageNotification.totalCount}
                       </span>
                     )}
                   </div>
@@ -121,7 +140,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                   { href: "/dashboard", label: "My Dashboard" },
                   { href: "/dashboard/profile", label: "My Profile" },
                   { href: "/dashboard/requests", label: "My Requests" },
-                  { href: messageHref, label: "Messages", badge: messageNotification.count },
+                  { href: messageHref, label: "Messages", badge: messageNotification.messagesCount },
                   ...(isProfessional ? [{ href: "/dashboard/leads", label: "Incoming Requests" }] : []),
                 ].map((link) => (
                   <Link key={link.href} href={link.href}
@@ -138,8 +157,13 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                 {isAdmin && (
                   <Link href="/admin"
                     onClick={closeMenu}
-                    className="py-2.5 px-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors">
-                    Admin Panel
+                    className="flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors">
+                    <span className="flex-1">Admin Panel</span>
+                    {messageNotification.adminCount > 0 && (
+                      <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                        {messageNotification.adminCount > 9 ? "9+" : messageNotification.adminCount}
+                      </span>
+                    )}
                   </Link>
                 )}
                 <form action="/auth/signout" method="post" className="mt-2">

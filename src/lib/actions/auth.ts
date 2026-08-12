@@ -199,18 +199,23 @@ export async function getCurrentUser() {
     },
   };
 
-  const [unreadMessageCount, latestUnreadMessage] = await Promise.all([
+  const isAdmin = dbUser.role === "ADMIN" || dbUser.role === "SUPER_ADMIN";
+  const [unreadMessageCount, latestUnreadMessage, pendingApplications, pendingEditDrafts] = await Promise.all([
     prisma.message.count({ where: unreadWhere }),
     prisma.message.findFirst({
       where: unreadWhere,
       orderBy: { createdAt: "desc" },
       select: { conversationId: true },
     }),
+    isAdmin ? prisma.professional.count({ where: { status: "PENDING" } }) : Promise.resolve(0),
+    isAdmin ? prisma.professionalEditDraft.count({ where: { status: "PENDING" } }) : Promise.resolve(0),
   ]);
 
   return {
     ...dbUser,
     unreadMessageCount,
+    adminNotificationCount: pendingApplications + pendingEditDrafts,
+    totalNotificationCount: unreadMessageCount + pendingApplications + pendingEditDrafts,
     latestUnreadConversationId: latestUnreadMessage?.conversationId ?? null,
   };
 }

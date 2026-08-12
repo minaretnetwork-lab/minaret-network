@@ -26,17 +26,27 @@ export async function GET() {
     },
   };
 
-  const [count, latestUnreadMessage] = await Promise.all([
+  const [count, latestUnreadMessage, pendingApplications, pendingEditDrafts] = await Promise.all([
     prisma.message.count({ where: unreadWhere }),
     prisma.message.findFirst({
       where: unreadWhere,
       orderBy: { createdAt: "desc" },
       select: { conversationId: true },
     }),
+    dbUser.role === "ADMIN" || dbUser.role === "SUPER_ADMIN"
+      ? prisma.professional.count({ where: { status: "PENDING" } })
+      : Promise.resolve(0),
+    dbUser.role === "ADMIN" || dbUser.role === "SUPER_ADMIN"
+      ? prisma.professionalEditDraft.count({ where: { status: "PENDING" } })
+      : Promise.resolve(0),
   ]);
+  const adminCount = pendingApplications + pendingEditDrafts;
 
   return Response.json({
     count,
+    totalCount: count + adminCount,
+    messagesCount: count,
+    adminCount,
     latestConversationId: latestUnreadMessage?.conversationId ?? null,
   });
 }

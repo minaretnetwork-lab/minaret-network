@@ -10,21 +10,36 @@ interface Props {
   isAdmin: boolean;
   isProfessional: boolean;
   unreadMessageCount?: number;
+  adminNotificationCount?: number;
+  totalNotificationCount?: number;
   latestUnreadConversationId?: string | null;
   compact?: boolean;
 }
+
+type NotificationPayload = {
+  count: number;
+  totalCount?: number;
+  messagesCount?: number;
+  adminCount?: number;
+  latestConversationId: string | null;
+};
 
 export function UserDropdown({
   displayName,
   isAdmin,
   isProfessional,
   unreadMessageCount = 0,
+  adminNotificationCount = 0,
+  totalNotificationCount,
   latestUnreadConversationId,
   compact = false,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [messageNotification, setMessageNotification] = useState({
     count: unreadMessageCount,
+    totalCount: totalNotificationCount ?? unreadMessageCount + adminNotificationCount,
+    messagesCount: unreadMessageCount,
+    adminCount: adminNotificationCount,
     latestConversationId: latestUnreadConversationId,
   });
   const ref = useRef<HTMLDivElement>(null);
@@ -53,8 +68,16 @@ export function UserDropdown({
         const response = await fetch("/api/dashboard/messages/unread", { cache: "no-store" });
         if (!response.ok) return;
 
-        const payload = await response.json() as { count: number; latestConversationId: string | null };
-        if (!cancelled) setMessageNotification(payload);
+        const payload = await response.json() as NotificationPayload;
+        if (!cancelled) {
+          setMessageNotification({
+            count: payload.messagesCount ?? payload.count,
+            totalCount: payload.totalCount ?? payload.count,
+            messagesCount: payload.messagesCount ?? payload.count,
+            adminCount: payload.adminCount ?? 0,
+            latestConversationId: payload.latestConversationId,
+          });
+        }
       } catch {
         // Keep the last known badge state if the network blips.
       }
@@ -79,7 +102,7 @@ export function UserDropdown({
       href: messageHref,
       label: "Messages",
       icon: <MessageCircle className="h-4 w-4" />,
-      badge: messageNotification.count,
+      badge: messageNotification.messagesCount,
     },
     ...(isProfessional ? [
       { href: "/dashboard/leads", label: "Incoming Requests", icon: <Send className="h-4 w-4" /> },
@@ -87,7 +110,7 @@ export function UserDropdown({
       { href: "/dashboard/featured", label: "Featured Business", icon: <Star className="h-4 w-4" /> },
     ] : []),
     ...(isAdmin ? [
-      { href: "/admin", label: "Admin Panel", icon: <Shield className="h-4 w-4" /> },
+      { href: "/admin", label: "Admin Panel", icon: <Shield className="h-4 w-4" />, badge: messageNotification.adminCount },
     ] : []),
   ];
 
@@ -104,9 +127,9 @@ export function UserDropdown({
           <div className="h-7 w-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold">
             {(displayName?.[0] ?? "U").toUpperCase()}
           </div>
-          {messageNotification.count > 0 && (
+          {messageNotification.totalCount > 0 && (
             <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#14532d]">
-              {messageNotification.count > 9 ? "9+" : messageNotification.count}
+              {messageNotification.totalCount > 9 ? "9+" : messageNotification.totalCount}
             </span>
           )}
         </div>

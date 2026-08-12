@@ -13,6 +13,8 @@ interface NavbarProps {
     role: string;
     isProfessional?: boolean;
     unreadMessageCount?: number;
+    adminNotificationCount?: number;
+    totalNotificationCount?: number;
     latestUnreadConversationId?: string | null;
   } | null;
 }
@@ -76,6 +78,8 @@ export function Navbar({ user }: NavbarProps) {
                 isAdmin={isAdmin}
                 isProfessional={isProfessional}
                 unreadMessageCount={user.unreadMessageCount ?? 0}
+                adminNotificationCount={user.adminNotificationCount ?? 0}
+                totalNotificationCount={user.totalNotificationCount ?? user.unreadMessageCount ?? 0}
                 latestUnreadConversationId={user.latestUnreadConversationId ?? null}
               />
             ) : (
@@ -102,6 +106,8 @@ export function Navbar({ user }: NavbarProps) {
                 isAdmin={isAdmin}
                 isProfessional={isProfessional}
                 unreadMessageCount={user.unreadMessageCount ?? 0}
+                adminNotificationCount={user.adminNotificationCount ?? 0}
+                totalNotificationCount={user.totalNotificationCount ?? user.unreadMessageCount ?? 0}
                 latestUnreadConversationId={user.latestUnreadConversationId ?? null}
                 compact
               />

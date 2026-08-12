@@ -10,6 +10,14 @@ interface Props {
   latestUnreadConversationId?: string | null;
 }
 
+type NotificationPayload = {
+  count: number;
+  totalCount?: number;
+  messagesCount?: number;
+  adminCount?: number;
+  latestConversationId: string | null;
+};
+
 export function MobileProfileShortcut({
   displayName,
   unreadMessageCount = 0,
@@ -17,6 +25,7 @@ export function MobileProfileShortcut({
 }: Props) {
   const [messageNotification, setMessageNotification] = useState({
     count: unreadMessageCount,
+    totalCount: unreadMessageCount,
     latestConversationId: latestUnreadConversationId,
   });
   const href = messageNotification.latestConversationId
@@ -31,8 +40,14 @@ export function MobileProfileShortcut({
         const response = await fetch("/api/dashboard/messages/unread", { cache: "no-store" });
         if (!response.ok) return;
 
-        const payload = await response.json() as { count: number; latestConversationId: string | null };
-        if (!cancelled) setMessageNotification(payload);
+        const payload = await response.json() as NotificationPayload;
+        if (!cancelled) {
+          setMessageNotification({
+            count: payload.messagesCount ?? payload.count,
+            totalCount: payload.totalCount ?? payload.count,
+            latestConversationId: payload.latestConversationId,
+          });
+        }
       } catch {
         // Keep the last known badge state if the network blips.
       }
@@ -52,8 +67,8 @@ export function MobileProfileShortcut({
     <Link
       href={href}
       aria-label={
-        messageNotification.count > 0
-          ? `${messageNotification.count} unread messages`
+        messageNotification.totalCount > 0
+          ? `${messageNotification.totalCount} notifications`
           : "Open dashboard"
       }
       className="relative flex h-10 w-10 items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white"
@@ -61,9 +76,9 @@ export function MobileProfileShortcut({
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
         {(displayName?.[0] ?? "U").toUpperCase()}
       </span>
-      {messageNotification.count > 0 && (
+      {messageNotification.totalCount > 0 && (
         <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#14532d]">
-          {messageNotification.count > 9 ? "9+" : messageNotification.count}
+          {messageNotification.totalCount > 9 ? "9+" : messageNotification.totalCount}
         </span>
       )}
     </Link>
