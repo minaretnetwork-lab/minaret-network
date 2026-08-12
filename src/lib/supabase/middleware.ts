@@ -1,8 +1,27 @@
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
+  const protectedRoutes = ["/dashboard", "/admin", "/auth/update-password"];
+  const isProtected = protectedRoutes.some((r) => pathname === r || pathname.startsWith(r + "/"));
+
+  function clearSupabaseCookies(response: NextResponse) {
+    request.cookies
+      .getAll()
+      .filter((cookie) => cookie.name.startsWith("sb-") || cookie.name.includes("supabase"))
+      .forEach((cookie) => response.cookies.delete(cookie.name));
+    return response;
+  }
+
+  function redirectToLogin() {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/login";
+    url.searchParams.set("redirectTo", pathname);
+    return clearSupabaseCookies(NextResponse.redirect(url));
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,20 +44,19 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
-
-  const protectedRoutes = ["/dashboard", "/admin", "/auth/update-password"];
-  const isProtected = protectedRoutes.some((r) => pathname === r || pathname.startsWith(r + "/"));
+  let user: User | null = null;
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch {
+    if (isProtected) {
+      return redirectToLogin();
+    }
+    return clearSupabaseCookies(supabaseResponse);
+  }
 
   if (!user && isProtected) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
-    url.searchParams.set("redirectTo", pathname);
-    return NextResponse.redirect(url);
+    return redirectToLogin();
   }
 
   return supabaseResponse;
