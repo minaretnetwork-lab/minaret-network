@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, User, FileText, Sparkles, Star, Shield, LogOut, ChevronDown, Send, MessageCircle } from "lucide-react";
+import { LayoutDashboard, User, FileText, Sparkles, Star, Shield, LogOut, ChevronDown, Send, MessageCircle, Search, Tags, ClipboardList } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
 
@@ -31,6 +31,11 @@ export function UserDropdown({
   const messageHref = messageNotification.latestConversationId
     ? `/dashboard/messages/${messageNotification.latestConversationId}`
     : "/dashboard/messages";
+  const publicLinks = [
+    { href: "/professionals", label: "Find Professionals", icon: <Search className="h-4 w-4" /> },
+    { href: "/categories", label: "Categories", icon: <Tags className="h-4 w-4" /> },
+    { href: "/request", label: "Service Request", icon: <ClipboardList className="h-4 w-4" /> },
+  ];
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -122,6 +127,20 @@ export function UserDropdown({
 
           {/* Links */}
           <div className="py-1">
+            {publicLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <span className="text-gray-400">{link.icon}</span>
+                <span className="flex-1">{link.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-100 py-1 dark:border-gray-800">
             {links.map((link) => (
               <Link
                 key={link.href}
