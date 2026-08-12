@@ -57,8 +57,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Please enter the mosque name so admins can review it." }, { status: 400 });
     }
 
-    const categoryId = formData.get("categoryId") as string;
-    if (!categoryId) return NextResponse.json({ ok: false, error: "Please select a category." }, { status: 400 });
+    const categoryIds = Array.from(new Set(formData.getAll("categoryIds").filter((value): value is string => typeof value === "string" && Boolean(value))));
+    const legacyCategoryId = formData.get("categoryId") as string | null;
+    const categoryId = categoryIds[0] ?? legacyCategoryId;
+    if (!categoryId) return NextResponse.json({ ok: false, error: "Please select at least one category." }, { status: 400 });
+    const selectedCategoryIds = categoryIds.length > 0 ? categoryIds : [categoryId];
 
     const languages = formData.getAll("languages") as string[];
     const serviceAreaIds = formData.getAll("serviceAreaIds") as string[];
@@ -138,7 +141,7 @@ export async function POST(request: Request) {
           await prisma.professionalEditDraft.update({
             where: { id: pendingDraft.id },
             data: {
-              data,
+              data: { ...data, categoryIds: selectedCategoryIds },
               serviceAreaIds,
               adminNote: null,
               submittedAt: new Date(),
@@ -148,7 +151,7 @@ export async function POST(request: Request) {
           await prisma.professionalEditDraft.create({
             data: {
               professionalId,
-              data,
+              data: { ...data, categoryIds: selectedCategoryIds },
               serviceAreaIds,
             },
           });
@@ -170,6 +173,7 @@ export async function POST(request: Request) {
         where: { id: professionalId },
         data: {
           ...data,
+          categories: { set: selectedCategoryIds.map((id) => ({ id })) },
           serviceAreas: { set: serviceAreaIds.map((id) => ({ id })) },
         },
       });
@@ -195,6 +199,7 @@ export async function POST(request: Request) {
           id: storageListingId,
           ...data,
           userId: dbUser.id,
+          categories: { connect: selectedCategoryIds.map((id) => ({ id })) },
           serviceAreas: { connect: serviceAreaIds.map((id) => ({ id })) },
         },
       });

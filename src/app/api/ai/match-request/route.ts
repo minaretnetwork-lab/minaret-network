@@ -191,6 +191,7 @@ export async function POST(request: Request) {
   const professionalInclude = {
     user: { select: { firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
     category: { select: { id: true, name: true, slug: true, icon: true } },
+    categories: { select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
     serviceAreas: { select: { id: true, name: true, slug: true } },
     badges: { select: { type: true } },
     recommendations: { where: { status: "APPROVED" }, select: { id: true } },
@@ -208,7 +209,10 @@ export async function POST(request: Request) {
         where: {
           mosqueId: mosque.id,
           status: "APPROVED",
-          categoryId: { in: categoryIds },
+          OR: [
+            { categoryId: { in: categoryIds } },
+            { categories: { some: { id: { in: categoryIds } } } },
+          ],
           ...(matchedArea ? { serviceAreas: { some: { id: matchedArea.id } } } : {}),
         },
         include: professionalInclude,
@@ -233,7 +237,10 @@ export async function POST(request: Request) {
       where: {
         mosqueId: mosque.id,
         status: "APPROVED",
-        categoryId: { in: categoryIds },
+        OR: [
+          { categoryId: { in: categoryIds } },
+          { categories: { some: { id: { in: categoryIds } } } },
+        ],
       },
       include: professionalInclude,
       orderBy: professionalOrderBy,
@@ -279,6 +286,7 @@ export async function POST(request: Request) {
         ownerName,
         ownerFirstName: firstNameForUser(professional.user),
         category: professional.category,
+        categories: professional.categories.length > 0 ? professional.categories : [professional.category],
         serviceAreas: professional.serviceAreas,
         badges: professional.badges.map((badge) => badge.type),
         recommendationCount: professional.recommendations.length,

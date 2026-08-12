@@ -68,6 +68,7 @@ function ActionTooltip({ label }: { label: string }) {
 export function ProfessionalCard({ professional, isLoggedIn = true }: ProfessionalCardProps) {
   const router = useRouter();
   const { user, mosque, category, badges, recommendations, serviceAreas } = professional;
+  const displayCategories = professional.categories?.length ? professional.categories : [category];
   const isSponsored = (professional as typeof professional & { isSponsored?: boolean }).isSponsored === true;
   const distanceKm = professional.fallbackDistanceKm;
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -164,11 +165,16 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           {professional.businessName && (
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{professional.businessName}</p>
           )}
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <Link href={`/professionals?category=${category.slug}`} className="relative z-20 flex items-center gap-1.5 hover:underline">
-              <CategoryIcon slug={category.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-              <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{category.name}</span>
-            </Link>
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mt-1.5">
+            {displayCategories.slice(0, 2).map((displayCategory) => (
+              <Link key={displayCategory.id} href={`/professionals?category=${displayCategory.slug}`} className="relative z-20 flex items-center gap-1.5 hover:underline">
+                <CategoryIcon slug={displayCategory.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{displayCategory.name}</span>
+              </Link>
+            ))}
+            {displayCategories.length > 2 && (
+              <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">+{displayCategories.length - 2}</span>
+            )}
             {professional.yearsOfExperience && (
               <>
                 <span className="text-gray-200 dark:text-gray-700">·</span>

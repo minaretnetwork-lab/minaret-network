@@ -31,7 +31,8 @@ const schema = z.object({
   mosqueSuggestionChannelName: z.string().optional(),
   mosqueSuggestionChannelLink: z.string().url("Enter a valid community link").optional().or(z.literal("")),
   mosqueSuggestionNotes: z.string().optional(),
-  categoryId: z.string().min(1, "Please select a category"),
+  categoryId: z.string().optional(),
+  categoryIds: z.array(z.string()).min(1, "Please select at least one category"),
   businessName: z.string().optional(),
   title: z.string().min(2, "Job title is required"),
   bio: z.string().min(BIO_MIN_LENGTH, `Please write at least ${BIO_MIN_LENGTH} characters`).max(BIO_MAX_LENGTH),
@@ -67,6 +68,8 @@ export interface ProfessionalFormInitialData {
   id: string;
   mosqueId: string | null;
   categoryId: string;
+  categoryIds?: string[];
+  categories?: { id: string }[];
   businessName: string | null;
   title: string | null;
   bio: string | null;
@@ -213,7 +216,7 @@ const STEPS = [
 
 // Fields that must pass validation before each step's "Next"
 const STEP_FIELDS: (keyof FormData)[][] = [
-  ["categoryId", "title"],
+  ["categoryIds", "title"],
   ["bio"],
   ["serviceAreaIds", "languages"],
   [],
@@ -264,6 +267,11 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     defaultValues: {
       mosqueId: initialData?.mosqueId ?? "",
       categoryId: initialData?.categoryId ?? "",
+      categoryIds: initialData?.categoryIds?.length
+        ? initialData.categoryIds
+        : initialData?.categories?.length
+        ? initialData.categories.map((category) => category.id)
+        : initialData?.categoryId ? [initialData.categoryId] : [],
       businessName: initialData?.businessName ?? "",
       title: initialData?.title ?? "",
       bio: initialData?.bio ?? "",
@@ -285,6 +293,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   const selectedLanguages = watch("languages") ?? [];
   const selectedAreas = watch("serviceAreaIds") ?? [];
+  const selectedCategoryIds = watch("categoryIds") ?? [];
+  const primaryCategoryId = selectedCategoryIds[0] ?? watch("categoryId") ?? "";
   const selectedMosqueId = watch("mosqueId");
   const phoneValue = watch("phone") ?? "";
   const whatsappSameAsPhone = watch("whatsappSameAsPhone") ?? false;
@@ -360,6 +370,19 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     setValue("serviceAreaIds", selectedAreas.includes(id)
       ? selectedAreas.filter((a) => a !== id)
       : [...selectedAreas, id]);
+  }
+
+  function addCategory(id: string) {
+    if (!id) return;
+    const next = selectedCategoryIds.includes(id) ? selectedCategoryIds : [...selectedCategoryIds, id];
+    setValue("categoryIds", next, { shouldDirty: true, shouldValidate: true });
+    setValue("categoryId", next[0] ?? "", { shouldDirty: true, shouldValidate: true });
+  }
+
+  function removeCategory(id: string) {
+    const next = selectedCategoryIds.filter((categoryId) => categoryId !== id);
+    setValue("categoryIds", next, { shouldDirty: true, shouldValidate: true });
+    setValue("categoryId", next[0] ?? "", { shouldDirty: true, shouldValidate: true });
   }
   function selectAllServiceAreas() {
     setValue("serviceAreaIds", serviceAreas.map((area) => area.id), { shouldDirty: true, shouldValidate: true });
@@ -580,40 +603,60 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} className="hidden" />
               </div>
 
-              {/* Category — searchable combobox */}
+              {/* Categories — searchable multi-select combobox */}
               <div>
-                <Label>Profession / Category *</Label>
+                <Label>Professions / Categories *</Label>
+                <p className="mt-0.5 text-xs text-gray-400">Choose every category this listing should appear under. The first selected category is treated as primary.</p>
                 <div ref={catRef} className="relative mt-1.5">
                   {(() => {
-                    const selectedCat = categories.find((c) => c.id === watch("categoryId"));
                     const filtered = catSearch
-                      ? categories.filter((c) => c.name.toLowerCase().includes(catSearch.toLowerCase()))
+                      ? categories.filter((c) => c.name.toLowerCase().includes(catSearch.toLowerCase()) && !selectedCategoryIds.includes(c.id))
                       : categories;
+                    const selectedCategories = selectedCategoryIds
+                      .map((id) => categories.find((category) => category.id === id))
+                      .filter((category): category is Category => Boolean(category));
                     return (
                       <>
                         <div className="relative">
                           <input
                             type="text"
-                            value={catSearch !== "" ? catSearch : selectedCat ? `${selectedCat.icon ?? ""} ${selectedCat.name}`.trim() : ""}
-                            onChange={(e) => { setCatSearch(e.target.value); setValue("categoryId", ""); setCatOpen(true); }}
+                            value={catSearch}
+                            onChange={(e) => { setCatSearch(e.target.value); setCatOpen(true); }}
                             onFocus={() => setCatOpen(true)}
-                            placeholder="Search profession…"
+                            placeholder={selectedCategories.length ? "Add another profession…" : "Search profession…"}
                             autoComplete="off"
                             className={`${selectClass} pr-8`}
                           />
-                          {(selectedCat || catSearch) && (
-                            <button type="button" onClick={() => { setCatSearch(""); setValue("categoryId", ""); setCatOpen(false); }}
+                          {catSearch && (
+                            <button type="button" onClick={() => { setCatSearch(""); setCatOpen(false); }}
                               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                               <X className="h-3.5 w-3.5" />
                             </button>
                           )}
                         </div>
+                        {selectedCategories.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {selectedCategories.map((category, index) => (
+                              <button
+                                key={category.id}
+                                type="button"
+                                onClick={() => removeCategory(category.id)}
+                                className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                              >
+                                <CategoryIcon slug={category.slug} className="h-3.5 w-3.5" />
+                                {category.name}
+                                {index === 0 && <span className="text-[10px] uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Primary</span>}
+                                <X className="h-3 w-3" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         {catOpen && filtered.length > 0 && (
                           <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-y-auto max-h-52">
                             {filtered.map((c) => (
                               <button key={c.id} type="button"
-                                onMouseDown={(e) => { e.preventDefault(); setValue("categoryId", c.id); setCatSearch(""); setCatOpen(false); }}
-                                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors ${c.id === watch("categoryId") ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 font-medium" : "text-gray-800 dark:text-gray-200"}`}>
+                                onMouseDown={(e) => { e.preventDefault(); addCategory(c.id); setCatSearch(""); setCatOpen(false); }}
+                                className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors text-gray-800 dark:text-gray-200">
                                 <CategoryIcon slug={c.slug} className="h-4 w-4 flex-shrink-0" /><span>{c.name}</span>
                               </button>
                             ))}
@@ -623,16 +666,16 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                     );
                   })()}
                 </div>
-                {errors.categoryId && <p className="text-xs text-red-600 mt-1">{errors.categoryId.message}</p>}
+                {errors.categoryIds && <p className="text-xs text-red-600 mt-1">{errors.categoryIds.message}</p>}
               </div>
-              <CategorySuggestionPanel categories={categories} selectedCategoryId={watch("categoryId")} />
+              <CategorySuggestionPanel categories={categories} selectedCategoryId={primaryCategoryId} />
 
               {/* Title + Business name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="title">Job Title *</Label>
                   <Input id="title" {...register("title")} className="mt-1.5"
-                    placeholder={(() => { const sel = categories.find((c) => c.id === watch("categoryId")); return sel?.slug === "other" ? "Describe your profession…" : "e.g. Licensed Electrician"; })()} />
+                    placeholder={(() => { const sel = categories.find((c) => c.id === primaryCategoryId); return sel?.slug === "other" ? "Describe your profession…" : "e.g. Licensed Electrician"; })()} />
                   {errors.title && <p className="text-xs text-red-600 mt-1">{errors.title.message}</p>}
                 </div>
                 <div>

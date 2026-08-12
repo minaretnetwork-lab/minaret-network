@@ -103,10 +103,13 @@ function professionalDataFromDraft(draft: { data: Prisma.JsonValue; serviceAreaI
   const data = draft.data && typeof draft.data === "object" && !Array.isArray(draft.data)
     ? draft.data as Record<string, unknown>
     : {};
+  const primaryCategoryId = typeof data.categoryId === "string" ? data.categoryId : undefined;
+  const categoryIds = asStringArray(data.categoryIds);
+  const draftCategoryIds = categoryIds.length > 0 ? categoryIds : primaryCategoryId ? [primaryCategoryId] : [];
 
   return {
     mosqueId: asNullableString(data.mosqueId),
-    categoryId: typeof data.categoryId === "string" ? data.categoryId : undefined,
+    categoryId: primaryCategoryId,
     photoUrl: asNullableString(data.photoUrl),
     logoUrl: asNullableString(data.logoUrl),
     businessName: asNullableString(data.businessName),
@@ -126,6 +129,7 @@ function professionalDataFromDraft(draft: { data: Prisma.JsonValue; serviceAreaI
     status: "APPROVED" as const,
     approvedAt: new Date(),
     rejectionReason: null,
+    categories: { set: draftCategoryIds.map((categoryId) => ({ id: categoryId })) },
     serviceAreas: { set: draft.serviceAreaIds.map((areaId) => ({ id: areaId })) },
   };
 }

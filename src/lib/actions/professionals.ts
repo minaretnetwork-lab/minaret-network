@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { SearchFilters } from "@/types";
 import {
   distanceBetweenServiceAreas,
@@ -49,16 +49,38 @@ export async function getProfessionals(
   if (!mosque) return [];
 
   // Location filter: slug takes precedence (sidebar), else free-text from GPS/hero
-  const areaFilter = serviceAreaSlug
+  const areaFilter: Prisma.ProfessionalWhereInput = serviceAreaSlug
     ? { serviceAreas: { some: { slug: serviceAreaSlug } } }
     : locationText
-    ? { serviceAreas: { some: { name: { contains: locationText, mode: "insensitive" } } } }
+    ? { serviceAreas: { some: { name: { contains: locationText, mode: Prisma.QueryMode.insensitive } } } }
     : {};
 
-  const where: Record<string, unknown> = {
+  const andFilters: Prisma.ProfessionalWhereInput[] = [];
+  if (categorySlug) {
+    andFilters.push({
+      OR: [
+        { category: { slug: categorySlug } },
+        { categories: { some: { slug: categorySlug } } },
+      ],
+    });
+  }
+  if (query) {
+    andFilters.push({
+      OR: [
+        { category: { name: { contains: query, mode: Prisma.QueryMode.insensitive } } },
+        { categories: { some: { name: { contains: query, mode: Prisma.QueryMode.insensitive } } } },
+        { user: { firstName: { contains: query, mode: Prisma.QueryMode.insensitive } } },
+        { user: { lastName: { contains: query, mode: Prisma.QueryMode.insensitive } } },
+        { user: { displayName: { contains: query, mode: Prisma.QueryMode.insensitive } } },
+        { businessName: { contains: query, mode: Prisma.QueryMode.insensitive } },
+      ],
+    });
+  }
+
+  const where: Prisma.ProfessionalWhereInput = {
     mosqueId: mosque.id,
     status: "APPROVED",
-    ...(categorySlug && { category: { slug: categorySlug } }),
+    ...(andFilters.length > 0 && { AND: andFilters }),
     ...areaFilter,
     ...(gender && { gender }),
     ...(verifiedOnly && { badges: { some: { type: "MOSQUE_AFFILIATED" } } }),
@@ -68,15 +90,6 @@ export async function getProfessionals(
     }),
     ...(languages && languages.length > 0 && {
       languages: { hasSome: languages },
-    }),
-    ...(query && {
-      OR: [
-        { category: { name: { contains: query, mode: "insensitive" } } },
-        { user: { firstName: { contains: query, mode: "insensitive" } } },
-        { user: { lastName: { contains: query, mode: "insensitive" } } },
-        { user: { displayName: { contains: query, mode: "insensitive" } } },
-        { businessName: { contains: query, mode: "insensitive" } },
-      ],
     }),
   };
 
@@ -91,6 +104,7 @@ export async function getProfessionals(
     user: { select: { id: true, firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
     mosque: { select: { id: true, name: true, slug: true } },
     category: { select: { id: true, name: true, slug: true, icon: true } },
+    categories: { select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
     serviceAreas: { select: { id: true, name: true, slug: true } },
     badges: { select: { id: true, type: true, issuedAt: true } },
     recommendations: { where: { status: "APPROVED" }, select: { id: true, status: true, rating: true } },
@@ -162,6 +176,7 @@ export async function getProfessionalById(id: string) {
       user: { select: { id: true, firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
       mosque: { select: { id: true, name: true, slug: true } },
       category: true,
+      categories: { select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
       serviceAreas: true,
       badges: true,
       recommendations: {
@@ -187,6 +202,7 @@ export async function getFeaturedProfessionals(mosqueSlug: string, limit = 6) {
     include: {
       user: { select: { id: true, firstName: true, lastName: true, displayName: true, avatarUrl: true } },
       category: { select: { id: true, name: true, slug: true, icon: true } },
+      categories: { select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
       serviceAreas: { select: { id: true, name: true, slug: true } },
       mosque: { select: { id: true, name: true, slug: true } },
       badges: { select: { id: true, type: true } },

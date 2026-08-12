@@ -88,6 +88,7 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   professionals     Professional[]
+  categorizedProfessionals Professional[] @relation("ProfessionalCategories")
   requests          ServiceRequest[]
   sponsoredListings SponsoredListing[]
   waitlistEntries   SponsoredWaitlist[]
@@ -125,6 +126,7 @@ model Professional {
   mosque            Mosque?            @relation(fields: [mosqueId], references: [id])
   categoryId        String
   category          Category           @relation(fields: [categoryId], references: [id])
+  categories        Category[]         @relation("ProfessionalCategories")
   businessName      String?
   title             String?
   bio               String?

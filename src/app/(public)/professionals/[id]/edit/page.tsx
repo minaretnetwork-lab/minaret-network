@@ -43,6 +43,7 @@ export default async function EditProfessionalPage({
         availability: true,
         photoUrl: true,
         logoUrl: true,
+        categories: { select: { id: true } },
         serviceAreas: { select: { id: true } },
       },
     }),
