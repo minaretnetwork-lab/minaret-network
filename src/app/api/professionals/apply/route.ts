@@ -117,9 +117,26 @@ export async function POST(request: Request) {
     if (professionalId) {
       const existing = await prisma.professional.findFirst({
         where: { id: professionalId, userId: dbUser.id },
-        select: { id: true },
+        select: {
+          id: true,
+          isFeatured: true,
+          featuredListings: {
+            where: { status: "ACTIVE" },
+            select: { id: true },
+            take: 1,
+          },
+        },
       });
       if (!existing) return NextResponse.json({ ok: false, error: "Listing not found." }, { status: 404 });
+      if (existing.isFeatured || existing.featuredListings.length > 0) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "Featured listings are locked while featured. Please contact admin if you need changes.",
+          },
+          { status: 403 },
+        );
+      }
 
       await prisma.professional.update({
         where: { id: professionalId },

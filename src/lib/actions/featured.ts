@@ -23,6 +23,7 @@ export async function getFeaturedBusinessesForHomepage(city?: string) {
   return prisma.featuredListing.findMany({
     where: {
       status: "ACTIVE",
+      professional: { status: "APPROVED" },
       ...(city ? { city } : {}),
     },
     take: 12,
