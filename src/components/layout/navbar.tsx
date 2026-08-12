@@ -111,33 +111,31 @@ export function Navbar({ user }: NavbarProps) {
           </div>
         </div>
       </header>
-      {!user && (
-        <nav
-          aria-label="Quick actions"
-          className="sticky top-16 z-[90] border-b border-emerald-100 bg-white/95 px-3 py-2 shadow-sm backdrop-blur lg:hidden"
-        >
-          <div className="mx-auto grid max-w-xl grid-cols-3 gap-2">
-            <Link
-              href="/professionals"
-              className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-center text-xs font-semibold text-emerald-800"
-            >
-              Find
-            </Link>
-            <Link
-              href="/auth/login"
-              className="rounded-full border border-gray-200 bg-white px-2.5 py-2 text-center text-xs font-semibold text-gray-700"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/professionals/register"
-              className="rounded-full bg-emerald-600 px-2.5 py-2 text-center text-xs font-semibold text-white shadow-sm"
-            >
-              Join
-            </Link>
-          </div>
-        </nav>
-      )}
+      <nav
+        aria-label="Quick actions"
+        className="sticky top-16 z-[90] border-b border-emerald-100 bg-white/95 px-3 py-2 shadow-sm backdrop-blur lg:hidden"
+      >
+        <div className="mx-auto grid max-w-xl grid-cols-3 gap-2">
+          <Link
+            href="/professionals"
+            className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-center text-xs font-semibold text-emerald-800"
+          >
+            Find
+          </Link>
+          <Link
+            href={user ? "/dashboard" : "/auth/login"}
+            className="rounded-full border border-gray-200 bg-white px-2.5 py-2 text-center text-xs font-semibold text-gray-700"
+          >
+            {user ? "Dashboard" : "Sign in"}
+          </Link>
+          <Link
+            href={isProfessional ? "/dashboard/professional" : "/professionals/register"}
+            className="rounded-full bg-emerald-600 px-2.5 py-2 text-center text-xs font-semibold text-white shadow-sm"
+          >
+            {isProfessional ? "Listings" : "Join"}
+          </Link>
+        </div>
+      </nav>
     </>
   );
 }
