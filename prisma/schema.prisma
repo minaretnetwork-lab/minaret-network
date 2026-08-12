@@ -373,6 +373,7 @@ model FeaturedListing {
   websiteClicks  Int             @default(0)
   phoneClicks    Int             @default(0)
   whatsappClicks Int             @default(0)
+  displayOrder   Int             @default(0)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 

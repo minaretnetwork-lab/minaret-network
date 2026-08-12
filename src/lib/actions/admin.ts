@@ -261,6 +261,13 @@ export async function makeProfessionalFeatured(professionalId: string) {
     throw new Error(`Featured slots are full for ${city}.`);
   }
 
+  const lastFeatured = await prisma.featuredListing.findFirst({
+    where: { status: "ACTIVE", displayOrder: { gt: 0 } },
+    select: { displayOrder: true },
+    orderBy: { displayOrder: "desc" },
+  });
+  const displayOrder = (lastFeatured?.displayOrder ?? 0) + 1;
+
   await prisma.$transaction([
     prisma.featuredListing.create({
       data: {
@@ -270,6 +277,7 @@ export async function makeProfessionalFeatured(professionalId: string) {
         priceMonthly: Number(tier?.priceMonthly ?? 99),
         status: "ACTIVE",
         startDate: new Date(),
+        displayOrder,
         adminNote: "Activated directly by admin.",
       },
     }),

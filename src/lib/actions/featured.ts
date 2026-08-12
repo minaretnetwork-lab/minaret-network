@@ -27,7 +27,7 @@ export async function getFeaturedBusinessesForHomepage(city?: string) {
       ...(city ? { city } : {}),
     },
     take: 12,
-    orderBy: { startDate: "desc" },
+    orderBy: [{ displayOrder: "asc" }, { startDate: "asc" }, { createdAt: "asc" }],
     include: {
       professional: {
         include: {
@@ -214,7 +214,7 @@ export async function getFeaturedListingsForAdmin() {
     prisma.featuredListing.findMany({
       where: { status: "ACTIVE" },
       include: featuredInclude,
-      orderBy: { startDate: "desc" },
+      orderBy: [{ displayOrder: "asc" }, { startDate: "asc" }, { createdAt: "asc" }],
     }),
     prisma.featuredWaitlist.findMany({
       include: {
@@ -253,9 +253,15 @@ export async function approveFeaturedListing(listingId: string) {
   });
   if (activeCount >= maxSlots) throw new Error(`Slots full for ${listing.city} — max ${maxSlots}`);
 
+  const nextDisplayOrder = await getNextFeaturedDisplayOrder();
   await prisma.featuredListing.update({
     where: { id: listingId },
-    data: { status: "ACTIVE", startDate: new Date(), adminNote: null },
+    data: {
+      status: "ACTIVE",
+      startDate: new Date(),
+      adminNote: null,
+      displayOrder: listing.displayOrder > 0 ? listing.displayOrder : nextDisplayOrder,
+    },
   });
 
   await syncIsFeatured(listing.professionalId);
@@ -365,4 +371,13 @@ async function notifyFeaturedWaitlist(city: string) {
       data: { notifiedAt: new Date() },
     });
   }
+}
+
+async function getNextFeaturedDisplayOrder() {
+  const last = await prisma.featuredListing.findFirst({
+    where: { status: "ACTIVE", displayOrder: { gt: 0 } },
+    select: { displayOrder: true },
+    orderBy: { displayOrder: "desc" },
+  });
+  return (last?.displayOrder ?? 0) + 1;
 }

@@ -14,13 +14,7 @@ export async function FeaturedSection() {
     // unreachable; database-backed sections will return once it reconnects.
     return null;
   }
-  const listings = JSON.parse(JSON.stringify(rawListings))
-    .sort((a: FeaturedListingForSort, b: FeaturedListingForSort) => {
-      const priorityDelta = getFeaturedPriority(a) - getFeaturedPriority(b);
-      if (priorityDelta !== 0) return priorityDelta;
-      return getFeaturedDate(b) - getFeaturedDate(a);
-    })
-    .slice(0, 6);
+  const listings = JSON.parse(JSON.stringify(rawListings)).slice(0, 6);
 
   if (listings.length === 0) return null;
 
@@ -76,39 +70,4 @@ export async function FeaturedSection() {
       </div>
     </section>
   );
-}
-
-type FeaturedListingForSort = {
-  startDate?: string | Date | null;
-  createdAt?: string | Date | null;
-  professional?: {
-    businessName?: string | null;
-    title?: string | null;
-    user?: {
-      displayName?: string | null;
-      firstName?: string | null;
-      lastName?: string | null;
-    };
-  };
-};
-
-function getFeaturedPriority(listing: FeaturedListingForSort) {
-  const professional = listing.professional;
-  const searchableName = [
-    professional?.businessName,
-    professional?.title,
-    professional?.user?.displayName,
-    professional?.user?.firstName,
-    professional?.user?.lastName,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return searchableName.includes("canset") ? 0 : 1;
-}
-
-function getFeaturedDate(listing: FeaturedListingForSort) {
-  const value = listing.startDate ?? listing.createdAt;
-  return value ? new Date(value).getTime() : 0;
 }
