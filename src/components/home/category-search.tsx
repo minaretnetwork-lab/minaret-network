@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, X, ArrowRight } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -14,17 +14,21 @@ interface Category {
 
 export function CategorySearch({ categories }: { categories: Category[] }) {
   const [query, setQuery] = useState("");
+  const sampledCategories = useMemo(() => {
+    const shuffled = [...categories].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 4);
+  }, [categories]);
 
   const filtered = query.trim()
     ? categories.filter((c) =>
         c.name.toLowerCase().includes(query.toLowerCase())
       )
-    : categories;
+    : sampledCategories;
 
   return (
     <div>
       {/* Search input */}
-      <div className="relative mb-5">
+      <div className="relative mb-4">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
         <input
           type="text"
@@ -64,7 +68,7 @@ export function CategorySearch({ categories }: { categories: Category[] }) {
           {!query && (
             <Link
               href="/categories"
-              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-dashed border-gray-200 dark:border-gray-700 text-sm text-gray-400 hover:text-emerald-600 hover:border-emerald-300 dark:hover:text-emerald-400 transition-all"
+              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-dashed border-emerald-200 bg-emerald-50/70 text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:text-emerald-200 transition-all"
             >
               All categories <ArrowRight className="h-3.5 w-3.5" />
             </Link>
