@@ -80,7 +80,30 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </nav>
         </aside>
 
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="flex-1 min-w-0">
+          <nav className="mb-6 grid grid-cols-2 gap-2 md:hidden" aria-label="Admin sections">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+              >
+                <span className="text-emerald-700">{link.icon}</span>
+                <span className="min-w-0 truncate">{link.label}</span>
+              </Link>
+            ))}
+            {isSuperAdmin && (
+              <Link
+                href="/admin/admins"
+                className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm font-medium text-amber-800 shadow-sm transition hover:bg-amber-100"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span className="min-w-0 truncate">Manage Admins</span>
+              </Link>
+            )}
+          </nav>
+          {children}
+        </main>
       </div>
     </div>
   );
