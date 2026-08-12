@@ -178,12 +178,18 @@ additional_redirect_urls = [
   "https://am5.tail033f8c.ts.net:8443/auth/callback",
   "https://am5.tail033f8c.ts.net:8443/auth/callback?next=/auth/update-password",
   "https://am5.tail033f8c.ts.net:8443/auth/callback?next=/dashboard",
+  "https://am5.tail033f8c.ts.net:8443/auth/callback?next=/professionals/register",
+  "https://am5.tail033f8c.ts.net:8443/auth/callback?next=%2Fprofessionals%2Fregister",
   "https://minaretnetwork.ca/auth/callback",
   "https://minaretnetwork.ca/auth/callback?next=/auth/update-password",
   "https://minaretnetwork.ca/auth/callback?next=/dashboard",
+  "https://minaretnetwork.ca/auth/callback?next=/professionals/register",
+  "https://minaretnetwork.ca/auth/callback?next=%2Fprofessionals%2Fregister",
   "https://www.minaretnetwork.ca/auth/callback",
   "https://www.minaretnetwork.ca/auth/callback?next=/auth/update-password",
   "https://www.minaretnetwork.ca/auth/callback?next=/dashboard",
+  "https://www.minaretnetwork.ca/auth/callback?next=/professionals/register",
+  "https://www.minaretnetwork.ca/auth/callback?next=%2Fprofessionals%2Fregister",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

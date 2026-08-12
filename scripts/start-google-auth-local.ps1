@@ -39,12 +39,18 @@ $allowList = @(
   "$publicOrigin/auth/callback",
   "$publicOrigin/auth/callback?next=/auth/update-password",
   "$publicOrigin/auth/callback?next=/dashboard",
+  "$publicOrigin/auth/callback?next=/professionals/register",
+  "$publicOrigin/auth/callback?next=%2Fprofessionals%2Fregister",
   "https://www.minaretnetwork.ca/auth/callback",
   "https://www.minaretnetwork.ca/auth/callback?next=/auth/update-password",
   "https://www.minaretnetwork.ca/auth/callback?next=/dashboard",
+  "https://www.minaretnetwork.ca/auth/callback?next=/professionals/register",
+  "https://www.minaretnetwork.ca/auth/callback?next=%2Fprofessionals%2Fregister",
   "$tailscaleOrigin/auth/callback",
   "$tailscaleOrigin/auth/callback?next=/auth/update-password",
-  "$tailscaleOrigin/auth/callback?next=/dashboard"
+  "$tailscaleOrigin/auth/callback?next=/dashboard",
+  "$tailscaleOrigin/auth/callback?next=/professionals/register",
+  "$tailscaleOrigin/auth/callback?next=%2Fprofessionals%2Fregister"
 ) -join ","
 
 $tempEnv = Join-Path ([System.IO.Path]::GetTempPath()) ("minaret-auth-" + [guid]::NewGuid().ToString("N") + ".env")
