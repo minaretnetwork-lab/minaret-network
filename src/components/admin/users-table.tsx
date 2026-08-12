@@ -81,6 +81,15 @@ function normalize(value: string | null | undefined) {
   return value?.toLowerCase().trim() ?? "";
 }
 
+function hasApprovedProfessionalListing(user: AdminUserRow) {
+  return user.professionals.some((professional) => professional.status === "APPROVED");
+}
+
+function effectiveRole(user: AdminUserRow) {
+  if (user.role === "MEMBER" && hasApprovedProfessionalListing(user)) return "PROFESSIONAL";
+  return user.role;
+}
+
 export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("ALL");
@@ -89,7 +98,8 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
     const needle = normalize(query);
 
     return users.filter((user) => {
-      const matchesRole = role === "ALL" || user.role === role;
+      const userEffectiveRole = effectiveRole(user);
+      const matchesRole = role === "ALL" || userEffectiveRole === role;
       if (!matchesRole) return false;
       if (!needle) return true;
 
@@ -109,6 +119,7 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
         user.whatsapp,
         user.preferredContact,
         user.role,
+        userEffectiveRole,
         listingText,
         user.supabaseId,
       ].some((value) => normalize(value).includes(needle));
@@ -116,7 +127,7 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
   }, [query, role, users]);
 
   const activeCount = filteredUsers.filter((user) => user.isActive).length;
-  const professionalCount = filteredUsers.filter((user) => user.role === "PROFESSIONAL").length;
+  const professionalCount = filteredUsers.filter((user) => effectiveRole(user) === "PROFESSIONAL").length;
   const adminCount = filteredUsers.filter((user) => user.role === "ADMIN" || user.role === "SUPER_ADMIN").length;
 
   return (
@@ -229,6 +240,7 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
                   const name = displayName(user);
                   const primaryListing = user.professionals[0];
                   const totalProfileViews = user.professionals.reduce((sum, professional) => sum + professional.profileViews, 0);
+                  const userEffectiveRole = effectiveRole(user);
 
                   return (
                     <tr key={user.id} className="align-top transition hover:bg-emerald-50/40 dark:hover:bg-emerald-950/10">
@@ -248,8 +260,8 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
                       </td>
                       <td className="px-4 py-4">
                         <div className="space-y-1.5">
-                          <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[user.role] ?? ROLE_BADGE.MEMBER}`}>
-                            {user.role.replace("_", " ")}
+                          <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[userEffectiveRole] ?? ROLE_BADGE.MEMBER}`}>
+                            {userEffectiveRole.replace("_", " ")}
                           </span>
                           <div className="flex flex-wrap gap-1">
                             <Badge variant="outline" className={user.isActive ? "text-emerald-700" : "text-gray-500"}>
@@ -258,7 +270,7 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
                             {user.emailVerified && (
                               <Badge variant="outline" className="gap-1 text-blue-700">
                                 <ShieldCheck className="h-3 w-3" />
-                                Email verified
+                                Provider verified
                               </Badge>
                             )}
                           </div>

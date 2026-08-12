@@ -106,7 +106,7 @@ export function SearchBar({ defaultValue = "" }: { defaultValue?: string }) {
           onChange={(e) => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => suggestions.length > 0 && setOpen(true)}
-          placeholder="Search by profession, name, or keyword…"
+          placeholder="Search"
           autoComplete="off"
           className="w-full h-11 pl-9 pr-8 rounded-lg text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />

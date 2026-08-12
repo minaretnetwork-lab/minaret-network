@@ -1,5 +1,5 @@
 export type UserRole = "MEMBER" | "PROFESSIONAL" | "ADMIN" | "SUPER_ADMIN";
-export type ProfessionalStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+export type ProfessionalStatus = "PENDING" | "WITHDRAWN" | "APPROVED" | "REJECTED" | "SUSPENDED";
 export type BadgeType = "MOSQUE_AFFILIATED" | "HIGHLY_RECOMMENDED";
 export type RecommendationStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type RequestStatus = "OPEN" | "IN_PROGRESS" | "CLOSED" | "CANCELLED";

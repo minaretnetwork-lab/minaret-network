@@ -173,6 +173,7 @@ export async function POST(request: Request) {
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/professional");
+    revalidatePath("/admin/professionals");
     revalidatePath("/admin/mosques");
     console.info("POST /api/professionals/apply success", {
       userId: dbUser.id,

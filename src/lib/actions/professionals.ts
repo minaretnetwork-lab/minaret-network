@@ -204,6 +204,80 @@ export async function incrementProfileView(professionalId: string) {
   });
 }
 
+export async function withdrawProfessionalApplication(professionalId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("You must be signed in.");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: user.id },
+    select: { id: true },
+  });
+  if (!dbUser) throw new Error("Your account was not found. Please sign out and back in.");
+
+  const professional = await prisma.professional.findFirst({
+    where: { id: professionalId, userId: dbUser.id },
+    select: { id: true, status: true },
+  });
+  if (!professional) throw new Error("Listing not found.");
+  if (professional.status !== "PENDING") {
+    throw new Error("Only applications that are pending review can be called back for edits.");
+  }
+
+  await prisma.professional.update({
+    where: { id: professionalId },
+    data: { status: "WITHDRAWN", rejectionReason: null },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/professional");
+  revalidatePath("/admin/professionals");
+}
+
+export async function deleteProfessionalListing(
+  professionalId: string,
+  confirmText = ""
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { ok: false, error: "You must be signed in to delete a listing." };
+
+    const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+    if (!dbUser) return { ok: false, error: "Your account was not found. Please sign out and back in." };
+
+    const professional = await prisma.professional.findFirst({
+      where: { id: professionalId, userId: dbUser.id },
+      select: { id: true, status: true },
+    });
+
+    if (!professional) return { ok: false, error: "Listing not found." };
+    if (professional.status === "APPROVED" && confirmText !== "DELETE") {
+      return { ok: false, error: "Type DELETE to confirm removing a live listing." };
+    }
+
+    await prisma.$transaction([
+      prisma.serviceRequest.updateMany({
+        where: { assignedToId: professionalId },
+        data: { assignedToId: null },
+      }),
+      prisma.professional.delete({ where: { id: professionalId } }),
+    ]);
+
+    revalidatePath("/");
+    revalidatePath("/professionals");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/professional");
+    revalidatePath("/admin/professionals");
+
+    return { ok: true };
+  } catch (err) {
+    console.error("deleteProfessionalListing:", err);
+    const message = err instanceof Error ? err.message : "Could not delete this listing.";
+    return { ok: false, error: message };
+  }
+}
+
 export async function submitProfessionalApplication(
   formData: FormData
 ): Promise<{ ok: true } | { ok: false; error: string }> {

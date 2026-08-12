@@ -91,6 +91,7 @@ interface Props {
   serviceAreas: ServiceArea[];
   initialData?: ProfessionalFormInitialData | null;
   mode?: "create" | "edit";
+  onSubmitted?: () => void;
 }
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -109,6 +110,33 @@ const PRESETS = [
 ];
 
 type DaySchedule = { from: string; to: string };
+type AddressSuggestion = {
+  label: string;
+  address: string;
+  city: string | null;
+  province: string | null;
+};
+
+function timeToMinutes(value: string) {
+  const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const period = match[3].toUpperCase();
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+  const normalizedHour = (hour % 12) + (period === "PM" ? 12 : 0);
+  return normalizedHour * 60 + minute;
+}
+
+function getInvalidAvailabilityDays(schedules: Record<string, DaySchedule>) {
+  return DAYS.filter((day) => {
+    const schedule = schedules[day];
+    if (!schedule) return false;
+    const start = timeToMinutes(schedule.from);
+    const end = timeToMinutes(schedule.to);
+    return start === null || end === null || end <= start;
+  });
+}
 
 async function prepareImageForUpload(file: File, label: string) {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
@@ -185,7 +213,7 @@ const STEP_FIELDS: (keyof FormData)[][] = [
   [],
 ];
 
-export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas, initialData = null, mode = "create" }: Props) {
+export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas, initialData = null, mode = "create", onSubmitted }: Props) {
   const isEdit = mode === "edit" && initialData;
   const [step, setStep] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
@@ -208,10 +236,16 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const [catOpen, setCatOpen] = useState(false);
   const [areaSearch, setAreaSearch] = useState("");
   const catRef = useRef<HTMLDivElement>(null);
+  const addressRef = useRef<HTMLDivElement>(null);
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [addressLookupOpen, setAddressLookupOpen] = useState(false);
+  const [addressLookupLoading, setAddressLookupLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState("");
   const whatsappInitiallySameAsPhone = Boolean(initialData?.phone && initialData.phone === initialData?.whatsapp);
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (catRef.current && !catRef.current.contains(e.target as Node)) setCatOpen(false);
+      if (addressRef.current && !addressRef.current.contains(e.target as Node)) setAddressLookupOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -248,14 +282,46 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const selectedMosqueId = watch("mosqueId");
   const phoneValue = watch("phone") ?? "";
   const whatsappSameAsPhone = watch("whatsappSameAsPhone") ?? false;
+  const businessAddressValue = watch("businessAddress") ?? "";
   const bioLength = watch("bio")?.length ?? 0;
   const bioCharactersRemaining = Math.max(BIO_MIN_LENGTH - bioLength, 0);
   const normalizedAreaSearch = areaSearch.trim().toLowerCase();
   const visibleServiceAreas = normalizedAreaSearch
     ? serviceAreas.filter((area) => area.name.toLowerCase().includes(normalizedAreaSearch) || selectedAreas.includes(area.id))
     : serviceAreas;
+  const invalidAvailabilityDays = getInvalidAvailabilityDays(avSchedules);
+
+  useEffect(() => {
+    const query = businessAddressValue.trim();
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setAddressLookupLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = window.setTimeout(async () => {
+      setAddressLookupLoading(true);
+      try {
+        const response = await fetch(`/api/geocode/search?q=${encodeURIComponent(query)}`);
+        if (!response.ok) throw new Error("Address lookup failed");
+        const data = await response.json() as { suggestions?: AddressSuggestion[] };
+        if (!cancelled) setAddressSuggestions(data.suggestions ?? []);
+      } catch {
+        if (!cancelled) setAddressSuggestions([]);
+      } finally {
+        if (!cancelled) setAddressLookupLoading(false);
+      }
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [businessAddressValue]);
 
   function syncAvailability(schedules: Record<string, DaySchedule>, emergency: boolean) {
+    if (getInvalidAvailabilityDays(schedules).length === 0) setAvailabilityError("");
     setValue("availability", buildAvailabilityString(schedules, emergency));
   }
   function toggleDay(day: string) {
@@ -288,6 +354,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     setValue("serviceAreaIds", selectedAreas.includes(id)
       ? selectedAreas.filter((a) => a !== id)
       : [...selectedAreas, id]);
+  }
+  function selectAllServiceAreas() {
+    setValue("serviceAreaIds", serviceAreas.map((area) => area.id), { shouldDirty: true, shouldValidate: true });
+  }
+  function clearServiceAreas() {
+    setValue("serviceAreaIds", [], { shouldDirty: true, shouldValidate: true });
   }
 
   function handlePhoneValueChange(value: string) {
@@ -334,6 +406,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     if (transitioning || goNextPending.current || step >= STEPS.length - 1) return;
     goNextPending.current = true;
     try {
+      if (step === 2 && invalidAvailabilityDays.length > 0) {
+        setAvailabilityError(`End time must be after start time for ${invalidAvailabilityDays.join(", ")}.`);
+        return;
+      }
       const fields = STEP_FIELDS[step];
       const valid = fields.length === 0 || await trigger(fields);
       if (valid) lockAndScroll(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)));
@@ -348,6 +424,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   async function onSubmit(data: FormData) {
     setSubmitStatus("idle");
+    const invalidDays = getInvalidAvailabilityDays(avSchedules);
+    if (invalidDays.length > 0) {
+      setAvailabilityError(`End time must be after start time for ${invalidDays.join(", ")}.`);
+      setStep(2);
+      return;
+    }
     try {
       const fd = new window.FormData();
       Object.entries(data).forEach(([key, value]) => {
@@ -367,6 +449,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         setSubmitStatus("error");
       } else {
         setSubmitStatus("success");
+        onSubmitted?.();
       }
     } catch (err) {
       const message = err instanceof TypeError && err.message.toLowerCase().includes("fetch")
@@ -399,6 +482,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   }
 
   const selectClass = "border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full";
+  const businessAddressRegistration = register("businessAddress");
 
   return (
     <div className="space-y-6">
@@ -607,9 +691,30 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   type="search"
                   value={areaSearch}
                   onChange={(event) => setAreaSearch(event.target.value)}
-                  className="mb-3 max-w-sm"
+                  className="mb-2 max-w-sm"
                   placeholder="Type a city or area to filter..."
                 />
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllServiceAreas}
+                    className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  >
+                    Select all GTA areas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearServiceAreas}
+                    className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    Clear all
+                  </button>
+                  {selectedAreas.length > 0 && (
+                    <span className="text-xs text-gray-400">
+                      {selectedAreas.length} of {serviceAreas.length} selected
+                    </span>
+                  )}
+                </div>
                 {errors.serviceAreaIds && <p className="text-xs text-red-600 mb-1">{errors.serviceAreaIds.message}</p>}
                 <div className="flex flex-wrap gap-2">
                   {visibleServiceAreas.map((area) => (
@@ -633,12 +738,56 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <p className="mt-0.5 text-xs text-gray-400">
                   Add this if clients can visit your office, clinic, shop, or storefront. Leave it blank if you work from home or travel to clients.
                 </p>
-                <Input
-                  id="businessAddress"
-                  {...register("businessAddress")}
-                  className="mt-2"
-                  placeholder="e.g. 123 Main St, Newmarket, ON"
-                />
+                <div ref={addressRef} className="relative mt-2">
+                  <Input
+                    id="businessAddress"
+                    name={businessAddressRegistration.name}
+                    ref={businessAddressRegistration.ref}
+                    onBlur={businessAddressRegistration.onBlur}
+                    value={businessAddressValue}
+                    onChange={(event) => {
+                      setValue("businessAddress", event.target.value, { shouldDirty: true, shouldValidate: false });
+                      setAddressLookupOpen(true);
+                    }}
+                    onFocus={() => setAddressLookupOpen(true)}
+                    autoComplete="street-address"
+                    placeholder="Start typing an address, e.g. 123 Main St, Newmarket"
+                  />
+                  {addressLookupOpen && businessAddressValue.trim().length >= 3 && (
+                    <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-auto rounded-xl border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                      {addressLookupLoading ? (
+                        <p className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Looking up addresses…</p>
+                      ) : addressSuggestions.length > 0 ? (
+                        addressSuggestions.map((suggestion) => (
+                          <button
+                            key={`${suggestion.address}-${suggestion.label}`}
+                            type="button"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => {
+                              setValue("businessAddress", suggestion.address, { shouldDirty: true, shouldValidate: true });
+                              setAddressLookupOpen(false);
+                            }}
+                            className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-emerald-50 focus:bg-emerald-50 focus:outline-none dark:hover:bg-emerald-900/20"
+                          >
+                            <span className="block font-medium text-gray-900 dark:text-white">{suggestion.address}</span>
+                            {(suggestion.city || suggestion.province) && (
+                              <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                {[suggestion.city, suggestion.province].filter(Boolean).join(", ")}
+                              </span>
+                            )}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                          No matching address found. You can still type it manually.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Suggestions use free OpenStreetMap data. You can always edit the address manually.
+                </p>
                 <label className="mt-3 flex cursor-pointer select-none items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <input
                     type="checkbox"
@@ -688,22 +837,36 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   {DAYS.filter((d) => d in avSchedules).length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Hours per day</p>
-                      {DAYS.filter((d) => d in avSchedules).map((day) => (
-                        <div key={day} className="flex items-center gap-2">
-                          <span className="w-9 text-xs font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0">{day}</span>
-                          <select value={avSchedules[day].from}
-                            onChange={(e) => updateDayHours(day, "from", e.target.value)}
-                            className={`${selectClass} flex-1 text-xs py-1.5`}>
-                            {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                          <span className="text-xs text-gray-400 flex-shrink-0">to</span>
-                          <select value={avSchedules[day].to}
-                            onChange={(e) => updateDayHours(day, "to", e.target.value)}
-                            className={`${selectClass} flex-1 text-xs py-1.5`}>
-                            {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </div>
-                      ))}
+                      {DAYS.filter((d) => d in avSchedules).map((day) => {
+                        const invalid = invalidAvailabilityDays.includes(day);
+                        const invalidClass = invalid ? "border-red-300 focus:ring-red-500 dark:border-red-700" : "";
+                        return (
+                          <div key={day} className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-9 flex-shrink-0 text-xs font-semibold ${invalid ? "text-red-600" : "text-gray-600 dark:text-gray-400"}`}>{day}</span>
+                              <select value={avSchedules[day].from}
+                                onChange={(e) => updateDayHours(day, "from", e.target.value)}
+                                className={`${selectClass} ${invalidClass} flex-1 text-xs py-1.5`}>
+                                {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                              </select>
+                              <span className="text-xs text-gray-400 flex-shrink-0">to</span>
+                              <select value={avSchedules[day].to}
+                                onChange={(e) => updateDayHours(day, "to", e.target.value)}
+                                className={`${selectClass} ${invalidClass} flex-1 text-xs py-1.5`}>
+                                {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                              </select>
+                            </div>
+                            {invalid && (
+                              <p className="pl-11 text-xs text-red-600">End time must be after start time.</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {availabilityError && (
+                        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                          {availabilityError}
+                        </p>
+                      )}
                     </div>
                   )}
                   <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -933,9 +1096,6 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
             <p className="text-xs text-gray-400">
               Your application will be reviewed by our admin team before going live.
             </p>
-            <Link href="/dashboard" className="mt-2 inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline">
-              I&apos;ll do this later
-            </Link>
           </div>
         )}
       </form>

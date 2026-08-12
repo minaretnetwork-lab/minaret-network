@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   approveProfessional,
@@ -37,6 +38,7 @@ const STATUS_BADGE: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700 border-amber-200",
   APPROVED: "bg-green-100 text-green-700 border-green-200",
   REJECTED: "bg-red-100 text-red-700 border-red-200",
+  WITHDRAWN: "bg-blue-100 text-blue-700 border-blue-200",
   SUSPENDED: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
@@ -45,6 +47,7 @@ interface Props {
 }
 
 export function AdminProfessionalTable({ professionals }: Props) {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
@@ -133,7 +136,19 @@ export function AdminProfessionalTable({ professionals }: Props) {
         const channelLink = p.mosque?.communityChannelLink;
 
         return (
-          <div key={p.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
+          <div
+            key={p.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push(`/admin/professionals/${p.id}`)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                router.push(`/admin/professionals/${p.id}`);
+              }
+            }}
+            className="cursor-pointer bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 transition hover:border-emerald-200 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -159,6 +174,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
                           href={channelLink}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={(event) => event.stopPropagation()}
                           className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
                         >
                           <ExternalLink className="h-3 w-3" />
@@ -176,7 +192,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
                 </div>
 
                 {/* Badges */}
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2" onClick={(event) => event.stopPropagation()}>
                   <button
                     onClick={() => handleToggleBadge(p.id, "MOSQUE_AFFILIATED", hasMosqueAffiliated)}
                     disabled={!!loading || !p.mosque}
@@ -219,7 +235,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-wrap gap-2 flex-shrink-0">
+              <div className="flex flex-wrap gap-2 flex-shrink-0" onClick={(event) => event.stopPropagation()}>
                 {p.status === "PENDING" && (
                   <>
                     <Button
@@ -299,7 +315,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
 
             {/* Rejection form */}
             {rejectId === p.id && (
-              <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+              <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4" onClick={(event) => event.stopPropagation()}>
                 <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 block">
                   Reason for rejection *
                 </label>

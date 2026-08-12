@@ -12,7 +12,7 @@ export async function signIn(email: string, password: string) {
   redirect("/dashboard");
 }
 
-export async function signUp(email: string, password: string, firstName: string, lastName: string) {
+export async function signUp(email: string, password: string, firstName: string, lastName: string, redirectTo = "/dashboard") {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -28,8 +28,16 @@ export async function signUp(email: string, password: string, firstName: string,
   const mosqueSlug = process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
   const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { supabaseId: data.user.id },
+    update: {
+      email,
+      firstName,
+      lastName,
+      displayName: `${firstName} ${lastName}`,
+      mosqueId: mosque?.id,
+    },
+    create: {
       supabaseId: data.user.id,
       email,
       firstName,
@@ -37,10 +45,12 @@ export async function signUp(email: string, password: string, firstName: string,
       displayName: `${firstName} ${lastName}`,
       mosqueId: mosque?.id,
       role: "MEMBER",
+      emailVerified: false,
     },
   });
 
-  redirect("/auth/verify-email");
+  const safeRedirectTo = redirectTo.startsWith("/") ? redirectTo : "/dashboard";
+  redirect(safeRedirectTo);
 }
 
 export async function signOut() {

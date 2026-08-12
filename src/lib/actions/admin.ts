@@ -1,7 +1,25 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+
+const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>()({
+  user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true, whatsapp: true, preferredContact: true } },
+  mosque: { select: { name: true, city: true, address: true, website: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
+  category: { select: { id: true, name: true, slug: true, icon: true } },
+  serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
+  badges: true,
+  recommendations: {
+    where: { status: "APPROVED" },
+    include: { user: { select: { firstName: true, lastName: true, displayName: true, email: true } } },
+    orderBy: { approvedAt: "desc" },
+  },
+  credentials: { orderBy: { uploadedAt: "desc" } },
+  galleryImages: { orderBy: { sortOrder: "asc" } },
+});
+
+export type ProfessionalForAdmin = Prisma.ProfessionalGetPayload<{ include: typeof professionalForAdminInclude }>;
 
 export async function approveProfessional(id: string) {
   await prisma.professional.update({
@@ -25,6 +43,13 @@ export async function suspendProfessional(id: string) {
     data: { status: "SUSPENDED" },
   });
   revalidatePath("/admin/professionals");
+}
+
+export async function getProfessionalForAdmin(id: string): Promise<ProfessionalForAdmin | null> {
+  return prisma.professional.findUnique({
+    where: { id },
+    include: professionalForAdminInclude,
+  });
 }
 
 async function getSponsoredPricingTier(categoryId: string, serviceAreaId: string) {
@@ -200,7 +225,7 @@ export async function getAdminStats(mosqueSlug: string) {
     openRequests,
     pendingRecommendations,
   ] = await Promise.all([
-    prisma.professional.count({ where: { mosqueId: mosque.id } }),
+    prisma.professional.count({ where: { mosqueId: mosque.id, status: { not: "WITHDRAWN" } } }),
     prisma.professional.count({ where: { mosqueId: mosque.id, status: "PENDING" } }),
     prisma.professional.count({ where: { mosqueId: mosque.id, status: "APPROVED" } }),
     prisma.user.count({ where: { mosqueId: mosque.id, role: "MEMBER" } }),
@@ -364,7 +389,7 @@ export async function getAdminAnalytics() {
 
 export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: string) {
   const professionals = await prisma.professional.findMany({
-    where: { ...(status && { status: status as never }) },
+    where: status ? { status: status as never } : { status: { not: "WITHDRAWN" } },
     include: {
       user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true } },
       mosque: { select: { name: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },

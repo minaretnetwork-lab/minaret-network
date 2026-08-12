@@ -40,7 +40,7 @@ function SignUpForm() {
   async function onSubmit(data: FormData) {
     try {
       setError("");
-      await signUp(data.email, data.password, data.firstName, data.lastName);
+      await signUp(data.email, data.password, data.firstName, data.lastName, redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign up failed");
     }

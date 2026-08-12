@@ -5,9 +5,11 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
+import { DeleteProfessionalListingButton } from "@/components/dashboard/delete-professional-listing-button";
 import { formatDate } from "@/lib/utils";
-import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User, Plus } from "lucide-react";
+import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User, Plus, Megaphone } from "lucide-react";
 import type { BadgeType } from "@/types";
+import { withdrawProfessionalApplication } from "@/lib/actions/professionals";
 
 export const metadata = { title: "My Professional Listings" };
 
@@ -17,6 +19,12 @@ const STATUS_UI: Record<string, { label: string; color: string; icon: React.Reac
     color: "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/10 dark:border-amber-800 dark:text-amber-300",
     icon: <Clock className="h-5 w-5 text-amber-600" />,
     desc: "Your application is being reviewed by the Minaret Network administration.",
+  },
+  WITHDRAWN: {
+    label: "Called Back for Edits",
+    color: "bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/10 dark:border-blue-800 dark:text-blue-300",
+    icon: <AlertCircle className="h-5 w-5 text-blue-600" />,
+    desc: "This application is hidden from admin review while you make edits. Submit it again when you are ready.",
   },
   APPROVED: {
     label: "Approved & Live",
@@ -186,12 +194,31 @@ export default async function ProfessionalDashboardPage() {
         </dl>
       </div>
 
-      <div className="flex gap-3">
-        <Link href={`/professionals/${professional.id}/edit`}>
-          <Button variant="outline" size="sm" className="border-green-300 text-green-700 hover:bg-green-50">
-            Edit Listing
-          </Button>
-        </Link>
+      <div className="flex flex-wrap gap-3">
+        {professional.status === "PENDING" && (
+          <form action={withdrawProfessionalApplication.bind(null, professional.id)}>
+            <Button
+              type="submit"
+              variant="outline"
+              size="sm"
+              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              Call back for edits
+            </Button>
+          </form>
+        )}
+        {professional.status !== "PENDING" && (
+          <Link href={`/professionals/${professional.id}/edit`}>
+            <Button variant="outline" size="sm" className="border-green-300 text-green-700 hover:bg-green-50">
+              {professional.status === "WITHDRAWN" ? "Edit & resubmit" : "Edit Listing"}
+            </Button>
+          </Link>
+        )}
+        <DeleteProfessionalListingButton
+          professionalId={professional.id}
+          status={professional.status}
+          label={professional.businessName ?? professional.category.name}
+        />
       </div>
           </section>
         );
@@ -229,21 +256,18 @@ function SponsoredHistory({ listings }: { listings: SponsoredListing[] }) {
           <Sparkles className="h-4 w-4 text-violet-600" />
           Sponsored Listing History
         </h3>
-        <Link
-          href="/dashboard/promote"
-          className="text-xs text-violet-700 dark:text-violet-400 hover:underline flex items-center gap-1"
-        >
-          Manage <ArrowRight className="h-3 w-3" />
-        </Link>
       </div>
 
       {listings.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-2xl font-bold text-gray-200 dark:text-gray-700 mb-1">0</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500">No sponsored listings yet</p>
-          <Link href="/dashboard/promote" className="text-xs text-violet-700 dark:text-violet-400 hover:underline mt-2 inline-block">
-            Promote your business →
-          </Link>
+        <div className="rounded-xl border border-dashed border-violet-200 bg-violet-50/40 px-4 py-7 text-center dark:border-violet-900/40 dark:bg-violet-950/10">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-white text-violet-700 shadow-sm dark:bg-gray-900 dark:text-violet-300">
+            <Megaphone className="h-5 w-5" />
+          </div>
+          <p className="hidden text-2xl font-bold text-gray-200 dark:text-gray-700 mb-1">0</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">No sponsored listings yet</p>
+          <p className="mx-auto mt-1 max-w-sm text-xs text-gray-500 dark:text-gray-400">
+            Sponsored placements are coming soon. Admins can still manage sponsored status directly.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">

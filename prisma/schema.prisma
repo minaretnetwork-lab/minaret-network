@@ -178,6 +178,7 @@ enum Gender {
 
 enum ProfessionalStatus {
   PENDING
+  WITHDRAWN
   APPROVED
   REJECTED
   SUSPENDED
