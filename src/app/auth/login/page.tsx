@@ -99,7 +99,7 @@ function LoginForm() {
     const callbackOrigin = siteUrl ?? window.location.origin;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${callbackOrigin}/auth/callback?next=${redirectTo}` },
+      options: { redirectTo: `${callbackOrigin}/auth/callback?next=${encodeURIComponent(redirectTo)}` },
     });
   }
 

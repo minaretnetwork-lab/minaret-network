@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,8 +28,10 @@ type FormData = z.infer<typeof schema>;
 const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
-export default function SignUpPage() {
+function SignUpForm() {
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -50,7 +53,7 @@ export default function SignUpPage() {
     const callbackOrigin = siteUrl ?? window.location.origin;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${callbackOrigin}/auth/callback?next=/dashboard` },
+      options: { redirectTo: `${callbackOrigin}/auth/callback?next=${encodeURIComponent(redirectTo)}` },
     });
   }
 
@@ -143,10 +146,18 @@ export default function SignUpPage() {
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             Already have an account?{" "}
-            <Link href="/auth/login" className="text-green-700 hover:underline font-medium">Sign in</Link>
+            <Link href={`/auth/login?redirectTo=${encodeURIComponent(redirectTo)}`} className="text-green-700 hover:underline font-medium">Sign in</Link>
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignUpForm />
+    </Suspense>
   );
 }
