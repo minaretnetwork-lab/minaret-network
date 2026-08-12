@@ -14,10 +14,6 @@ import { FeaturedSection } from "@/components/featured/featured-section";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
-interface HomePageProps {
-  searchParams: Promise<{ featured_city?: string }>;
-}
-
 const POPULAR_TAGS = [
   { label: "Plumber", href: "/professionals?category=plumber" },
   { label: "Family doctor", href: "/professionals?category=doctor" },
@@ -25,10 +21,7 @@ const POPULAR_TAGS = [
   { label: "Realtor", href: "/professionals?category=realtor" },
 ];
 
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const params = await searchParams;
-  const featuredCity = params.featured_city;
-
+export default async function HomePage() {
   let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];
   try {
     const mosque = await prisma.mosque.findUnique({
@@ -139,7 +132,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       {/* ── Sponsor Logo Carousel ───────────────────────────── */}
       {/* ── Featured Businesses ──────────────────────────────── */}
-      <FeaturedSection city={featuredCity} />
+      <FeaturedSection />
 
       {/* ── Quranic Verse ────────────────────────────────────── */}
       <section className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 py-16">

@@ -1,32 +1,28 @@
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
-import { getFeaturedBusinessesForHomepage, getActiveFeaturedCities } from "@/lib/actions/featured";
+import { getFeaturedBusinessesForHomepage } from "@/lib/actions/featured";
 import { FeaturedBusinessCard } from "./featured-business-card";
 import { FeaturedImpressionTracker } from "./featured-impression-tracker";
 
-interface Props {
-  city?: string;
-}
-
-export async function FeaturedSection({ city }: Props) {
+export async function FeaturedSection() {
   let rawListings: Awaited<ReturnType<typeof getFeaturedBusinessesForHomepage>>;
-  let cities: Awaited<ReturnType<typeof getActiveFeaturedCities>>;
 
   try {
-    [rawListings, cities] = await Promise.all([
-      getFeaturedBusinessesForHomepage(city),
-      getActiveFeaturedCities(),
-    ]);
+    rawListings = await getFeaturedBusinessesForHomepage();
   } catch {
     // Keep the public homepage available when the database is temporarily
     // unreachable; database-backed sections will return once it reconnects.
     return null;
   }
-  const listings = JSON.parse(JSON.stringify(rawListings));
+  const listings = JSON.parse(JSON.stringify(rawListings))
+    .sort((a: FeaturedListingForSort, b: FeaturedListingForSort) => {
+      const priorityDelta = getFeaturedPriority(a) - getFeaturedPriority(b);
+      if (priorityDelta !== 0) return priorityDelta;
+      return getFeaturedDate(b) - getFeaturedDate(a);
+    })
+    .slice(0, 6);
 
   if (listings.length === 0) return null;
-
-  const sectionTitle = city ? `Featured Businesses in ${city}` : "Featured Businesses";
 
   return (
     <section className="bg-amber-50/40 dark:bg-amber-900/5 border-y border-amber-100 dark:border-amber-900/20 py-10 sm:py-20">
@@ -44,7 +40,7 @@ export async function FeaturedSection({ city }: Props) {
               className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white"
               style={{ fontFamily: "var(--font-lora)" }}
             >
-              {sectionTitle}
+              Featured Businesses
             </h2>
           </div>
           <Link
@@ -54,16 +50,6 @@ export async function FeaturedSection({ city }: Props) {
             Feature your business <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-
-        {/* City tabs */}
-        {cities.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 mb-8">
-            <CityTab label="All" city={undefined} active={!city} />
-            {cities.map((c) => (
-              <CityTab key={c} label={c} city={c} active={city === c} />
-            ))}
-          </div>
-        )}
 
         {/* Cards */}
         <div className={listings.length === 1
@@ -92,18 +78,37 @@ export async function FeaturedSection({ city }: Props) {
   );
 }
 
-function CityTab({ label, city, active }: { label: string; city?: string; active: boolean }) {
-  const href = city ? `/?featured_city=${encodeURIComponent(city)}` : "/";
-  return (
-    <Link
-      href={href}
-      className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border transition-all ${
-        active
-          ? "bg-amber-700 text-white border-amber-700"
-          : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:border-amber-300"
-      }`}
-    >
-      {label}
-    </Link>
-  );
+type FeaturedListingForSort = {
+  startDate?: string | Date | null;
+  createdAt?: string | Date | null;
+  professional?: {
+    businessName?: string | null;
+    title?: string | null;
+    user?: {
+      displayName?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+    };
+  };
+};
+
+function getFeaturedPriority(listing: FeaturedListingForSort) {
+  const professional = listing.professional;
+  const searchableName = [
+    professional?.businessName,
+    professional?.title,
+    professional?.user?.displayName,
+    professional?.user?.firstName,
+    professional?.user?.lastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return searchableName.includes("canset") ? 0 : 1;
+}
+
+function getFeaturedDate(listing: FeaturedListingForSort) {
+  const value = listing.startDate ?? listing.createdAt;
+  return value ? new Date(value).getTime() : 0;
 }

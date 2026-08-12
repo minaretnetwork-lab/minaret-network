@@ -25,7 +25,7 @@ export async function getFeaturedBusinessesForHomepage(city?: string) {
       status: "ACTIVE",
       ...(city ? { city } : {}),
     },
-    take: 6,
+    take: 12,
     orderBy: { startDate: "desc" },
     include: {
       professional: {
