@@ -98,8 +98,8 @@ export default async function DashboardPage() {
                   <User className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-gray-900 dark:text-white">Join as Professional</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Create your listing</p>
+                  <p className="font-medium text-sm text-gray-900 dark:text-white">Create Professional Listing</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Add your first profile</p>
                 </div>
               </CardContent>
             </Card>
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
                   <User className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-gray-900 dark:text-white">My Listings</p>
+                  <p className="font-medium text-sm text-gray-900 dark:text-white">Professional Profiles</p>
                   <p className="text-xs text-gray-500 capitalize dark:text-gray-400">
                     {user.professionals.length} listing{user.professionals.length === 1 ? "" : "s"} · latest {latestProfessional.status.toLowerCase()}
                   </p>
