@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -865,9 +866,20 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           )}
         </div>
 
-        <p className="text-xs text-center text-gray-400 mt-3">
-          {isEdit ? "Edited listings return to admin review before going live again." : "Your application will be reviewed by our admin team before going live."}
-        </p>
+        {isEdit ? (
+          <p className="text-xs text-center text-gray-400 mt-3">
+            Edited listings return to admin review before going live again.
+          </p>
+        ) : (
+          <div className="mt-3 text-center">
+            <p className="text-xs text-gray-400">
+              Your application will be reviewed by our admin team before going live.
+            </p>
+            <Link href="/dashboard" className="mt-2 inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline">
+              I&apos;ll do this later
+            </Link>
+          </div>
+        )}
       </form>
     </div>
   );

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { ProfessionalRegistrationForm } from "@/components/professionals/registration-form";
 import { prisma } from "@/lib/prisma";
@@ -47,6 +48,12 @@ export default async function ProfessionalRegisterPage() {
         <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
           Complete your profile to be listed in the Minaret Network directory. Your listing will be reviewed and approved by our administration.
         </p>
+        <Link
+          href="/dashboard"
+          className="mt-4 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+        >
+          I&apos;ll do this later
+        </Link>
       </div>
       <ProfessionalRegistrationForm
         mosques={mosques}
