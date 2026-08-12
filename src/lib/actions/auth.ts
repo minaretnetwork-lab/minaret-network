@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
 export async function signIn(email: string, password: string) {
@@ -46,6 +47,83 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+export async function deleteCurrentUserAccount(confirmText: string) {
+  if (confirmText !== "DELETE") throw new Error("Type DELETE to confirm account deletion.");
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: user.id },
+    select: { id: true, role: true },
+  });
+  if (!dbUser) throw new Error("User not found");
+  if (dbUser.role === "SUPER_ADMIN") {
+    throw new Error("Super admin accounts cannot be deleted from this screen.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const professionals = await tx.professional.findMany({
+      where: { userId: dbUser.id },
+      select: { id: true },
+    });
+    const professionalIds = professionals.map((professional) => professional.id);
+
+    const serviceRequests = await tx.serviceRequest.findMany({
+      where: { userId: dbUser.id },
+      select: { id: true },
+    });
+    const serviceRequestIds = serviceRequests.map((request) => request.id);
+
+    const conversations = await tx.conversation.findMany({
+      where: {
+        OR: [
+          { requesterId: dbUser.id },
+          ...(professionalIds.length ? [{ professionalId: { in: professionalIds } }] : []),
+          ...(serviceRequestIds.length ? [{ serviceRequestId: { in: serviceRequestIds } }] : []),
+        ],
+      },
+      select: { id: true },
+    });
+    const conversationIds = conversations.map((conversation) => conversation.id);
+
+    if (conversationIds.length) {
+      await tx.message.deleteMany({ where: { conversationId: { in: conversationIds } } });
+      await tx.conversation.deleteMany({ where: { id: { in: conversationIds } } });
+    }
+
+    await tx.message.deleteMany({ where: { senderId: dbUser.id } });
+    await tx.recommendation.deleteMany({ where: { userId: dbUser.id } });
+    await tx.categorySuggestion.deleteMany({ where: { requestedById: dbUser.id } });
+    await tx.mosqueSuggestion.deleteMany({ where: { requestedById: dbUser.id } });
+
+    if (serviceRequestIds.length) {
+      await tx.serviceRequest.deleteMany({ where: { id: { in: serviceRequestIds } } });
+    }
+    if (professionalIds.length) {
+      await tx.serviceRequest.updateMany({
+        where: { assignedToId: { in: professionalIds } },
+        data: { assignedToId: null },
+      });
+      await tx.professional.deleteMany({ where: { id: { in: professionalIds } } });
+    }
+
+    await tx.user.delete({ where: { id: dbUser.id } });
+  });
+
+  const supabaseUrl = process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  await supabase.auth.signOut();
+
+  if (supabaseUrl && serviceRoleKey) {
+    const admin = createSupabaseAdminClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    await admin.auth.admin.deleteUser(user.id);
+  }
 }
 
 export async function updateUserProfile(data: {
