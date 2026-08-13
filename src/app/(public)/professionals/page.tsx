@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import type { ProfessionalWithRelations, SearchFilters as SearchFiltersType } from "@/types";
+import { ListingDisclaimer } from "@/components/professionals/listing-disclaimer";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | undefined }>;
@@ -105,15 +106,7 @@ export default async function ProfessionalsPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      {/* Disclaimer banner — full width */}
-      <div className="bg-amber-50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/30 px-4 py-3">
-        <div className="container mx-auto lg:px-6 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
-          <span className="flex-shrink-0 mt-0.5">ⓘ</span>
-          <span>
-            <span className="font-semibold">About listings:</span> The &ldquo;Mosque Affiliated&rdquo; badge means the professional&apos;s membership in that mosque&apos;s community channel has been confirmed by an admin. It does not verify professional credentials, licensing, or quality of work. We recommend doing your own due diligence before hiring.
-          </span>
-        </div>
-      </div>
+      <ListingDisclaimer />
 
       <div className="container mx-auto px-4 lg:px-6 py-10">
       <div className="mb-6">

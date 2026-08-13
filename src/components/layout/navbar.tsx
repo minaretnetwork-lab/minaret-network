@@ -34,7 +34,7 @@ export function Navbar({ user }: NavbarProps) {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white font-bold text-sm">
               <span style={{ fontFamily: "var(--font-lora)" }}>MN</span>
             </div>
-            <div className="hidden sm:block">
+            <div>
               <span className="text-[15px] font-semibold text-white leading-none" style={{ fontFamily: "var(--font-lora)" }}>
                 Minaret Network
               </span>

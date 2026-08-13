@@ -136,6 +136,7 @@ export async function getMatchingServiceRequests(limit?: number) {
   const requests = await prisma.serviceRequest.findMany({
     where: {
       userId: { not: dbUser.id },
+      status: { in: ["OPEN", "IN_PROGRESS"] },
       AND: [
         { OR: filters },
         {
