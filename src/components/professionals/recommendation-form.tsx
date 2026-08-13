@@ -117,6 +117,27 @@ export function RecommendationForm({ professionalId, isLoggedIn }: Props) {
         {errors.rating && <p className="text-xs text-red-600 mt-1">Please select a star rating</p>}
       </div>
 
+      {/* Community Standards */}
+      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/10 px-4 py-3 text-xs text-amber-900 dark:text-amber-200 space-y-2">
+        <p className="font-semibold">Community Standards — Reviews & Recommendations</p>
+        <p className="text-amber-800 dark:text-amber-300">Minaret Network exists to help our community find professionals it can trust. That only works if reviews are honest. Before you post:</p>
+        <ul className="list-disc list-inside space-y-1 text-amber-800 dark:text-amber-300">
+          <li>Only post a review based on a genuine experience you personally had with this professional.</li>
+          <li>Don&apos;t post a fake review, and don&apos;t review your own business or listing.</li>
+          <li>Don&apos;t post on someone else&apos;s behalf without their clear authorization.</li>
+          <li>Don&apos;t make false factual claims. Honest opinions are fine; stating something you know isn&apos;t true is not.</li>
+          <li>No threats, harassment, discriminatory language, personal attacks, or private information.</li>
+          <li>Don&apos;t disclose confidential information from a private engagement.</li>
+          <li>Don&apos;t manipulate ratings through fake accounts, coordinated posting, or undisclosed incentives.</li>
+        </ul>
+        <p className="text-amber-800 dark:text-amber-300">
+          We may moderate or remove reviews at our discretion. You remain personally responsible for what you post, including legal responsibility for false or defamatory statements.{" "}
+          <Link href="/terms" className="underline hover:text-amber-900 dark:hover:text-amber-100">Terms of Service</Link>
+          {" · "}
+          <Link href="/privacy" className="underline hover:text-amber-900 dark:hover:text-amber-100">Privacy Policy</Link>
+        </p>
+      </div>
+
       <Textarea
         {...register("content")}
         placeholder="Share your experience working with this professional…"
