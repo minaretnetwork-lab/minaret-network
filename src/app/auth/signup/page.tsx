@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signUp } from "@/lib/actions/auth";
-import { createClient } from "@/lib/supabase/client";
 
 const schema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -26,7 +25,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 function SignUpForm() {
   const [error, setError] = useState("");
@@ -49,12 +47,7 @@ function SignUpForm() {
   async function handleGoogleSignUp() {
     if (!googleAuthEnabled) return;
 
-    const supabase = createClient();
-    const callbackOrigin = siteUrl ?? window.location.origin;
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${callbackOrigin}/auth/callback?next=${encodeURIComponent(redirectTo)}` },
-    });
+    window.location.href = `/auth/google?next=${encodeURIComponent(redirectTo)}`;
   }
 
   return (

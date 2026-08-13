@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,12 +14,10 @@ import { useRouter } from "next/navigation";
 import { Camera, X, Building2, ChevronRight, ChevronLeft, Check, Lightbulb } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { submitCategorySuggestion } from "@/lib/actions/category-suggestions";
+import { IMAGE_UPLOAD_LIMIT_BYTES, isAcceptedUploadImageType } from "@/lib/upload-image-config";
 
 const BIO_MIN_LENGTH = 50;
 const BIO_MAX_LENGTH = 1000;
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-const TARGET_IMAGE_BYTES = 1.5 * 1024 * 1024;
-const MAX_IMAGE_DIMENSION = 1600;
 
 const schema = z.object({
   mosqueId: z.string().optional(),
@@ -141,48 +138,21 @@ function getInvalidAvailabilityDays(schedules: Record<string, DaySchedule>) {
   });
 }
 
-async function prepareImageForUpload(file: File, label: string) {
-  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-    throw new Error(`${label} must be a JPG, PNG, or WebP image.`);
+function validateSelectedUpload(file: File, label: string) {
+  if (!file || file.size <= 0) {
+    throw new Error(`${label} is empty. Please choose an image and try again.`);
   }
 
-  if (file.size <= TARGET_IMAGE_BYTES) return file;
-
-  const imageUrl = URL.createObjectURL(file);
-  try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error(`We couldn't read that ${label.toLowerCase()}. Please try a smaller JPG or PNG.`));
-      img.src = imageUrl;
-    });
-
-    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(image.width * scale));
-    canvas.height = Math.max(1, Math.round(image.height * scale));
-    const context = canvas.getContext("2d");
-    if (!context) return file;
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(resolve, "image/jpeg", 0.82);
-    });
-    if (!blob || blob.size >= file.size) return file;
-
-    return new File(
-      [blob],
-      file.name.replace(/\.[^.]+$/, "") + ".jpg",
-      { type: "image/jpeg", lastModified: Date.now() },
-    );
-  } finally {
-    URL.revokeObjectURL(imageUrl);
+  if (!file.type || !file.type.startsWith("image/")) {
+    throw new Error(`${label} must be an image file.`);
   }
-}
 
-function validatePreparedUpload(file: File, label: string) {
-  if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error(`${label} is still too large after shrinking. Please choose a smaller image under 5 MB.`);
+  if (!isAcceptedUploadImageType(file.type)) {
+    throw new Error(`${label} must be a phone or web image such as JPG, PNG, WebP, HEIC, HEIF, or AVIF.`);
+  }
+
+  if (file.size > IMAGE_UPLOAD_LIMIT_BYTES) {
+    throw new Error(`${label} is too large to upload. Please choose an image under 40 MB.`);
   }
 }
 
@@ -405,9 +375,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const prepared = await prepareImageForUpload(file, "Profile photo");
-      if (prepared.size > MAX_UPLOAD_BYTES) { alert("Profile photo must be under 5 MB. Please choose a smaller image."); return; }
-      setPhotoFile(prepared); setPhotoPreview(URL.createObjectURL(prepared));
+      validateSelectedUpload(file, "Profile photo");
+      setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file));
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not prepare that profile photo.");
     }
@@ -416,9 +385,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const prepared = await prepareImageForUpload(file, "Business logo");
-      if (prepared.size > MAX_UPLOAD_BYTES) { alert("Business logo must be under 5 MB. Please choose a smaller image."); return; }
-      setLogoFile(prepared); setLogoPreview(URL.createObjectURL(prepared));
+      validateSelectedUpload(file, "Business logo");
+      setLogoFile(file); setLogoPreview(URL.createObjectURL(file));
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not prepare that business logo.");
     }
@@ -465,16 +433,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         if (Array.isArray(value)) value.forEach((v) => fd.append(key, v));
         else if (value !== undefined && value !== "") fd.append(key, String(value));
       });
-      if (photoFile) {
-        const preparedPhoto = await prepareImageForUpload(photoFile, "Profile photo");
-        validatePreparedUpload(preparedPhoto, "Profile photo");
-        fd.append("photo", preparedPhoto);
-      }
-      if (logoFile) {
-        const preparedLogo = await prepareImageForUpload(logoFile, "Business logo");
-        validatePreparedUpload(preparedLogo, "Business logo");
-        fd.append("logo", preparedLogo);
-      }
+      if (photoFile) fd.append("photo", photoFile);
+      if (logoFile) fd.append("logo", logoFile);
       if (initialData?.id) fd.append("professionalId", initialData.id);
       const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
       const contentType = res.headers.get("content-type") ?? "";
@@ -598,9 +558,9 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                     className="text-sm text-green-700 dark:text-green-400 font-medium hover:underline">
                     {photoPreview ? "Change photo" : "Upload profile photo"}
                   </button>
-                  <p className="text-xs text-gray-400 mt-0.5">Optional · JPG, PNG or WebP · Max 5 MB</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Optional · Most phone photos work automatically · We optimize on upload</p>
                 </div>
-                <input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} className="hidden" />
+                <input ref={photoInputRef} type="file" accept="image/*,.heic,.heif,.avif" onChange={handlePhotoChange} className="hidden" />
               </div>
 
               {/* Categories — searchable multi-select combobox */}
@@ -1083,10 +1043,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                       <button type="button" onClick={() => { setLogoFile(null); setLogoPreview(null); if (logoInputRef.current) logoInputRef.current.value = ""; }}
                         className="text-xs text-red-500 hover:underline text-left">Remove</button>
                     )}
-                    <p className="text-xs text-gray-400">JPG, PNG or WebP · Max 5 MB</p>
+                    <p className="text-xs text-gray-400">Most phone and web image formats work · We optimize on upload</p>
                   </div>
                 </div>
-                <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoChange} className="hidden" />
+                <input ref={logoInputRef} type="file" accept="image/*,.heic,.heif,.avif" onChange={handleLogoChange} className="hidden" />
               </div>
 
               {/* Disclaimer + Terms */}

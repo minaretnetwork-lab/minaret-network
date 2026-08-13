@@ -4,30 +4,39 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { normalizePublicAssetUrl } from "@/lib/public-asset-url";
+import { IMAGE_UPLOAD_LIMIT_BYTES } from "@/lib/upload-image-config";
+import { optimizeUploadedImage } from "@/lib/upload-images";
 
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-function validateImageUpload(file: File, label: string) {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    throw new Error(`${label} must be a JPG, PNG, or WebP image.`);
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error(`${label} must be under 5 MB.`);
-  }
-}
-
-async function uploadToStorage(bucket: string, path: string, file: File): Promise<string> {
+async function ensureStorageBucket(bucket: string) {
   const admin = createAdminClient();
   const { error: bucketErr } = await admin.storage.createBucket(bucket, {
     public: true,
-    fileSizeLimit: 5242880,
-    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+    fileSizeLimit: IMAGE_UPLOAD_LIMIT_BYTES,
+    allowedMimeTypes: ["image/webp"],
   });
+
   if (bucketErr && !bucketErr.message.includes("already exists")) throw bucketErr;
+
+  const { error: updateErr } = await admin.storage.updateBucket(bucket, {
+    public: true,
+    fileSizeLimit: IMAGE_UPLOAD_LIMIT_BYTES,
+    allowedMimeTypes: ["image/webp"],
+  });
+
+  if (updateErr) throw updateErr;
+}
+
+async function uploadToStorage(
+  bucket: string,
+  path: string,
+  optimized: Awaited<ReturnType<typeof optimizeUploadedImage>>,
+): Promise<string> {
+  const admin = createAdminClient();
+  await ensureStorageBucket(bucket);
+
   const { error: uploadErr } = await admin.storage
     .from(bucket)
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, optimized.output, { upsert: true, contentType: optimized.contentType });
   if (uploadErr) throw uploadErr;
   const { data } = admin.storage.from(bucket).getPublicUrl(path);
   return `${normalizePublicAssetUrl(data.publicUrl)}?t=${Date.now()}`;
@@ -71,28 +80,40 @@ export async function POST(request: Request) {
     let photoUrl: string | null = null;
     let logoUrl: string | null = null;
     if (photoFile && photoFile.size > 0) {
-      validateImageUpload(photoFile, "Profile photo");
-      const ext = photoFile.name.split(".").pop() ?? "jpg";
+      const optimizedPhoto = await optimizeUploadedImage(photoFile, "photo");
       console.info("POST /api/professionals/apply upload", {
         userId: dbUser.id,
         professionalId: storageListingId,
         type: "photo",
         size: photoFile.size,
         mime: photoFile.type,
+        optimizedBytes: optimizedPhoto.output.byteLength,
+        width: optimizedPhoto.width,
+        height: optimizedPhoto.height,
       });
-      photoUrl = await uploadToStorage("professional-photos", `${dbUser.id}/${storageListingId}/photo.${ext}`, photoFile);
+      photoUrl = await uploadToStorage(
+        "professional-photos",
+        `${dbUser.id}/${storageListingId}/photo.${optimizedPhoto.extension}`,
+        optimizedPhoto,
+      );
     }
     if (logoFile && logoFile.size > 0) {
-      validateImageUpload(logoFile, "Business logo");
-      const ext = logoFile.name.split(".").pop() ?? "png";
+      const optimizedLogo = await optimizeUploadedImage(logoFile, "logo");
       console.info("POST /api/professionals/apply upload", {
         userId: dbUser.id,
         professionalId: storageListingId,
         type: "logo",
         size: logoFile.size,
         mime: logoFile.type,
+        optimizedBytes: optimizedLogo.output.byteLength,
+        width: optimizedLogo.width,
+        height: optimizedLogo.height,
       });
-      logoUrl = await uploadToStorage("professional-logos", `${dbUser.id}/${storageListingId}/logo.${ext}`, logoFile);
+      logoUrl = await uploadToStorage(
+        "professional-logos",
+        `${dbUser.id}/${storageListingId}/logo.${optimizedLogo.extension}`,
+        optimizedLogo,
+      );
     }
 
     const data = {

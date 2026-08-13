@@ -456,6 +456,8 @@ model Conversation {
   requesterId      String
   requester        User           @relation("RequesterConversations", fields: [requesterId], references: [id], onDelete: Cascade)
   status           String         @default("OPEN")
+  requesterArchivedAt    DateTime?
+  professionalArchivedAt DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 

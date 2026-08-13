@@ -48,6 +48,9 @@ const ICON_MAP: Record<string, LucideIcon> = {
   "cleaning-services":    Sparkles,
   // Auto
   "mechanic":             Cog,
+  "car-dealership":       Car,
+  "car-rental":           Car,
+  "auto-body-shop":       Wrench,
   // Education & Coaching
   "tutor":                BookOpen,
   "driving-instructor":   Car,

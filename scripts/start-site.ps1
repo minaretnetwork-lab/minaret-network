@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory = $true)]
-  [ValidateSet("production", "staging")]
+  [ValidateSet("production")]
   [string]$Environment
 )
 
@@ -18,8 +18,8 @@ if (-not (Test-Path -LiteralPath $envPath)) {
 
 $env:MINARET_ENVIRONMENT = $Environment
 $env:MINARET_ENV_FILE = $envPath
-$env:NEXT_DIST_DIR = if ($Environment -eq "production") { ".next-production" } else { ".next-staging" }
-$env:MINARET_PORT = if ($Environment -eq "production") { "3220" } else { "3221" }
+$env:NEXT_DIST_DIR = ".next-production"
+$env:MINARET_PORT = "3220"
 $env:MINARET_HOST = "127.0.0.1"
 
 & $nodePath (Join-Path $workspace "scripts\start-local.mjs")

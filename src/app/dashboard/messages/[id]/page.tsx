@@ -7,6 +7,7 @@ import { getConversationById } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { ConversationThread } from "@/components/dashboard/conversation-thread";
+import { ArchiveConversationButton } from "@/components/dashboard/archive-conversation-button";
 import { ReopenRequestButton } from "@/components/dashboard/reopen-request-button";
 import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
 
@@ -34,7 +35,7 @@ export default async function ConversationPage({ params }: Props) {
   const data = await getConversationById(id);
   if (!data) notFound();
 
-  const { currentUserId, conversation } = data;
+  const { currentUserId, conversation, viewerHasArchived } = data;
   const isRequester = conversation.requesterId === currentUserId;
   const otherPerson = isRequester
     ? displayName(conversation.professional.user)
@@ -168,6 +169,9 @@ export default async function ConversationPage({ params }: Props) {
           <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
             Messaging is paused while the related service request is {closedLabel}.
           </p>
+          <div className="mt-4">
+            <ArchiveConversationButton conversationId={conversation.id} archived={viewerHasArchived} />
+          </div>
           {isRequester ? (
             <div className="mt-4">
               <ReopenRequestButton requestId={conversation.serviceRequestId} />

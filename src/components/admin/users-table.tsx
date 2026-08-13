@@ -56,6 +56,7 @@ function formatShortDate(date: Date | string) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "America/Toronto",
   });
 }
 
@@ -64,7 +65,20 @@ function formatLongDate(date: Date | string) {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "America/Toronto",
   });
+}
+
+function formatTorontoDateTime(date: Date | string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/Toronto",
+  }).format(new Date(date));
 }
 
 function displayName(user: {
@@ -222,7 +236,7 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
       ) : (
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div className="overflow-x-auto">
-            <table className="min-w-[1120px] w-full text-left text-sm">
+            <table className="min-w-[1260px] w-full text-left text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-900/60">
                 <tr>
                   <th className="px-4 py-3 font-semibold">User</th>
@@ -309,11 +323,12 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-xs text-gray-500">
-                        {formatShortDate(user.createdAt)}
+                        <p>{formatTorontoDateTime(user.createdAt)}</p>
+                        <p className="mt-1 text-gray-400">Toronto time</p>
                       </td>
                       <td className="px-4 py-4 text-xs text-gray-500">
-                        <p>{formatShortDate(user.lastActivityAt)}</p>
-                        <p className="mt-1 text-gray-400">Updated {formatLongDate(user.updatedAt)}</p>
+                        <p>{formatTorontoDateTime(user.lastActivityAt)}</p>
+                        <p className="mt-1 text-gray-400">Toronto time</p>
                       </td>
                     </tr>
                   );

@@ -1,10 +1,10 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory = $true)]
-  [ValidateSet("production", "staging")]
+  [ValidateSet("production")]
   [string]$Environment,
 
-  [ValidateSet("none", "clean", "fixtures")]
+  [ValidateSet("none", "clean")]
   [string]$Seed = "none",
 
   [switch]$SkipBuild,
@@ -22,41 +22,21 @@ $ErrorActionPreference = "Stop"
 function Get-EnvironmentSettings {
   param([string]$Name)
 
-  if ($Name -eq "production") {
-    return [ordered]@{
-      Name = "production"
-      PublicOrigin = "https://minaretnetwork.ca"
-      SitePort = 3220
-      SupabaseWorkdir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-      SupabaseApiPort = 54321
-      SupabaseDbPort = 54322
-      SupabaseStudioPort = 54323
-      SupabaseMailPort = 54324
-      SupabaseShadowPort = 54320
-      SupabasePoolerPort = 54329
-      DistDir = ".next-production"
-      EnvFile = ".env.production.local"
-      TaskName = "Minaret Network Local Site"
-      ProjectId = "minaret-production"
-    }
-  }
-
-  $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
   return [ordered]@{
-    Name = "staging"
-    PublicOrigin = "https://staging.minaretnetwork.ca"
-    SitePort = 3221
-    SupabaseWorkdir = (Join-Path $workspace ".minaret-runtime\staging")
-    SupabaseApiPort = 54421
-    SupabaseDbPort = 54422
-    SupabaseStudioPort = 54423
-    SupabaseMailPort = 54424
-    SupabaseShadowPort = 54420
-    SupabasePoolerPort = 54429
-    DistDir = ".next-staging"
-    EnvFile = ".env.staging.local"
-    TaskName = "Minaret Network Staging Site"
-    ProjectId = "minaret-staging-local"
+    Name = "production"
+    PublicOrigin = "https://minaretnetwork.ca"
+    SitePort = 3220
+    SupabaseWorkdir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+    SupabaseApiPort = 54321
+    SupabaseDbPort = 54322
+    SupabaseStudioPort = 54323
+    SupabaseMailPort = 54324
+    SupabaseShadowPort = 54320
+    SupabasePoolerPort = 54329
+    DistDir = ".next-production"
+    EnvFile = ".env.production.local"
+    TaskName = "Minaret Network Local Site"
+    ProjectId = "minaret-production"
   }
 }
 
@@ -65,37 +45,6 @@ function Set-ProcessEnvFromMap {
   foreach ($key in $Values.Keys) {
     [Environment]::SetEnvironmentVariable([string]$key, [string]$Values[$key], "Process")
   }
-}
-
-function Initialize-StagingSupabaseWorkdir {
-  param([System.Collections.IDictionary]$Settings)
-
-  $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-  $sourceSupabase = Join-Path $workspace "supabase"
-  $targetRoot = [string]$Settings.SupabaseWorkdir
-  $targetSupabase = Join-Path $targetRoot "supabase"
-
-  if (-not (Test-Path -LiteralPath $targetSupabase)) {
-    New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
-    Copy-Item -LiteralPath $sourceSupabase -Destination $targetRoot -Recurse -Force
-  }
-
-  $configPath = Join-Path $targetSupabase "config.toml"
-  $config = [System.IO.File]::ReadAllText($configPath)
-  $config = $config -replace 'project_id = ".*?"', "project_id = `"$($Settings.ProjectId)`""
-  $config = $config -replace 'port = 54321', "port = $($Settings.SupabaseApiPort)"
-  $config = $config -replace 'port = 54322', "port = $($Settings.SupabaseDbPort)"
-  $config = $config -replace 'shadow_port = 54320', "shadow_port = $($Settings.SupabaseShadowPort)"
-  $config = $config -replace 'port = 54329', "port = $($Settings.SupabasePoolerPort)"
-  $config = $config -replace 'port = 54323', "port = $($Settings.SupabaseStudioPort)"
-  $config = $config -replace 'port = 54324', "port = $($Settings.SupabaseMailPort)"
-  $config = $config -replace '127\.0\.0\.1:3220', "127.0.0.1:$($Settings.SitePort)"
-  $config = $config -replace 'localhost:3220', "localhost:$($Settings.SitePort)"
-  $config = $config -replace 'https://www\.minaretnetwork\.ca', "https://www.staging.minaretnetwork.ca"
-  $config = $config -replace 'https://minaretnetwork\.ca', [string]$Settings.PublicOrigin
-  $config = $config -replace 'site_url = ".*?"', "site_url = `"$($Settings.PublicOrigin)`""
-  $config = $config -replace 'external_url = ".*?"', "external_url = `"$($Settings.PublicOrigin)/auth/v1`""
-  [System.IO.File]::WriteAllText($configPath, $config, [System.Text.UTF8Encoding]::new($false))
 }
 
 function Register-MinaretTask {
@@ -132,13 +81,6 @@ $workspace = Get-ExperimentWorkspace
 $settings = Get-EnvironmentSettings -Name $Environment
 $npxPath = Get-ExperimentNpxPath
 $dockerPath = Get-ExperimentDockerPath | Out-Null
-
-if ($Environment -eq "staging") {
-  Initialize-StagingSupabaseWorkdir -Settings $settings
-}
-elseif ($Seed -eq "fixtures") {
-  throw "Production cannot be fixture-seeded by this script."
-}
 
 if ($Environment -eq "production" -and $Seed -eq "clean") {
   if (-not $ResetProductionData -or $ConfirmText -ne "RESET_PRODUCTION_DATABASE") {
@@ -204,19 +146,6 @@ foreach ($optional in @("OPENAI_API_KEY", "SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET"
   }
 }
 
-if ($Environment -eq "staging") {
-  $experimentPassword = if ($existingEnv.ContainsKey("EXPERIMENT_USER_PASSWORD") -and $existingEnv["EXPERIMENT_USER_PASSWORD"].Length -ge 12) {
-    $existingEnv["EXPERIMENT_USER_PASSWORD"]
-  }
-  elseif ($existingLocal.ContainsKey("EXPERIMENT_USER_PASSWORD") -and $existingLocal["EXPERIMENT_USER_PASSWORD"].Length -ge 12) {
-    $existingLocal["EXPERIMENT_USER_PASSWORD"]
-  }
-  else {
-    New-ExperimentSecret
-  }
-  $managed["EXPERIMENT_USER_PASSWORD"] = $experimentPassword
-}
-
 $envPath = Join-Path $workspace ([string]$settings.EnvFile)
 Set-ExperimentDotEnvValues -Path $envPath -Values $managed
 Write-Host "Wrote $($settings.EnvFile) for $Environment (secrets omitted)."
@@ -229,14 +158,7 @@ if ($dbPush.ExitCode -ne 0) {
   throw "Prisma db push failed for $Environment. Output suppressed."
 }
 
-if ($Seed -eq "fixtures") {
-  Write-Host "Seeding staging fixtures..."
-  $seedResult = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("tsx", "prisma/seed-experiment.ts")
-  if ($seedResult.ExitCode -ne 0) {
-    throw "Fixture seed failed for $Environment. Output suppressed."
-  }
-}
-elseif ($Seed -eq "clean") {
+if ($Seed -eq "clean") {
   Write-Host "Resetting and clean-seeding production data..."
   $env:CONFIRM_CLEAN_DATABASE = "YES"
   $seedResult = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("tsx", "prisma/seed-clean.ts")

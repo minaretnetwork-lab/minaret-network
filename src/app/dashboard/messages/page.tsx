@@ -17,8 +17,14 @@ const REQUEST_STATUS_STYLES: Record<string, { label: string; className: string }
   CANCELLED: { label: "Cancelled", className: "border-red-200 bg-red-100 text-red-700" },
 };
 
-export default async function MessagesPage() {
-  const { currentUserId, conversations } = await getMyConversations();
+export default async function MessagesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ view?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const view = resolvedSearchParams?.view === "archived" ? "archived" : "active";
+  const { currentUserId, conversations, counts } = await getMyConversations(view);
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -29,15 +35,43 @@ export default async function MessagesPage() {
         </p>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href="/dashboard/messages"
+          className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium ${
+            view === "active"
+              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border border-gray-200 bg-white text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+          }`}
+        >
+          Active
+          <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-xs text-emerald-700">{counts.active}</span>
+        </Link>
+        <Link
+          href="/dashboard/messages?view=archived"
+          className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium ${
+            view === "archived"
+              ? "border border-gray-300 bg-gray-100 text-gray-900"
+              : "border border-gray-200 bg-white text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+          }`}
+        >
+          Archived
+          <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{counts.archived}</span>
+        </Link>
+      </div>
+
       {conversations.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-900">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">
             <Inbox className="h-6 w-6" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No messages yet</h2>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+            {view === "archived" ? "No archived conversations yet" : "No messages yet"}
+          </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-            Conversations will appear here when a professional responds to your service request, or when you message a
-            requester from an incoming request.
+            {view === "archived"
+              ? "When you archive a closed conversation, it will stay available here for later review."
+              : "Conversations will appear here when a professional responds to your service request, or when you message a requester from an incoming request."}
           </p>
         </div>
       ) : (

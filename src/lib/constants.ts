@@ -37,6 +37,9 @@ export const CATEGORIES = [
   { name: "Cleaning Services", slug: "cleaning-services", icon: "🧹" },
   // Auto
   { name: "Mechanic", slug: "mechanic", icon: "🔩" },
+  { name: "Car Dealership", slug: "car-dealership", icon: "🚘" },
+  { name: "Car Rental", slug: "car-rental", icon: "🔑" },
+  { name: "Auto Body Shop", slug: "auto-body-shop", icon: "🛠️" },
   // Education & Coaching
   { name: "Tutor", slug: "tutor", icon: "📚" },
   { name: "Driving Instructor", slug: "driving-instructor", icon: "🚗" },

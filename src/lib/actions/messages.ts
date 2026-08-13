@@ -13,6 +13,20 @@ async function getCurrentDbUser() {
   return prisma.user.findUnique({ where: { supabaseId: user.id } });
 }
 
+function isConversationArchivedForUser(
+  conversation: {
+    requesterId: string;
+    requesterArchivedAt: Date | null;
+    professional: { userId: string };
+    professionalArchivedAt: Date | null;
+  },
+  userId: string
+) {
+  if (conversation.requesterId === userId) return Boolean(conversation.requesterArchivedAt);
+  if (conversation.professional.userId === userId) return Boolean(conversation.professionalArchivedAt);
+  return false;
+}
+
 function cleanMessageBody(body: FormDataEntryValue | null) {
   return typeof body === "string" ? body.trim().replace(/\n{4,}/g, "\n\n\n") : "";
 }
@@ -147,11 +161,11 @@ export async function getConversationForMatchingServiceRequest(serviceRequestId:
   return { currentUserId: dbUser.id, conversation };
 }
 
-export async function getMyConversations() {
+export async function getMyConversations(view: "active" | "archived" = "active") {
   const dbUser = await getCurrentDbUser();
-  if (!dbUser) return { currentUserId: null, conversations: [] };
+  if (!dbUser) return { currentUserId: null, conversations: [], counts: { active: 0, archived: 0 } };
 
-  const conversations = await prisma.conversation.findMany({
+  const allConversations = await prisma.conversation.findMany({
     where: {
       OR: [
         { requesterId: dbUser.id },
@@ -181,7 +195,17 @@ export async function getMyConversations() {
     orderBy: { updatedAt: "desc" },
   });
 
-  return { currentUserId: dbUser.id, conversations };
+  const activeConversations = allConversations.filter((conversation) => !isConversationArchivedForUser(conversation, dbUser.id));
+  const archivedConversations = allConversations.filter((conversation) => isConversationArchivedForUser(conversation, dbUser.id));
+
+  return {
+    currentUserId: dbUser.id,
+    conversations: view === "archived" ? archivedConversations : activeConversations,
+    counts: {
+      active: activeConversations.length,
+      archived: archivedConversations.length,
+    },
+  };
 }
 
 export async function getConversationById(id: string) {
@@ -228,7 +252,11 @@ export async function getConversationById(id: string) {
     data: { readAt: new Date() },
   });
 
-  return { currentUserId: dbUser.id, conversation };
+  return {
+    currentUserId: dbUser.id,
+    conversation,
+    viewerHasArchived: isConversationArchivedForUser(conversation, dbUser.id),
+  };
 }
 
 export async function getConversationsForMyRequest(serviceRequestId: string) {
@@ -267,6 +295,54 @@ export async function getExistingConversationWithProfessional(professionalId: st
     select: { id: true },
     orderBy: { updatedAt: "desc" },
   });
+}
+
+export async function setConversationArchivedState(conversationId: string, archived: boolean) {
+  const dbUser = await getCurrentDbUser();
+  if (!dbUser) redirect(`/auth/login?redirectTo=/dashboard/messages/${conversationId}`);
+
+  const conversation = await prisma.conversation.findFirst({
+    where: {
+      id: conversationId,
+      OR: [
+        { requesterId: dbUser.id },
+        { professional: { userId: dbUser.id } },
+      ],
+    },
+    include: {
+      professional: {
+        select: { userId: true },
+      },
+      serviceRequest: {
+        select: { status: true },
+      },
+    },
+  });
+
+  if (!conversation) throw new Error("Conversation not found.");
+
+  const requestClosed = conversation.serviceRequest.status === "CLOSED" || conversation.serviceRequest.status === "CANCELLED";
+  if (!requestClosed) {
+    throw new Error("Only closed conversations can be archived.");
+  }
+
+  const archivedAt = archived ? new Date() : null;
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data:
+      conversation.requesterId === dbUser.id
+        ? {
+            requesterArchivedAt: archivedAt,
+            professionalArchivedAt: conversation.professionalArchivedAt,
+          }
+        : {
+            requesterArchivedAt: conversation.requesterArchivedAt,
+            professionalArchivedAt: archivedAt,
+          },
+  });
+
+  revalidatePath("/dashboard/messages");
+  revalidatePath(`/dashboard/messages/${conversationId}`);
 }
 
 export async function sendConversationMessage(conversationId: string, formData: FormData) {

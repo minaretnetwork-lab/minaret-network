@@ -20,6 +20,13 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     url.searchParams.set("redirectTo", pathname);
+    console.info("[auth-middleware] redirecting protected route to login", {
+      path: pathname,
+      host: request.nextUrl.host,
+      hasSupabaseCookies: request.cookies
+        .getAll()
+        .some((cookie) => cookie.name.startsWith("sb-") || cookie.name.includes("supabase")),
+    });
     return clearSupabaseCookies(NextResponse.redirect(url));
   }
 

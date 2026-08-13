@@ -20,7 +20,6 @@
     "experiment:status": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-status.ps1",
     "experiment:stop": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-stop.ps1",
     "experiment:backup": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/experiment-backup.ps1",
-    "env:setup:staging": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-environment.ps1 -Environment staging -Seed fixtures",
     "env:setup:production": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-environment.ps1 -Environment production",
     "env:reset:production": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-environment.ps1 -Environment production -Seed clean -ResetProductionData -ConfirmText RESET_PRODUCTION_DATABASE"
   },
@@ -59,6 +58,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.81.0",
     "shadcn": "^4.13.0",
+    "sharp": "^0.34.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",

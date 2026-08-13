@@ -35,24 +35,46 @@ const host = process.env.MINARET_HOST ?? "127.0.0.1";
 const port = process.env.MINARET_PORT ?? "3220";
 const distDir = process.env.NEXT_DIST_DIR ?? ".next";
 const logDirectory = path.join(workspace, "logs");
+const runDirectory = path.join(workspace, "run");
 fs.mkdirSync(logDirectory, { recursive: true });
-const log = fs.openSync(path.join(logDirectory, `server-${process.env.MINARET_ENVIRONMENT ?? port}.log`), "a");
+fs.mkdirSync(runDirectory, { recursive: true });
+const environmentName = process.env.MINARET_ENVIRONMENT ?? port;
+const stdoutLogPath = path.join(logDirectory, `server-${environmentName}.out.log`);
+const stderrLogPath = path.join(logDirectory, `server-${environmentName}.err.log`);
+const pidPath = path.join(runDirectory, `server-${environmentName}.pid`);
 const hasProductionBuild = fs.existsSync(path.join(workspace, distDir, "BUILD_ID"));
 const command = hasProductionBuild ? "start" : "dev";
 const nodeEnvironment = hasProductionBuild ? "production" : "development";
 
+function isPidAlive(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+if (fs.existsSync(pidPath)) {
+  const existingPid = Number.parseInt(fs.readFileSync(pidPath, "utf8").trim(), 10);
+  if (isPidAlive(existingPid)) {
+    console.log(`${environmentName} already running with PID ${existingPid}`);
+    process.exit(0);
+  }
+  fs.rmSync(pidPath, { force: true });
+}
+
+const stdoutLog = fs.openSync(stdoutLogPath, "a");
+const stderrLog = fs.openSync(stderrLogPath, "a");
 const child = spawn(process.execPath, [nextCli, command, "-H", host, "-p", port], {
   cwd: workspace,
   env: { ...process.env, NODE_ENV: nodeEnvironment },
-  stdio: ["ignore", log, log],
+  stdio: ["ignore", stdoutLog, stderrLog],
   windowsHide: true,
+  detached: true,
 });
 
-child.on("exit", (code, signal) => {
-  if (signal) process.kill(process.pid, signal);
-  process.exit(code ?? 1);
-});
-
-for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, () => child.kill(signal));
-}
+child.unref();
+fs.writeFileSync(pidPath, `${child.pid}\n`, "utf8");
+console.log(`Started ${environmentName} on ${host}:${port} with PID ${child.pid}`);
