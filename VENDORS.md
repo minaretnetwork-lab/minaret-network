@@ -73,9 +73,20 @@ No Google Analytics, GA4, Mixpanel, or other analytics vendor is currently integ
 
 ---
 
-## Payments / Stripe — (not yet integrated)
+## Payments — Stripe
 
-Stripe is planned for billing on listing tiers but has not been connected yet.
+| Item | Value |
+|------|-------|
+| Provider | Stripe (stripe.com) |
+| Integration point | `src/lib/stripe.ts` (singleton), `src/lib/actions/event-listings.ts` (Checkout session creation), `src/app/api/webhooks/stripe/route.ts` (webhook handler) |
+| Feature | Event listing payments — one-time Checkout sessions for STANDARD ($25 CAD) and FEATURED ($49 CAD) event listings |
+| Data sent | Listing metadata (title, organizer name, listing type) via Stripe Checkout `line_items` and `metadata`; no PII beyond organizer contact (stored locally, not sent to Stripe) |
+| Webhook | `checkout.session.completed` — Stripe calls our webhook endpoint; signature verified with `stripe.webhooks.constructEvent` before any DB write |
+| Price security | Server-side only — `computeEventListingPriceCents()` in `src/lib/stripe.ts`; client never supplies a price |
+| Key env vars | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL` |
+| Data residency | Stripe US (default); confirm in Stripe Dashboard &gt; Settings &gt; Data localization |
+| DPA | Stripe Data Processing Agreement — stripe.com/legal/dpa |
+| Last verified | 2026-08-15 |
 
 ---
 
