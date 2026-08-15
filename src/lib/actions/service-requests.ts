@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { CURRENT_BROADCAST_CONSENT_VERSION } from "@/lib/constants";
 
 export async function submitServiceRequest(data: {
   categoryId: string;
@@ -13,6 +14,7 @@ export async function submitServiceRequest(data: {
   contactEmail: string;
   contactPhone: string;
   preferredDate?: string;
+  broadcastConsentAt?: string;
 }) {
   try {
     const supabase = await createClient();
@@ -22,9 +24,31 @@ export async function submitServiceRequest(data: {
     const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
     if (!dbUser) throw new Error("User not found");
 
+    // Reject regulated professions before doing anything else
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+      select: { id: true, isRegulatedProfession: true },
+    });
+    if (!category) throw new Error("Category not found");
+    if (category.isRegulatedProfession) {
+      throw new Error(
+        "Service requests cannot be submitted for regulated professions. " +
+        "Please search for a professional directly and message them one-to-one."
+      );
+    }
+
+    // Require broadcast consent
+    if (!data.broadcastConsentAt) {
+      throw new Error(
+        "You must acknowledge that your request will be shared with multiple professionals before submitting."
+      );
+    }
+
     const mosqueSlug = process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
     const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
     if (!mosque) throw new Error("Mosque not found");
+
+    const now = new Date(data.broadcastConsentAt);
 
     const [request] = await Promise.all([
       prisma.serviceRequest.create({
@@ -39,20 +63,43 @@ export async function submitServiceRequest(data: {
           contactEmail: data.contactEmail,
           contactPhone: data.contactPhone || null,
           preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
+          broadcastConsentAt: now,
+          broadcastConsentVersion: CURRENT_BROADCAST_CONSENT_VERSION,
         },
       }),
       // Backfill profile with contact details entered in the form
       prisma.user.update({
         where: { id: dbUser.id },
         data: {
-          // Only update displayName if profile has none
           ...(!dbUser.displayName && data.contactName ? { displayName: data.contactName } : {}),
-          // Always update phone if the form has one (user may have added it just now)
           ...(data.contactPhone ? { phone: data.contactPhone } : {}),
           preferredContact: data.preferredContact,
         },
       }),
     ]);
+
+    // Log the broadcast to all BROADCAST_ELIGIBLE professionals in the matching category+area
+    const broadcastEligibleProfessionals = await prisma.professional.findMany({
+      where: {
+        categoryId: data.categoryId,
+        tier: "BROADCAST_ELIGIBLE",
+        status: "APPROVED",
+        ...(data.serviceAreaId
+          ? { serviceAreas: { some: { id: data.serviceAreaId } } }
+          : {}),
+      },
+      select: { id: true },
+    });
+
+    if (broadcastEligibleProfessionals.length > 0) {
+      await prisma.broadcastLog.createMany({
+        data: broadcastEligibleProfessionals.map((p) => ({
+          serviceRequestId: request.id,
+          professionalId: p.id,
+          channel: "platform",
+        })),
+      });
+    }
 
     revalidatePath("/dashboard/requests");
     revalidatePath("/dashboard/leads");
@@ -150,6 +197,7 @@ export async function getMatchingServiceRequests(limit?: number) {
         },
       ],
     },
+    omit: { contactPhone: true, contactEmail: true },
     include: {
       category: { select: { name: true, slug: true, icon: true } },
       serviceArea: { select: { id: true, name: true, slug: true } },
@@ -218,6 +266,7 @@ export async function getMatchingServiceRequestById(id: string) {
         },
       ],
     },
+    omit: { contactPhone: true, contactEmail: true },
     include: {
       category: { select: { id: true, name: true, slug: true, icon: true } },
       serviceArea: { select: { id: true, name: true } },

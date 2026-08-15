@@ -13,7 +13,11 @@ export default async function RequestPage() {
     prisma.mosque.findUnique({
       where: { slug: DEFAULT_MOSQUE_SLUG },
       include: {
-        categories: { where: { isActive: true }, orderBy: { name: "asc" } },
+        categories: {
+          where: { isActive: true },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true },
+        },
         serviceAreas: { orderBy: { name: "asc" } },
       },
     }),

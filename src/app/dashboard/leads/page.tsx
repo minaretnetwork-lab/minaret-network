@@ -5,7 +5,7 @@ import { startConversationForServiceRequest } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { IncomingDistanceControl } from "@/components/dashboard/incoming-distance-control";
-import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import {
   distanceBetweenServiceAreas,
   findServiceAreaCoordinateByName,
@@ -97,13 +97,6 @@ export default async function MatchingRequestsPage({ searchParams }: Props) {
               ? Math.round(distanceBetweenServiceAreas(originCoordinate, requestCoordinate) * 10) / 10
               : null;
             const distanceLabel = formatDistance(distanceKm);
-            const whatsappHref = request.contactPhone
-              ? buildWhatsAppUrl(
-                  request.contactPhone,
-                  `Hi ${request.contactName ?? "there"}, I saw your request on Minaret Network and may be able to help.`
-                )
-              : null;
-
             return (
               <article
                 key={request.id}
@@ -198,30 +191,6 @@ export default async function MatchingRequestsPage({ searchParams }: Props) {
                         Message
                       </Button>
                     </form>
-                  )}
-                  {!isClosed && whatsappHref && (
-                    <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-                      <Button size="sm" className="w-full gap-1.5 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
-                        <MessageCircle className="h-4 w-4" />
-                        WhatsApp
-                      </Button>
-                    </a>
-                  )}
-                  {!isClosed && request.contactEmail && (
-                    <a href={`mailto:${request.contactEmail}`} className="w-full sm:w-auto">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 sm:w-auto">
-                        <Mail className="h-4 w-4" />
-                        Email
-                      </Button>
-                    </a>
-                  )}
-                  {!isClosed && request.contactPhone && (
-                    <a href={`tel:${request.contactPhone}`} className="w-full sm:w-auto">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 sm:w-auto">
-                        <Phone className="h-4 w-4" />
-                        Call
-                      </Button>
-                    </a>
                   )}
                   <Link href={`/dashboard/leads/${request.id}`} className="sr-only">
                     <Button variant="outline" size="sm">

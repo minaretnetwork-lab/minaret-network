@@ -12,7 +12,17 @@ export async function signIn(email: string, password: string) {
   redirect("/dashboard");
 }
 
-export async function signUp(email: string, password: string, firstName: string, lastName: string, redirectTo = "/dashboard") {
+export async function signUp(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+  redirectTo = "/dashboard",
+  consent?: { ageAttested: boolean; tosAccepted: boolean },
+) {
+  if (!consent?.ageAttested) throw new Error("You must confirm you are 18 years or older to create an account.");
+  if (!consent?.tosAccepted) throw new Error("You must accept the Terms of Service and Privacy Policy to create an account.");
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -27,6 +37,7 @@ export async function signUp(email: string, password: string, firstName: string,
 
   const mosqueSlug = process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
   const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
+  const now = new Date();
 
   await prisma.user.upsert({
     where: { supabaseId: data.user.id },
@@ -36,6 +47,10 @@ export async function signUp(email: string, password: string, firstName: string,
       lastName,
       displayName: `${firstName} ${lastName}`,
       mosqueId: mosque?.id,
+      ageAttestedAt: now,
+      ageAttestationVersion: "1.0",
+      tosAcceptedAt: now,
+      tosVersion: "1.0",
     },
     create: {
       supabaseId: data.user.id,
@@ -46,6 +61,10 @@ export async function signUp(email: string, password: string, firstName: string,
       mosqueId: mosque?.id,
       role: "MEMBER",
       emailVerified: false,
+      ageAttestedAt: now,
+      ageAttestationVersion: "1.0",
+      tosAcceptedAt: now,
+      tosVersion: "1.0",
     },
   });
 
@@ -134,6 +153,24 @@ export async function deleteCurrentUserAccount(confirmText: string) {
     });
     await admin.auth.admin.deleteUser(user.id);
   }
+}
+
+export async function reAcceptTos() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { CURRENT_TOS_VERSION } = await import("@/lib/constants");
+  const now = new Date();
+  await prisma.user.update({
+    where: { supabaseId: user.id },
+    data: {
+      ageAttestedAt: now,
+      ageAttestationVersion: CURRENT_TOS_VERSION,
+      tosAcceptedAt: now,
+      tosVersion: CURRENT_TOS_VERSION,
+    },
+  });
 }
 
 export async function updateUserProfile(data: {

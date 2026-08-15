@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>()({
   user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true, whatsapp: true, preferredContact: true } },
   mosque: { select: { name: true, city: true, address: true, website: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
-  category: { select: { id: true, name: true, slug: true, icon: true } },
+  category: { select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true } },
   serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
   editDrafts: { where: { status: "PENDING" }, orderBy: { submittedAt: "desc" }, take: 1 },
   badges: true,
@@ -287,6 +287,66 @@ export async function makeProfessionalFeatured(professionalId: string) {
   revalidateAdminPromotionPaths();
 }
 
+export async function setListingTier(professionalId: string, tier: string) {
+  const professional = await prisma.professional.findUnique({
+    where: { id: professionalId },
+    select: { id: true, status: true, categoryId: true, category: { select: { isRegulatedProfession: true, name: true } } },
+  });
+  if (!professional) throw new Error("Professional not found.");
+  if (professional.status !== "APPROVED") throw new Error("Only approved listings can have their tier changed.");
+
+  if (tier === "BROADCAST_ELIGIBLE" && professional.category.isRegulatedProfession) {
+    throw new Error(
+      `The broadcast-eligible tier cannot be assigned to listings in regulated professions (${professional.category.name}). ` +
+      "This is enforced at the database level as well. " +
+      "Change the category's regulated status first if you believe this is correct."
+    );
+  }
+
+  await prisma.professional.update({
+    where: { id: professionalId },
+    data: { tier: tier as never },
+  });
+
+  revalidatePath("/admin/professionals");
+  revalidatePath(`/admin/professionals/${professionalId}`);
+  revalidatePath(`/professionals/${professionalId}`);
+}
+
+export async function getCategoriesForAdmin() {
+  return prisma.category.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      icon: true,
+      isActive: true,
+      isRegulatedProfession: true,
+      sortOrder: true,
+      _count: { select: { professionals: true } },
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function toggleCategoryRegulatedStatus(categoryId: string, isRegulated: boolean) {
+  await prisma.category.update({
+    where: { id: categoryId },
+    data: { isRegulatedProfession: isRegulated },
+  });
+
+  // If marking as regulated, demote any BROADCAST_ELIGIBLE listings in this category
+  if (isRegulated) {
+    await prisma.professional.updateMany({
+      where: { categoryId, tier: "BROADCAST_ELIGIBLE" },
+      data: { tier: "STANDARD" },
+    });
+  }
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/professionals");
+}
+
 export async function awardBadge(professionalId: string, type: string) {
   await prisma.verificationBadge.upsert({
     where: { professionalId_type: { professionalId, type: type as never } },
@@ -315,6 +375,7 @@ export async function getAdminStats(mosqueSlug: string) {
     openRequests,
     pendingRecommendations,
     pendingProfessionalEdits,
+    openReports,
   ] = await Promise.all([
     prisma.professional.count({ where: { mosqueId: mosque.id, status: { not: "WITHDRAWN" } } }),
     prisma.professional.count({ where: { mosqueId: mosque.id, status: "PENDING" } }),
@@ -323,6 +384,7 @@ export async function getAdminStats(mosqueSlug: string) {
     prisma.serviceRequest.count({ where: { mosqueId: mosque.id, status: "OPEN" } }),
     prisma.recommendation.count({ where: { status: "PENDING" } }),
     prisma.professionalEditDraft.count({ where: { status: "PENDING", professional: { mosqueId: mosque.id } } }),
+    prisma.recommendationReport.count({ where: { status: { in: ["OPEN", "REVIEWING"] } } }),
   ]);
   const pendingProfessionalReviews = pendingProfessionals + pendingProfessionalEdits;
 
@@ -335,6 +397,7 @@ export async function getAdminStats(mosqueSlug: string) {
     totalMembers,
     openRequests,
     pendingRecommendations,
+    openReports,
   };
 }
 

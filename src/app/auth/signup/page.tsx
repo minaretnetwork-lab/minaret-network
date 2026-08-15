@@ -17,6 +17,8 @@ const schema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
+  ageAttestation: z.boolean().refine((v) => v === true, "You must confirm you are 18 or older"),
+  tosAccepted: z.boolean().refine((v) => v === true, "You must accept the Terms of Service and Privacy Policy"),
 }).refine((d) => d.password === d.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -38,7 +40,10 @@ function SignUpForm() {
   async function onSubmit(data: FormData) {
     try {
       setError("");
-      await signUp(data.email, data.password, data.firstName, data.lastName, redirectTo);
+      await signUp(data.email, data.password, data.firstName, data.lastName, redirectTo, {
+        ageAttested: data.ageAttestation === true,
+        tosAccepted: data.tosAccepted === true,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign up failed");
     }
@@ -124,6 +129,39 @@ function SignUpForm() {
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input id="confirmPassword" type="password" {...register("confirmPassword")} className="mt-1.5" placeholder="••••••••" />
               {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword.message}</p>}
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...register("ageAttestation")}
+                  className="mt-0.5 flex-shrink-0 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  I confirm I am <strong>18 years of age or older</strong>
+                </span>
+              </label>
+              {errors.ageAttestation && (
+                <p className="text-xs text-red-600 -mt-1">{errors.ageAttestation.message}</p>
+              )}
+
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...register("tosAccepted")}
+                  className="mt-0.5 flex-shrink-0 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  I agree to the{" "}
+                  <Link href="/terms" className="text-green-700 hover:underline">Terms of Service</Link>
+                  {" "}and{" "}
+                  <Link href="/privacy" className="text-green-700 hover:underline">Privacy Policy</Link>
+                </span>
+              </label>
+              {errors.tosAccepted && (
+                <p className="text-xs text-red-600 -mt-1">{errors.tosAccepted.message}</p>
+              )}
             </div>
 
             {error && (

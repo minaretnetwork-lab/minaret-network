@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
+import { ReportRecommendationButton } from "@/components/professionals/report-recommendation-button";
 import { PendingChatRedirect } from "@/components/professionals/pending-chat-redirect";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
@@ -92,6 +93,13 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                   mosqueName={(professional as typeof professional & { mosque?: { name: string } }).mosque?.name}
                   size="sm"
                 />
+                {professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED") && (
+                  <p className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 leading-snug text-center px-2">
+                    Mosque affiliation is self-reported and not verified or endorsed by{" "}
+                    {(professional as typeof professional & { mosque?: { name: string } }).mosque?.name ?? "the mosque"}{" "}
+                    or Minaret Network.
+                  </p>
+                )}
               </div>
             )}
 
@@ -327,6 +335,10 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                         )}
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{rec.content}</p>
+                      <ReportRecommendationButton
+                        recommendationId={rec.id}
+                        isLoggedIn={!!currentUser}
+                      />
                     </div>
                   );
                 })}

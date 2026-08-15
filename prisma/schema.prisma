@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -38,31 +39,36 @@ model Mosque {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  supabaseId    String   @unique
-  email         String   @unique
-  firstName     String?
-  lastName      String?
-  displayName   String?
-  avatarUrl     String?
-  phone         String?
-  whatsapp      String?
-  preferredContact ContactMethod?
-  role          UserRole @default(MEMBER)
-  mosqueId      String?
-  mosque        Mosque?  @relation(fields: [mosqueId], references: [id])
-  isActive      Boolean  @default(true)
-  emailVerified Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                      String    @id @default(cuid())
+  supabaseId              String    @unique
+  email                   String    @unique
+  firstName               String?
+  lastName                String?
+  displayName             String?
+  avatarUrl               String?
+  phone                   String?
+  whatsapp                String?
+  preferredContact        ContactMethod?
+  role                    UserRole  @default(MEMBER)
+  mosqueId                String?
+  mosque                  Mosque?   @relation(fields: [mosqueId], references: [id])
+  isActive                Boolean   @default(true)
+  emailVerified           Boolean   @default(false)
+  ageAttestedAt           DateTime?
+  ageAttestationVersion   String?
+  tosAcceptedAt           DateTime?
+  tosVersion              String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
-  professionals        Professional[]
-  recommendations      Recommendation[]
-  serviceRequests      ServiceRequest[]
-  categorySuggestions  CategorySuggestion[]
-  mosqueSuggestions    MosqueSuggestion[]
-  requesterConversations Conversation[] @relation("RequesterConversations")
-  sentMessages           Message[]
+  professionals              Professional[]
+  recommendations            Recommendation[]
+  recommendationReports      RecommendationReport[] @relation("ReportedByUser")
+  serviceRequests            ServiceRequest[]
+  categorySuggestions        CategorySuggestion[]
+  mosqueSuggestions          MosqueSuggestion[]
+  requesterConversations     Conversation[] @relation("RequesterConversations")
+  sentMessages               Message[]
 
   @@map("users")
 }
@@ -75,24 +81,25 @@ enum UserRole {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String
-  icon        String?
-  description String?
-  mosqueId    String?
-  mosque      Mosque?  @relation(fields: [mosqueId], references: [id])
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String
+  icon                  String?
+  description           String?
+  mosqueId              String?
+  mosque                Mosque?  @relation(fields: [mosqueId], references: [id])
+  isActive              Boolean  @default(true)
+  sortOrder             Int      @default(0)
+  isRegulatedProfession Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  professionals     Professional[]
-  categorizedProfessionals Professional[] @relation("ProfessionalCategories")
-  requests          ServiceRequest[]
-  sponsoredListings SponsoredListing[]
-  waitlistEntries   SponsoredWaitlist[]
-  pricingTiers      SponsoredPricingTier[]
+  professionals            Professional[]
+  categorizedProfessionals Professional[]         @relation("ProfessionalCategories")
+  requests                 ServiceRequest[]
+  sponsoredListings        SponsoredListing[]
+  waitlistEntries          SponsoredWaitlist[]
+  pricingTiers             SponsoredPricingTier[]
 
   @@unique([slug, mosqueId])
   @@map("categories")
@@ -144,18 +151,23 @@ model Professional {
   photoUrl          String?
   logoUrl           String?
   status            ProfessionalStatus @default(PENDING)
+  tier              ListingTier        @default(STANDARD)
   isVerified        Boolean            @default(false)
   isFeatured        Boolean            @default(false)
   isSponsored       Boolean            @default(false)
   profileViews      Int                @default(0)
   searchAppearances Int                @default(0)
   contactClicks     Int                @default(0)
-  availability      String?
-  rejectionReason   String?
-  submittedAt       DateTime           @default(now())
-  approvedAt        DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  availability                  String?
+  rejectionReason               String?
+  mosqueAffiliationConsentAt    DateTime?
+  mosqueAffiliationVisible      Boolean            @default(true)
+  listingConsentAt              DateTime?
+  listingConsentVersion         String?
+  submittedAt                   DateTime           @default(now())
+  approvedAt                    DateTime?
+  createdAt                     DateTime           @default(now())
+  updatedAt                     DateTime           @updatedAt
 
   serviceAreas      ServiceArea[]
   badges            VerificationBadge[]
@@ -168,7 +180,8 @@ model Professional {
   featuredListings  FeaturedListing[]
   featuredWaitlist  FeaturedWaitlist[]
   conversations     Conversation[]
-  editDrafts         ProfessionalEditDraft[]
+  editDrafts        ProfessionalEditDraft[]
+  broadcastLogs     BroadcastLog[]
 
   @@map("professionals")
 }
@@ -185,6 +198,13 @@ enum ProfessionalStatus {
   APPROVED
   REJECTED
   SUSPENDED
+}
+
+enum ListingTier {
+  STANDARD
+  FEATURED
+  SPONSORED
+  BROADCAST_ELIGIBLE
 }
 
 model ProfessionalEditDraft {
@@ -266,8 +286,34 @@ model Recommendation {
   moderatorNote     String?
   createdAt         DateTime             @default(now())
   approvedAt        DateTime?
+  reports           RecommendationReport[]
 
   @@map("recommendations")
+}
+
+model RecommendationReport {
+  id               String                       @id @default(cuid())
+  recommendationId String
+  recommendation   Recommendation               @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  reportedById     String
+  reportedBy       User                         @relation("ReportedByUser", fields: [reportedById], references: [id])
+  reason           String
+  detail           String?
+  status           RecommendationReportStatus   @default(OPEN)
+  resolutionNote   String?
+  createdAt        DateTime                     @default(now())
+  resolvedAt       DateTime?
+
+  @@unique([recommendationId, reportedById])
+  @@index([status, createdAt])
+  @@map("recommendation_reports")
+}
+
+enum RecommendationReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
 }
 
 enum RecommendationStatus {
@@ -418,17 +464,20 @@ model ServiceRequest {
   contactEmail     String?
   contactPhone     String?
   preferredDate    DateTime?
-  status           RequestStatus @default(OPEN)
-  closeReason      String?
-  closeNote        String?
-  closedAt         DateTime?
-  requesterArchivedAt DateTime?
-  assignedToId     String?
-  assignedTo       Professional? @relation(fields: [assignedToId], references: [id])
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  status                  RequestStatus @default(OPEN)
+  broadcastConsentAt      DateTime?
+  broadcastConsentVersion String?
+  closeReason             String?
+  closeNote               String?
+  closedAt                DateTime?
+  requesterArchivedAt     DateTime?
+  assignedToId            String?
+  assignedTo              Professional? @relation(fields: [assignedToId], references: [id])
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
 
-  conversations     Conversation[]
+  conversations  Conversation[]
+  broadcastLogs  BroadcastLog[]
 
   @@map("service_requests")
 }
@@ -444,6 +493,22 @@ enum RequestStatus {
   IN_PROGRESS
   CLOSED
   CANCELLED
+}
+
+// ── Broadcast Log ─────────────────────────────────────────────────────────────
+
+model BroadcastLog {
+  id               String         @id @default(cuid())
+  serviceRequestId String
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id])
+  professionalId   String
+  professional     Professional   @relation(fields: [professionalId], references: [id])
+  channel          String         @default("platform")
+  sentAt           DateTime       @default(now())
+
+  @@index([serviceRequestId])
+  @@index([professionalId])
+  @@map("broadcast_logs")
 }
 
 // ── Category Suggestions ──────────────────────────────────────────────────────

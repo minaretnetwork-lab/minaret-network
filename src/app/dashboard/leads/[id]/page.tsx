@@ -5,19 +5,16 @@ import {
   ChevronLeft,
   Clock,
   FileText,
-  Mail,
   MapPin,
   MessageCircle,
-  Phone,
   Tag,
   User,
 } from "lucide-react";
 import { getMatchingServiceRequestById } from "@/lib/actions/service-requests";
 import { getConversationForMatchingServiceRequest } from "@/lib/actions/messages";
-import { Button } from "@/components/ui/button";
 import { ConversationThread } from "@/components/dashboard/conversation-thread";
 import { CategoryIcon } from "@/components/ui/category-icon";
-import { buildWhatsAppUrl, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +29,8 @@ const CONTACT_LABEL: Record<string, string> = {
 };
 
 const CONTACT_ICON: Record<string, React.ReactNode> = {
-  EMAIL: <Mail className="h-4 w-4" />,
-  PHONE: <Phone className="h-4 w-4" />,
+  EMAIL: <MessageCircle className="h-4 w-4" />,
+  PHONE: <MessageCircle className="h-4 w-4" />,
   WHATSAPP: <MessageCircle className="h-4 w-4" />,
 };
 
@@ -72,12 +69,6 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
   const businessName = professional?.businessName || professional?.title || request.category.name;
   const requestTitle = professional ? `${professionalName} at ${businessName}` : request.category.name;
   const isClosed = request.status === "CLOSED" || request.status === "CANCELLED";
-  const whatsappHref = request.contactPhone
-    ? buildWhatsAppUrl(
-        request.contactPhone,
-        `Hi ${requesterName}, I saw your ${request.category.name} request on Minaret Network and may be able to help.`
-      )
-    : null;
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -184,35 +175,17 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
       )}
 
       {!isClosed && (
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 dark:border-emerald-800/40 dark:bg-emerald-900/20">
-        <h2 className="font-semibold text-emerald-950 dark:text-emerald-100">Other contact methods</h2>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          {whatsappHref && (
-            <a href={whatsappHref} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-              <Button className="w-full gap-1.5 bg-green-600 text-white hover:bg-green-700 sm:w-auto">
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </Button>
-            </a>
-          )}
-          {request.contactEmail && (
-            <a href={`mailto:${request.contactEmail}`} className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
-                <Mail className="h-4 w-4" />
-                Email
-              </Button>
-            </a>
-          )}
-          {request.contactPhone && (
-            <a href={`tel:${request.contactPhone}`} className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full gap-1.5 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 sm:w-auto">
-                <Phone className="h-4 w-4" />
-                Call
-              </Button>
-            </a>
-          )}
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 dark:border-emerald-800/40 dark:bg-emerald-900/20">
+          <h2 className="flex items-center gap-2 font-semibold text-emerald-950 dark:text-emerald-100">
+            <MessageCircle className="h-4 w-4" />
+            How to reach this member
+          </h2>
+          <p className="mt-2 text-sm text-emerald-800 dark:text-emerald-200 leading-relaxed">
+            Use the message thread above to introduce yourself. Their preferred contact method is{" "}
+            <strong>{CONTACT_LABEL[request.preferredContact]}</strong>.
+            If they choose to share their direct contact details, they will do so through the conversation.
+          </p>
         </div>
-      </div>
       )}
     </div>
   );
