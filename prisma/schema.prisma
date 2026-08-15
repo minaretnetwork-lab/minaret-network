@@ -69,6 +69,8 @@ model User {
   mosqueSuggestions          MosqueSuggestion[]
   requesterConversations     Conversation[] @relation("RequesterConversations")
   sentMessages               Message[]
+  eventListings              EventListing[]
+  eventListingReports        EventListingReport[] @relation("EventListingReportedBy")
 
   @@map("users")
 }
@@ -588,6 +590,75 @@ model MosqueSuggestion {
 
   @@index([status, createdAt])
   @@map("mosque_suggestions")
+}
+
+// ── Event Listings ────────────────────────────────────────────────────────────
+
+model EventListing {
+  id                             String             @id @default(cuid())
+  organizerUserId                String?
+  organizerUser                  User?              @relation(fields: [organizerUserId], references: [id])
+  organizerName                  String
+  organizerContact               String
+  title                          String
+  description                    String
+  eventDate                      DateTime
+  location                       String
+  listingType                    EventListingType   @default(STANDARD)
+  isMosqueOrganized              Boolean            @default(false)
+  mosqueName                     String?
+  mosqueAuthorizationConfirmedAt DateTime?
+  status                         EventListingStatus @default(PENDING_PAYMENT)
+  removalReason                  String?
+  priceChargedCents              Int                @default(0)
+  currency                       String             @default("CAD")
+  stripeCheckoutSessionId        String?
+  stripePaymentIntentId          String?
+  createdAt                      DateTime           @default(now())
+  expiresAt                      DateTime?
+  removedAt                      DateTime?
+
+  reports EventListingReport[]
+
+  @@index([status, expiresAt])
+  @@map("event_listings")
+}
+
+enum EventListingType {
+  STANDARD
+  FEATURED
+}
+
+enum EventListingStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  EXPIRED
+  REMOVED
+}
+
+model EventListingReport {
+  id             String                   @id @default(cuid())
+  eventListingId String
+  eventListing   EventListing             @relation(fields: [eventListingId], references: [id], onDelete: Cascade)
+  reportedById   String
+  reportedBy     User                     @relation("EventListingReportedBy", fields: [reportedById], references: [id])
+  reason         String
+  detail         String?
+  status         EventListingReportStatus @default(OPEN)
+  resolutionNote String?
+  createdAt      DateTime                 @default(now())
+  resolvedAt     DateTime?
+
+  @@unique([eventListingId, reportedById])
+  @@index([status, createdAt])
+  @@map("event_listing_reports")
+}
+
+enum EventListingReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
 }
 
 // Lightweight first-party analytics for the self-hosted experiment.

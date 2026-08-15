@@ -42,6 +42,7 @@ export function Footer() {
                 { href: "/advertise", label: "Advertise with Us" },
                 { href: "/auth/login", label: "Member Login" },
                 { href: "/auth/signup", label: "Create Account" },
+                { href: "/events", label: "Community Events" },
                 { href: "/mission", label: "Our Mission" },
               ].map((link) => (
                 <li key={link.href}>
@@ -54,11 +55,21 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
+        <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/30">
           <span>© {new Date().getFullYear()} Minaret Network. All rights reserved.</span>
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-end">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Link href="/terms" className="hover:text-emerald-400">Terms</Link>
             <Link href="/privacy" className="hover:text-emerald-400">Privacy</Link>
+            <a
+              href="https://stripe.com"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 opacity-50 hover:opacity-80 transition-opacity"
+              aria-label="Payments powered by Stripe"
+            >
+              <span className="text-white/60 text-[11px]">Payments powered by</span>
+              <span className="text-white font-bold text-sm tracking-tight" style={{ fontFamily: "system-ui, sans-serif", letterSpacing: "-0.02em" }}>stripe</span>
+            </a>
             <span>
               Location data ©{" "}
               <a

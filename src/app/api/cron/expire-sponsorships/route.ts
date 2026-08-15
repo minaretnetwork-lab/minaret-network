@@ -27,10 +27,20 @@ export async function GET(req: NextRequest) {
     data: { isFeatured: false },
   });
 
+  // Expire event listings whose expiresAt has passed.
+  const expiredEvents = await prisma.eventListing.updateMany({
+    where: {
+      status: "ACTIVE",
+      expiresAt: { lt: new Date() },
+    },
+    data: { status: "EXPIRED" },
+  });
+
   return NextResponse.json({
     ok: true,
     sponsoredExpired: expiredSponsored.count,
     featuredExpired: expiredFeatured.count,
+    eventsExpired: expiredEvents.count,
     ranAt: new Date().toISOString(),
   });
 }
