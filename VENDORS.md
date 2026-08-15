@@ -38,9 +38,18 @@ Internal reference document. Update whenever a new third-party data processor is
 
 ---
 
-## AI / LLM — (none currently connected)
+## AI / LLM — OpenAI
 
-No OpenAI, Anthropic, or other LLM API is currently wired into the application.
+| Item | Value |
+|------|-------|
+| Provider | OpenAI (platform.openai.com) |
+| Integration point | `src/app/api/ai/match-request/route.ts` — category/location classification for service-request matching |
+| Model in use | Confirm in code (`OPENAI_API_KEY` env var; model name logged in route) |
+| Data sent | User's free-text service-request description + category list (no PII, no phone, no email) |
+| Retention | OpenAI standard API: ~30-day abuse-monitoring retention by default; not used for model training (confirm at platform.openai.com/account/data-controls) |
+| ZDR | Zero Data Retention agreement not yet in place — evaluate if volume or data sensitivity warrants it |
+| Fallback | Keyword-scoring fallback (`fallbackClassify`) runs locally if `OPENAI_API_KEY` is unset — no data sent externally in that case |
+| Last verified | 2026-08-15 |
 
 ---
 
