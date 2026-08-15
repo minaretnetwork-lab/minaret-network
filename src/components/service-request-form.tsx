@@ -80,7 +80,7 @@ function CategoryIcon({ slug, className }: { slug?: string; className?: string }
   return <Icon className={className} />;
 }
 
-interface Category { id: string; name: string; icon?: string | null; slug?: string }
+interface Category { id: string; name: string; icon?: string | null; slug?: string; isRegulatedProfession?: boolean }
 interface ServiceArea { id: string; name: string }
 interface Props {
   categories: Category[];
@@ -105,6 +105,7 @@ interface FormState {
   contactEmail: string;
   contactPhone: string;
   preferredDate: string;
+  broadcastConsentAccepted: boolean;
 }
 
 const STEPS = ["Category", "Description", "Location & Date", "Contact", "Review"];
@@ -199,6 +200,7 @@ export function ServiceRequestForm({
     contactEmail: defaultEmail,
     contactPhone: defaultPhone,
     preferredDate: "",
+    broadcastConsentAccepted: false,
   };
   const [initialDraft] = useState(() => readStoredDraft());
   const mergedDraft = initialDraft
@@ -239,7 +241,11 @@ export function ServiceRequestForm({
     CATEGORY_EXAMPLES[selectedCategory?.slug ?? ""] ??
     `e.g. I need a ${selectedCategory?.name.toLowerCase() || "professional"} for a specific job. Please include timing, location, scope, and any important details.`;
   const descriptionPlaceholder = descriptionFocused ? "" : descriptionExample;
-  const filteredCategories = categories.filter((category) => {
+  // Regulated professions are excluded from the service-request flow entirely.
+  // Members can still find and message them through normal search/browse.
+  const requestableCategories = categories.filter((c) => !c.isRegulatedProfession);
+
+  const filteredCategories = requestableCategories.filter((category) => {
     const query = categoryQuery.trim().toLowerCase();
     if (!query) return true;
 
@@ -332,6 +338,7 @@ export function ServiceRequestForm({
         contactEmail: form.contactEmail,
         contactPhone: form.contactPhone,
         preferredDate: form.preferredDate || undefined,
+        broadcastConsentAt: form.broadcastConsentAccepted ? new Date().toISOString() : undefined,
       });
       setSubmitted(true);
     } catch (e) {
@@ -681,6 +688,20 @@ export function ServiceRequestForm({
             />
           </div>
 
+          {/* Broadcast consent — required, not pre-checked */}
+          <label className="flex items-start gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 cursor-pointer mb-4">
+            <input
+              type="checkbox"
+              checked={form.broadcastConsentAccepted}
+              onChange={(e) => set("broadcastConsentAccepted", e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              I understand that my request, including my name, contact information, and description, will be sent to
+              multiple mosque-affiliated professionals in this category. I may be contacted by more than one of them.
+            </span>
+          </label>
+
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">{error}</p>
           )}
@@ -691,8 +712,8 @@ export function ServiceRequestForm({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={submitting}
-              className="h-11 bg-[#14532d] text-base font-medium text-white hover:bg-[#166534] sm:flex-1"
+              disabled={submitting || !form.broadcastConsentAccepted}
+              className="h-11 bg-[#14532d] text-base font-medium text-white hover:bg-[#166534] disabled:opacity-40 sm:flex-1"
             >
               {submitting ? "Submitting…" : "Submit Request"}
               {!submitting && <ArrowRight className="h-4 w-4" />}

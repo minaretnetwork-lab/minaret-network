@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -80,24 +81,25 @@ enum UserRole {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String
-  icon        String?
-  description String?
-  mosqueId    String?
-  mosque      Mosque?  @relation(fields: [mosqueId], references: [id])
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String
+  icon                  String?
+  description           String?
+  mosqueId              String?
+  mosque                Mosque?  @relation(fields: [mosqueId], references: [id])
+  isActive              Boolean  @default(true)
+  sortOrder             Int      @default(0)
+  isRegulatedProfession Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  professionals     Professional[]
-  categorizedProfessionals Professional[] @relation("ProfessionalCategories")
-  requests          ServiceRequest[]
-  sponsoredListings SponsoredListing[]
-  waitlistEntries   SponsoredWaitlist[]
-  pricingTiers      SponsoredPricingTier[]
+  professionals            Professional[]
+  categorizedProfessionals Professional[]         @relation("ProfessionalCategories")
+  requests                 ServiceRequest[]
+  sponsoredListings        SponsoredListing[]
+  waitlistEntries          SponsoredWaitlist[]
+  pricingTiers             SponsoredPricingTier[]
 
   @@unique([slug, mosqueId])
   @@map("categories")
@@ -149,6 +151,7 @@ model Professional {
   photoUrl          String?
   logoUrl           String?
   status            ProfessionalStatus @default(PENDING)
+  tier              ListingTier        @default(STANDARD)
   isVerified        Boolean            @default(false)
   isFeatured        Boolean            @default(false)
   isSponsored       Boolean            @default(false)
@@ -177,7 +180,8 @@ model Professional {
   featuredListings  FeaturedListing[]
   featuredWaitlist  FeaturedWaitlist[]
   conversations     Conversation[]
-  editDrafts         ProfessionalEditDraft[]
+  editDrafts        ProfessionalEditDraft[]
+  broadcastLogs     BroadcastLog[]
 
   @@map("professionals")
 }
@@ -194,6 +198,13 @@ enum ProfessionalStatus {
   APPROVED
   REJECTED
   SUSPENDED
+}
+
+enum ListingTier {
+  STANDARD
+  FEATURED
+  SPONSORED
+  BROADCAST_ELIGIBLE
 }
 
 model ProfessionalEditDraft {
@@ -453,16 +464,19 @@ model ServiceRequest {
   contactEmail     String?
   contactPhone     String?
   preferredDate    DateTime?
-  status           RequestStatus @default(OPEN)
-  closeReason      String?
-  closeNote        String?
-  closedAt         DateTime?
-  assignedToId     String?
-  assignedTo       Professional? @relation(fields: [assignedToId], references: [id])
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  status                  RequestStatus @default(OPEN)
+  broadcastConsentAt      DateTime?
+  broadcastConsentVersion String?
+  closeReason             String?
+  closeNote               String?
+  closedAt                DateTime?
+  assignedToId            String?
+  assignedTo              Professional? @relation(fields: [assignedToId], references: [id])
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
 
-  conversations     Conversation[]
+  conversations  Conversation[]
+  broadcastLogs  BroadcastLog[]
 
   @@map("service_requests")
 }
@@ -478,6 +492,22 @@ enum RequestStatus {
   IN_PROGRESS
   CLOSED
   CANCELLED
+}
+
+// ── Broadcast Log ─────────────────────────────────────────────────────────────
+
+model BroadcastLog {
+  id               String         @id @default(cuid())
+  serviceRequestId String
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id])
+  professionalId   String
+  professional     Professional   @relation(fields: [professionalId], references: [id])
+  channel          String         @default("platform")
+  sentAt           DateTime       @default(now())
+
+  @@index([serviceRequestId])
+  @@index([professionalId])
+  @@map("broadcast_logs")
 }
 
 // ── Category Suggestions ──────────────────────────────────────────────────────

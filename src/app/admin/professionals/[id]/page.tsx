@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   Globe,
+  Layers,
   Mail,
   MapPin,
   Phone,
@@ -17,7 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { approveProfessional, getProfessionalForAdmin, rejectProfessional, suspendProfessional } from "@/lib/actions/admin";
+import { approveProfessional, getProfessionalForAdmin, rejectProfessional, setListingTier, suspendProfessional } from "@/lib/actions/admin";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
 
@@ -59,6 +60,14 @@ export default async function AdminProfessionalDetailPage({
   async function suspendAction() {
     "use server";
     await suspendProfessional(id);
+    redirect(`/admin/professionals/${id}`);
+  }
+
+  async function setTierAction(formData: FormData) {
+    "use server";
+    const tier = String(formData.get("tier") ?? "").trim();
+    if (!tier) return;
+    await setListingTier(id, tier);
     redirect(`/admin/professionals/${id}`);
   }
 
@@ -218,6 +227,35 @@ export default async function AdminProfessionalDetailPage({
             <ImagePreview label="Profile photo" src={professional.photoUrl} />
             <ImagePreview label="Business logo" src={professional.logoUrl} />
             <Info label="Gallery photos" value={String(professional.galleryImages.length)} />
+          </Card>
+
+          <Card title="Listing tier" icon={<Layers className="h-4 w-4" />}>
+            <Info label="Current tier" value={professional.tier} />
+            {professional.category.isRegulatedProfession && (
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-300">
+                This listing is in a regulated profession category.
+                The <strong>broadcast_eligible</strong> tier is blocked and cannot be set.
+              </p>
+            )}
+            {professional.status === "APPROVED" && (
+              <form action={setTierAction} className="space-y-2">
+                <select
+                  name="tier"
+                  defaultValue={professional.tier}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900"
+                >
+                  <option value="STANDARD">Standard</option>
+                  <option value="FEATURED">Featured</option>
+                  <option value="SPONSORED">Sponsored</option>
+                  {!professional.category.isRegulatedProfession && (
+                    <option value="BROADCAST_ELIGIBLE">Broadcast Eligible</option>
+                  )}
+                </select>
+                <Button type="submit" size="sm" className="w-full bg-emerald-700 text-white hover:bg-emerald-800">
+                  Set tier
+                </Button>
+              </form>
+            )}
           </Card>
 
           <Card title="Timeline" icon={<Calendar className="h-4 w-4" />}>
