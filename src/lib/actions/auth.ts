@@ -155,7 +155,14 @@ export async function deleteCurrentUserAccount(confirmText: string) {
   }
 }
 
-export async function reAcceptTos() {
+export async function reAcceptTos(formData: FormData) {
+  if (formData.get("ageAttested") !== "on") {
+    throw new Error("You must confirm you are 18 years or older.");
+  }
+  if (formData.get("tosAccepted") !== "on") {
+    throw new Error("You must accept the Terms of Service and Privacy Policy.");
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
@@ -171,6 +178,8 @@ export async function reAcceptTos() {
       tosVersion: CURRENT_TOS_VERSION,
     },
   });
+
+  redirect("/dashboard");
 }
 
 export async function updateUserProfile(data: {
