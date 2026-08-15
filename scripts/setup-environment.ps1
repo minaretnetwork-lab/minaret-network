@@ -24,7 +24,7 @@ function Get-EnvironmentSettings {
 
   return [ordered]@{
     Name = "production"
-    PublicOrigin = "https://minaretnetwork.ca"
+    PublicOrigin = "https://staging.minaretnetwork.ca"
     SitePort = 3220
     SupabaseWorkdir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
     SupabaseApiPort = 54321
@@ -51,12 +51,18 @@ function Register-MinaretTask {
   param([System.Collections.IDictionary]$Settings)
 
   $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-  $scriptPath = Join-Path $workspace "scripts\start-site.ps1"
-  $argument = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -Environment $($Settings.Name)"
+  $scriptPath = Join-Path $workspace "scripts\ensure-site.ps1"
+  $argument = "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`" -Environment $($Settings.Name)"
   $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $argument -WorkingDirectory $workspace
   $trigger = New-ScheduledTaskTrigger -AtLogOn
+  $trigger.Delay = "PT45S"
+  $trigger.Repetition = New-CimInstance -Namespace root/Microsoft/Windows/TaskScheduler -ClassName MSFT_TaskRepetitionPattern -ClientOnly -Property @{
+    Interval = "PT5M"
+    Duration = "P1D"
+    StopAtDurationEnd = $false
+  }
   $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
-  $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero)
+  $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -StartWhenAvailable -MultipleInstances IgnoreNew -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 2)
 
   Register-ScheduledTask -TaskName ([string]$Settings.TaskName) -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -Description "Runs the Minaret Network $($Settings.Name) site on localhost." -Force | Out-Null
 }

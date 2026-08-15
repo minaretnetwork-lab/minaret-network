@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Archive, ArchiveRestore } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { setConversationArchivedState } from "@/lib/actions/messages";
 
@@ -20,8 +21,20 @@ export function ArchiveConversationButton({
     startTransition(async () => {
       try {
         await setConversationArchivedState(conversationId, nextArchived);
+        if (nextArchived) {
+          toast.success("Conversation archived", {
+            duration: 6000,
+            action: {
+              label: "Undo",
+              onClick: () => updateArchivedState(false),
+            },
+          });
+        } else {
+          toast.success("Conversation restored");
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not update this conversation right now.");
+        toast.error(err instanceof Error ? err.message : "Could not update this conversation right now.");
       }
     });
   }

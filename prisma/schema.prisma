@@ -422,6 +422,7 @@ model ServiceRequest {
   closeReason      String?
   closeNote        String?
   closedAt         DateTime?
+  requesterArchivedAt DateTime?
   assignedToId     String?
   assignedTo       Professional? @relation(fields: [assignedToId], references: [id])
   createdAt        DateTime      @default(now())

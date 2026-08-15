@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { Clock, MapPin, Phone, Mail, MessageCircle, UserCheck, Plus, ClipboardList, ChevronRight } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { RequestArchiveButton, RequestArchiveContextCard } from "@/components/dashboard/request-archive-button";
 
 export const metadata = { title: "My Requests" };
 
@@ -20,7 +21,7 @@ const CONTACT_ICON: Record<string, React.ReactNode> = {
   WHATSAPP: <MessageCircle className="h-3 w-3" />,
 };
 
-type StatusFilter = "all" | "open" | "closed";
+type StatusFilter = "all" | "open" | "closed" | "archived";
 
 interface MyRequestsPageProps {
   searchParams?: Promise<{ status?: string }>;
@@ -29,20 +30,25 @@ interface MyRequestsPageProps {
 export default async function MyRequestsPage({ searchParams }: MyRequestsPageProps) {
   const params = await searchParams;
   const statusFilter: StatusFilter =
-    params?.status === "open" || params?.status === "closed" ? params.status : "all";
-  const requests = await getMyServiceRequests();
+    params?.status === "open" || params?.status === "closed" || params?.status === "archived" ? params.status : "all";
+  const requests = await getMyServiceRequests({ includeArchived: true });
 
-  const open   = requests.filter((r) => r.status === "OPEN").length;
-  const closed = requests.filter((r) => ["CLOSED", "CANCELLED"].includes(r.status)).length;
+  const open = requests.filter((r) => !["CLOSED", "CANCELLED"].includes(r.status) && !r.requesterArchivedAt).length;
+  const closed = requests.filter((r) => ["CLOSED", "CANCELLED"].includes(r.status) && !r.requesterArchivedAt).length;
+  const archived = requests.filter((r) => Boolean(r.requesterArchivedAt)).length;
   const sortedRequests = [...requests].sort((a, b) => {
+    const aArchived = Boolean(a.requesterArchivedAt);
+    const bArchived = Boolean(b.requesterArchivedAt);
     const aClosed = ["CLOSED", "CANCELLED"].includes(a.status);
     const bClosed = ["CLOSED", "CANCELLED"].includes(b.status);
+    if (aArchived !== bArchived) return aArchived ? 1 : -1;
     if (aClosed !== bClosed) return aClosed ? 1 : -1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
   const filteredRequests = sortedRequests.filter((request) => {
-    if (statusFilter === "open") return request.status === "OPEN";
-    if (statusFilter === "closed") return ["CLOSED", "CANCELLED"].includes(request.status);
+    if (statusFilter === "archived") return Boolean(request.requesterArchivedAt);
+    if (statusFilter === "open") return !["CLOSED", "CANCELLED"].includes(request.status) && !request.requesterArchivedAt;
+    if (statusFilter === "closed") return ["CLOSED", "CANCELLED"].includes(request.status) && !request.requesterArchivedAt;
     return true;
   });
 
@@ -64,9 +70,10 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
 
       {/* Stats strip */}
       {requests.length > 0 && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatBox label="Open" value={open} color="text-green-600" href="/dashboard/requests?status=open" active={statusFilter === "open"} />
           <StatBox label="Closed / Cancelled" value={closed} color="text-gray-500" href="/dashboard/requests?status=closed" active={statusFilter === "closed"} />
+          <StatBox label="Archived" value={archived} color="text-slate-500" href="/dashboard/requests?status=archived" active={statusFilter === "archived"} />
         </div>
       )}
 
@@ -86,7 +93,7 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
           {statusFilter !== "all" && (
             <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-900">
               <span className="text-gray-600 dark:text-gray-400">
-                Showing {statusFilter === "open" ? "open" : "closed/cancelled"} requests
+                Showing {statusFilter === "open" ? "open" : statusFilter === "closed" ? "closed/cancelled" : "archived"} requests
               </span>
               <Link href="/dashboard/requests" className="font-medium text-emerald-700 hover:underline">
                 Clear filter
@@ -96,7 +103,7 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
 
           {filteredRequests.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-400 dark:border-gray-800 dark:bg-gray-900">
-              No {statusFilter === "open" ? "open" : "closed/cancelled"} requests found.
+              No {statusFilter === "open" ? "open" : statusFilter === "closed" ? "closed/cancelled" : "archived"} requests found.
             </div>
           ) : filteredRequests.map((req) => {
             const ui = STATUS_STYLES[req.status] ?? STATUS_STYLES.OPEN;
@@ -105,8 +112,13 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
                  [req.assignedTo.user.firstName, req.assignedTo.user.lastName].filter(Boolean).join(" "))
               : null;
 
+            const canArchive = ["CLOSED", "CANCELLED"].includes(req.status);
+            const isArchived = Boolean(req.requesterArchivedAt);
+
             return (
-              <Link key={req.id} href={`/dashboard/requests/${req.id}`} className="group block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-emerald-300 hover:shadow-sm transition-all cursor-pointer">
+              <RequestArchiveContextCard key={req.id} requestId={req.id} archived={isArchived} enabled={canArchive || isArchived}>
+              <div className="group rounded-xl border border-gray-200 bg-white p-5 transition-all hover:border-emerald-300 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <Link href={`/dashboard/requests/${req.id}`} className="block cursor-pointer">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><CategoryIcon slug={req.category.slug} className="h-5 w-5" /></div>
@@ -154,12 +166,19 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
                     {ui.label}
                   </span>
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                </Link>
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-3 dark:border-gray-800">
+                  <div>
+                    {(canArchive || isArchived) && (
+                      <RequestArchiveButton requestId={req.id} archived={isArchived} />
+                    )}
+                  </div>
                   <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1 group-hover:gap-2 transition-all">
                     View details <ChevronRight className="h-3.5 w-3.5" />
                   </span>
                 </div>
-              </Link>
+              </div>
+              </RequestArchiveContextCard>
             );
           })}
         </div>

@@ -3,9 +3,10 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { getMatchingServiceRequests, getMyServiceRequests } from "@/lib/actions/service-requests";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, User, Search, ChevronRight, Clock, MapPin, Send } from "lucide-react";
+import { FileText, User, Search, ChevronRight, MapPin, Send } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { IncomingRequestsAlert } from "@/components/dashboard/incoming-requests-alert";
+import { RecentRequestsPanel } from "@/components/dashboard/recent-requests-panel";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
@@ -42,7 +43,6 @@ export default async function DashboardPage() {
   if (!user) return null;
 
   const displayName = user.displayName ?? user.firstName ?? "there";
-  const recentRequests = requests.slice(0, 3);
   const latestProfessional = user.professionals[0] ?? null;
   const matchingRequests = latestProfessional ? await getMatchingServiceRequests() : [];
   const recentMatchingRequests = matchingRequests.slice(0, 3);
@@ -136,45 +136,7 @@ export default async function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {recentRequests.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-gray-400">No requests yet.</p>
-              <Link href="/request" className="mt-3 inline-block">
-                <Button size="sm" variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
-                  Submit a Request
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentRequests.map((req) => (
-                <Link
-                  key={req.id}
-                  href={`/dashboard/requests/${req.id}`}
-                  className="group flex items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-emerald-50 dark:bg-gray-800/50 dark:hover:bg-emerald-900/10"
-                >
-                  <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><CategoryIcon slug={req.category.slug} className="h-4 w-4" /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 transition-colors group-hover:text-emerald-700 dark:text-white">{req.category.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{req.description}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      req.status === "OPEN" ? "bg-green-100 text-green-700" :
-                      req.status === "IN_PROGRESS" ? "bg-blue-100 text-blue-700" :
-                      "bg-gray-100 text-gray-600"
-                    }`}>
-                      {req.status.replace("_", " ")}
-                    </span>
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {formatDate(req.createdAt)}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+          <RecentRequestsPanel requests={requests} />
         </CardContent>
       </Card>
 

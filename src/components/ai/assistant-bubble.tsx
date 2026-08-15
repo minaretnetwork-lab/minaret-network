@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Bot, BriefcaseBusiness, Loader2, LocateFixed, Mail, MapPin, MessageCircle, Phone, Send, Sparkles, X } from "lucide-react";
@@ -95,6 +95,7 @@ function storeBroadcastDraft(result: MatchResult, issue: string) {
 
 export function AssistantBubble() {
   const router = useRouter();
+  const pathname = usePathname();
   const transcriptRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("issue");
@@ -106,6 +107,9 @@ export function AssistantBubble() {
   const [messages, setMessages] = useState<ChatMessage[]>(() => initialMessages());
 
   const canMatch = issue.trim().length >= 8 && location.trim().length >= 2;
+  const isHoldingPage = pathname === "/upgrades-in-progress";
+  const browserHost = window.location.hostname.toLowerCase();
+  const isHoldingHost = browserHost === "minaretnetwork.ca" || browserHost === "www.minaretnetwork.ca";
 
   useEffect(() => {
     transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight });
@@ -158,33 +162,44 @@ export function AssistantBubble() {
     clearCachedDetectedCity();
     setLocating(true);
     setError("");
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const response = await fetch(`/api/geocode/reverse?lat=${latitude}&lon=${longitude}`);
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload.error ?? "Location lookup failed.");
-          const city = payload.city ?? "";
-          if (!city) throw new Error("Couldn't detect your city.");
-          cacheDetectedCity(city);
-          setLocation(city);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : "Location lookup failed. Type your city instead.");
-        } finally {
+    const requestPosition = (attempt: number) => {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const response = await fetch(`/api/geocode/reverse?lat=${latitude}&lon=${longitude}`);
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error ?? "Location lookup failed.");
+            const city = payload.city ?? "";
+            if (!city) throw new Error("Couldn't detect your city.");
+            cacheDetectedCity(city);
+            setLocation(city);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Location lookup failed. Type your city instead.");
+          } finally {
+            setLocating(false);
+          }
+        },
+        (err) => {
+          if (err.code !== err.PERMISSION_DENIED && attempt === 0) {
+            window.setTimeout(() => requestPosition(1), 400);
+            return;
+          }
+
           setLocating(false);
-        }
-      },
-      (err) => {
-        setLocating(false);
-        setError(
-          err.code === err.PERMISSION_DENIED
-            ? "Location permission is blocked. Type your city instead."
-            : "Couldn't read your location. Type your city instead."
-        );
-      },
-      CITY_POSITION_OPTIONS
-    );
+          setError(
+            err.code === err.PERMISSION_DENIED
+              ? "Location permission is blocked. Type your city instead."
+              : err.code === err.TIMEOUT
+                ? "Location timed out. Try again or type your city instead."
+                : "Couldn't read your location. Type your city instead."
+          );
+        },
+        CITY_POSITION_OPTIONS
+      );
+    };
+
+    requestPosition(0);
   }
 
   async function runMatch() {
@@ -362,6 +377,8 @@ export function AssistantBubble() {
     );
   }
 
+  if (isHoldingPage || isHoldingHost) return null;
+
   return (
     <>
       <button
@@ -429,6 +446,11 @@ export function AssistantBubble() {
                   <Textarea
                     value={issue}
                     onChange={(event) => setIssue(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
+                      event.preventDefault();
+                      continueToLocation();
+                    }}
                     rows={3}
                     placeholder="Describe the issue..."
                     className="min-h-24 resize-none bg-white text-base dark:bg-gray-950"

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8);
   const requestUrl = new URL(request.url);
   const next = safeNext(requestUrl.searchParams.get("next"));
-  const siteUrl = getRequestOrigin(request);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
   const callbackUrl = new URL("/auth/callback", siteUrl);
   callbackUrl.searchParams.set("next", next);
   const cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }> = [];

@@ -18,11 +18,15 @@ export function normalizePublicAssetUrl(url: string | null | undefined) {
 
   try {
     const parsed = new URL(url);
-    const isLocalSupabase =
-      (parsed.hostname === "127.0.0.1" || parsed.hostname === "localhost") &&
-      parsed.pathname.startsWith("/storage/v1/");
+    const isMinaretStorage =
+      parsed.pathname.startsWith("/storage/v1/") &&
+      (parsed.hostname === "127.0.0.1" ||
+        parsed.hostname === "localhost" ||
+        parsed.hostname === "minaretnetwork.ca" ||
+        parsed.hostname === "www.minaretnetwork.ca" ||
+        parsed.hostname === "staging.minaretnetwork.ca");
 
-    if (!isLocalSupabase) return url;
+    if (!isMinaretStorage) return url;
 
     return `${origin}${parsed.pathname}${parsed.search}`;
   } catch {

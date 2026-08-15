@@ -64,7 +64,7 @@ export async function submitServiceRequest(data: {
   }
 }
 
-export async function getMyServiceRequests() {
+export async function getMyServiceRequests(options?: { includeArchived?: boolean }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
@@ -73,7 +73,10 @@ export async function getMyServiceRequests() {
   if (!dbUser) return [];
 
   return prisma.serviceRequest.findMany({
-    where: { userId: dbUser.id },
+    where: {
+      userId: dbUser.id,
+      ...(options?.includeArchived ? {} : { requesterArchivedAt: null }),
+    },
     include: {
       category: { select: { name: true, slug: true, icon: true } },
       serviceArea: { select: { name: true } },
@@ -337,6 +340,7 @@ export async function closeMyServiceRequest(id: string, data: { reason: string; 
       closeReason: reason,
       closeNote: note || null,
       closedAt: new Date(),
+      requesterArchivedAt: null,
     },
   });
 
@@ -369,6 +373,7 @@ export async function reopenMyServiceRequest(id: string) {
       closeReason: null,
       closeNote: null,
       closedAt: null,
+      requesterArchivedAt: null,
     },
   });
 
@@ -377,6 +382,36 @@ export async function reopenMyServiceRequest(id: string) {
   revalidatePath(`/dashboard/requests/${id}`);
   revalidatePath("/dashboard/messages");
   revalidatePath("/dashboard/leads");
+}
+
+export async function setMyServiceRequestArchivedState(id: string, archived: boolean) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser) throw new Error("User not found");
+
+  const request = await prisma.serviceRequest.findFirst({
+    where: { id, userId: dbUser.id },
+    select: { id: true, status: true },
+  });
+
+  if (!request) throw new Error("Request not found.");
+  if (!["CLOSED", "CANCELLED"].includes(request.status)) {
+    throw new Error("Only closed or cancelled requests can be archived.");
+  }
+
+  await prisma.serviceRequest.update({
+    where: { id },
+    data: {
+      requesterArchivedAt: archived ? new Date() : null,
+    },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/requests");
+  revalidatePath(`/dashboard/requests/${id}`);
 }
 
 export async function broadcastMyServiceRequest(id: string) {

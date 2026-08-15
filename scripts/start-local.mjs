@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,12 +56,38 @@ function isPidAlive(pid) {
   }
 }
 
+function isMinaretServerProcess(pid) {
+  if (!isPidAlive(pid)) return false;
+
+  if (process.platform !== "win32") return true;
+
+  try {
+    const commandLine = execFileSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-Command",
+        `(Get-CimInstance Win32_Process -Filter 'ProcessId = ${pid}').CommandLine`,
+      ],
+      { encoding: "utf8", windowsHide: true },
+    ).trim();
+    const normalized = commandLine.toLowerCase();
+    return normalized.includes("next") &&
+      normalized.includes(" start ") &&
+      normalized.includes(`-p ${port}`) &&
+      normalized.includes(workspace.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 if (fs.existsSync(pidPath)) {
   const existingPid = Number.parseInt(fs.readFileSync(pidPath, "utf8").trim(), 10);
-  if (isPidAlive(existingPid)) {
+  if (isMinaretServerProcess(existingPid)) {
     console.log(`${environmentName} already running with PID ${existingPid}`);
     process.exit(0);
   }
+  console.log(`Removing stale ${environmentName} PID file (${existingPid || "invalid"})`);
   fs.rmSync(pidPath, { force: true });
 }
 

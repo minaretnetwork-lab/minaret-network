@@ -1,8 +1,8 @@
 export function normalizeSiteOrigin(origin: string) {
   try {
     const url = new URL(origin);
-    if (url.hostname === "www.minaretnetwork.ca") {
-      url.hostname = "minaretnetwork.ca";
+    if (url.hostname === "www.staging.minaretnetwork.ca") {
+      url.hostname = "staging.minaretnetwork.ca";
     }
     return url.toString().replace(/\/$/, "");
   } catch {
@@ -37,5 +37,5 @@ export function getRequestOrigin(request: RequestLike) {
     return normalizeSiteOrigin(new URL(request.url).origin);
   }
 
-  return normalizeSiteOrigin("https://minaretnetwork.ca");
+  return normalizeSiteOrigin("https://staging.minaretnetwork.ca");
 }

@@ -12,7 +12,9 @@ type CachedCity = {
 export const CITY_POSITION_OPTIONS: PositionOptions = {
   enableHighAccuracy: false,
   maximumAge: DETECTED_CITY_MAX_AGE_MS,
-  timeout: 3000,
+  // The browser permission prompt can consume several seconds on the first
+  // request, so allow enough time for the user to respond.
+  timeout: 15000,
 };
 
 export function getCachedDetectedCity() {

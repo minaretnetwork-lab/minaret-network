@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const rawNext = searchParams.get("next") ?? "/dashboard";
   const next = rawNext.startsWith("/") ? rawNext : "/dashboard";
-  const siteUrl = getRequestOrigin(request);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
   const requestId = crypto.randomUUID().slice(0, 8);
 
   function log(message: string, details: Record<string, unknown> = {}) {

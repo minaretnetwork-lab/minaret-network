@@ -29,7 +29,7 @@ if ([string]::IsNullOrWhiteSpace($googleSecret)) {
 }
 
 $clientId = "1030105890262-70tati9hevbb4l3s0pv70oeq8l9ng1fr.apps.googleusercontent.com"
-$publicOrigin = "https://minaretnetwork.ca"
+$publicOrigin = "https://staging.minaretnetwork.ca"
 $tailscaleOrigin = "https://am5.tail033f8c.ts.net:8443"
 $allowList = @(
   "http://127.0.0.1:3220/auth/callback",
@@ -41,11 +41,11 @@ $allowList = @(
   "$publicOrigin/auth/callback?next=/dashboard",
   "$publicOrigin/auth/callback?next=/professionals/register",
   "$publicOrigin/auth/callback?next=%2Fprofessionals%2Fregister",
-  "https://www.minaretnetwork.ca/auth/callback",
-  "https://www.minaretnetwork.ca/auth/callback?next=/auth/update-password",
-  "https://www.minaretnetwork.ca/auth/callback?next=/dashboard",
-  "https://www.minaretnetwork.ca/auth/callback?next=/professionals/register",
-  "https://www.minaretnetwork.ca/auth/callback?next=%2Fprofessionals%2Fregister",
+  "https://www.staging.minaretnetwork.ca/auth/callback",
+  "https://www.staging.minaretnetwork.ca/auth/callback?next=/auth/update-password",
+  "https://www.staging.minaretnetwork.ca/auth/callback?next=/dashboard",
+  "https://www.staging.minaretnetwork.ca/auth/callback?next=/professionals/register",
+  "https://www.staging.minaretnetwork.ca/auth/callback?next=%2Fprofessionals%2Fregister",
   "$tailscaleOrigin/auth/callback",
   "$tailscaleOrigin/auth/callback?next=/auth/update-password",
   "$tailscaleOrigin/auth/callback?next=/dashboard",
