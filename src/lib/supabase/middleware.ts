@@ -1,12 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
-import { getForwardedHostname, getSupabaseUrlForHostname } from "./url";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const { pathname } = request.nextUrl;
-  const forwardedHost = getForwardedHostname((name) => request.headers.get(name), request.nextUrl.host);
+  const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
   const protectedRoutes = ["/dashboard", "/admin", "/auth/update-password"];
   const isProtected = protectedRoutes.some((r) => pathname === r || pathname.startsWith(r + "/"));
 
@@ -33,7 +32,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   const supabase = createServerClient(
-    getSupabaseUrlForHostname(forwardedHost),
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {

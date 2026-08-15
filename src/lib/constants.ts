@@ -16,10 +16,6 @@ export const LEGACY_LISTING_CONSENT_SUSPENSION_REASON =
 export const LEGACY_LISTING_CONSENT_RECEIVED_REASON =
   "Consent received on August 15, 2026. Listing restored to live status.";
 
-export const CONSENT_HOST = "consent.minaretnetwork.ca";
-export const CONSENT_FLOW_PATH = "/auth/re-consent?source=listing-restoration";
-export const CONSENT_COMPLETE_PATH = "/auth/re-consent/complete";
-
 // Bump this whenever the broadcast consent disclosure wording materially changes.
 // Stored on each service request so we can tell which users saw which version.
 export const CURRENT_BROADCAST_CONSENT_VERSION = "1.0";

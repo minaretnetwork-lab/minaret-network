@@ -5,10 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import {
-  CONSENT_COMPLETE_PATH,
-  CONSENT_FLOW_PATH,
   CURRENT_TOS_VERSION,
-  CONSENT_HOST,
   LEGACY_LISTING_CONSENT_RECEIVED_REASON,
   LEGACY_LISTING_CONSENT_SUSPENSION_REASON,
 } from "@/lib/constants";
@@ -197,9 +194,7 @@ export async function reAcceptTos(formData: FormData) {
   ) {
     throw new Error("You must confirm and consent to displaying your mosque affiliation.");
   }
-
   const now = new Date();
-  const isConsentFlow = formData.get("flow") === "listing-restoration";
   await prisma.$transaction([
     prisma.user.update({
       where: { supabaseId: user.id },
@@ -232,10 +227,6 @@ export async function reAcceptTos(formData: FormData) {
     ),
   ]);
 
-  if (isConsentFlow) {
-    redirect(CONSENT_COMPLETE_PATH);
-  }
-
   redirect("/dashboard");
 }
 
@@ -261,19 +252,6 @@ export async function getLegacyListingConsentContext() {
     listingCount: listings.length,
     mosqueNames: [...new Set(listings.flatMap((listing) => listing.user.mosque?.name ?? []))],
   };
-}
-
-export async function getConsentFlowEntryUrl() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-
-  if (baseUrl) {
-    const url = new URL("/auth/login", baseUrl);
-    url.hostname = CONSENT_HOST;
-    url.searchParams.set("redirectTo", CONSENT_FLOW_PATH);
-    return url.toString();
-  }
-
-  return `https://${CONSENT_HOST}/`;
 }
 
 export async function updateUserProfile(data: {

@@ -42,11 +42,6 @@ Current local production environment:
 |---|---:|---:|---:|---|---|
 | Production | `https://minaretnetwork.ca` | `3220` | `54322` | `.next-production` | `.env.production.local` |
 
-Additional public consent/auth entrypoint:
-
-- `https://consent.minaretnetwork.ca`
-- `https://consent.minaretnetwork.ca/auth/v1`
-
 ## Prerequisites
 
 - Windows with PowerShell
@@ -76,8 +71,6 @@ This creates or updates:
 - `.env.production.local`
 - production Supabase database/schema
 - `.next-production` build
-- local Supabase Auth configured for the consent subdomain
-- local Cloudflare Tunnel config including consent host routing
 - Windows scheduled task: `Minaret Network Local Site`
   - starts a hidden background site supervisor at logon
   - no repeating visible PowerShell health-check window
@@ -170,7 +163,6 @@ Important notes:
 - Google OAuth callback URL must be registered in Google Cloud Console:
   - `https://minaretnetwork.ca/auth/v1/callback`
   - `https://staging.minaretnetwork.ca/auth/v1/callback`
-  - `https://consent.minaretnetwork.ca/auth/v1/callback`
 
 ## AI matching
 
@@ -252,7 +244,6 @@ The public domains should route to:
 - production app on `127.0.0.1:3220`
 - Supabase Auth on `127.0.0.1:54321` for:
   - `staging.minaretnetwork.ca/auth/v1/*`
-  - `consent.minaretnetwork.ca/auth/v1/*`
 
 Cloudflare DNS and tunnel configuration should be kept in sync with the local port above.
 

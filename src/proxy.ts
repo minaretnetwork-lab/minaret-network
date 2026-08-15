@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { getRequestOrigin } from "@/lib/site-origin";
-import { CONSENT_COMPLETE_PATH, CONSENT_FLOW_PATH, CONSENT_HOST } from "@/lib/constants";
 
 export async function proxy(request: NextRequest) {
   const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
@@ -12,21 +11,6 @@ export async function proxy(request: NextRequest) {
     const origin = getRequestOrigin(request);
     const url = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, origin);
     return NextResponse.redirect(url, 308);
-  }
-
-  if (normalizedHost === CONSENT_HOST) {
-    if (request.nextUrl.pathname === "/") {
-      const origin = getRequestOrigin(request);
-      const url = new URL("/auth/login", origin);
-      url.searchParams.set("redirectTo", CONSENT_FLOW_PATH);
-      return NextResponse.redirect(url, 307);
-    }
-
-    if (request.nextUrl.pathname === "/dashboard") {
-      const origin = getRequestOrigin(request);
-      const url = new URL(CONSENT_COMPLETE_PATH, origin);
-      return NextResponse.redirect(url, 307);
-    }
   }
 
   if (normalizedHost && apexHosts.has(normalizedHost) && request.nextUrl.pathname !== "/upgrades-in-progress") {
