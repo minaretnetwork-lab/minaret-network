@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MinaretLogo } from "@/components/ui/minaret-logo";
 
 export function Footer() {
   return (
@@ -8,17 +9,11 @@ export function Footer() {
 
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-sm">
-                <span style={{ fontFamily: "var(--font-lora)" }}>MN</span>
-              </div>
-              <div>
-                <p className="font-semibold text-white text-sm leading-none" style={{ fontFamily: "var(--font-lora)" }}>Minaret Network</p>
-                <p className="text-[10px] text-white/40 leading-none mt-1 uppercase tracking-wide">Mosque Professionals</p>
-              </div>
+            <div className="mb-5">
+              <MinaretLogo />
             </div>
             <p className="text-sm leading-relaxed max-w-xs text-white/50">
-              Connecting mosque communities with affiliated professionals across the GTA.
+              Connecting mosque communities with community-affiliated professionals across the GTA.
             </p>
           </div>
 
@@ -47,6 +42,7 @@ export function Footer() {
                 { href: "/advertise", label: "Advertise with Us" },
                 { href: "/auth/login", label: "Member Login" },
                 { href: "/auth/signup", label: "Create Account" },
+                { href: "/mission", label: "Our Mission" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-white/50 hover:text-emerald-400 transition-colors">

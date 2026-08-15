@@ -45,33 +45,41 @@ export function CookieBanner({ onConsent }: { onConsent?: (consent: CookieConsen
   if (consent !== null) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[200] p-4 sm:p-6">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-[200] px-3 pb-3 sm:px-6 sm:pb-6"
+      style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+    >
       <div className="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
-        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-6">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
-            <Cookie className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+        <div className="flex items-center gap-3 px-4 py-3 sm:gap-5 sm:px-5 sm:py-4">
+          {/* Icon — hidden on mobile to save vertical space */}
+          <div className="hidden sm:flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
+            <Cookie className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
           </div>
+
+          {/* Text */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">We use cookies</p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-              We use <strong className="font-medium text-gray-700 dark:text-gray-300">essential cookies</strong> to keep you signed in and remember your preferences. With your permission, analytics cookies enable Google Analytics and Contentsquare, including heatmaps and session replay, to help us understand how the site is used. Choosing Essential only prevents these tools from loading, and we do not sell personal data.{" "}
-              <Link href="/privacy" className="underline hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
+            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+              <span className="font-semibold text-gray-900 dark:text-white">Cookies: </span>
+              We use essential cookies to keep you signed in, and optional analytics cookies to improve the site.{" "}
+              <Link href="/privacy" className="underline hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors whitespace-nowrap">
                 Privacy Policy
               </Link>
             </p>
           </div>
-          <div className="flex flex-shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+
+          {/* Buttons — always in a row */}
+          <div className="flex flex-shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => accept("essential")}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 whitespace-nowrap"
             >
               Essential only
             </button>
             <button
               type="button"
               onClick={() => accept("all")}
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-700"
+              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 whitespace-nowrap"
             >
               Accept all
             </button>

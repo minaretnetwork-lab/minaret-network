@@ -39,7 +39,16 @@ Internal reference document. Update whenever a new third-party data processor is
 
 ## AI / LLM — OpenAI
 
-The AI match assistant sends the visitor's service issue, approximate location text, and available category names to the OpenAI Responses API for classification. It does not send the visitor's account email or phone number to OpenAI in the matching request. If the API is unavailable, the application falls back to local keyword matching.
+| Item | Value |
+|------|-------|
+| Provider | OpenAI (platform.openai.com) |
+| Integration point | `src/app/api/ai/match-request/route.ts` — category/location classification for service-request matching |
+| Model in use | `OPENAI_MATCH_MODEL`, defaulting to `gpt-5.6-luna` |
+| Data sent | Visitor's free-text service issue, approximate location text, and available category names; no account email or phone number |
+| Retention | OpenAI standard API: ~30-day abuse-monitoring retention by default; not used for model training (confirm at platform.openai.com/account/data-controls) |
+| ZDR | Zero Data Retention agreement not yet in place — evaluate if volume or data sensitivity warrants it |
+| Fallback | Keyword-scoring fallback (`fallbackClassify`) runs locally if `OPENAI_API_KEY` is unset — no data sent externally in that case |
+| Last verified | 2026-08-15 |
 
 ---
 
