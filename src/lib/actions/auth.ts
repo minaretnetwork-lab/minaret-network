@@ -4,11 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import {
-  CURRENT_TOS_VERSION,
-  LEGACY_LISTING_CONSENT_RECEIVED_REASON,
-  LEGACY_LISTING_CONSENT_SUSPENSION_REASON,
-} from "@/lib/constants";
+import { CURRENT_TOS_VERSION } from "@/lib/constants";
 
 export async function signIn(email: string, password: string) {
   const supabase = await createClient();
@@ -171,87 +167,18 @@ export async function reAcceptTos(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
-
-  const listingsAwaitingConsent = await prisma.professional.findMany({
-    where: {
-      user: { supabaseId: user.id },
-      status: "SUSPENDED",
-      rejectionReason: LEGACY_LISTING_CONSENT_SUSPENSION_REASON,
-      listingConsentAt: null,
-    },
-    select: {
-      id: true,
-      user: { select: { mosqueId: true } },
+  const now = new Date();
+  await prisma.user.update({
+    where: { supabaseId: user.id },
+    data: {
+      ageAttestedAt: now,
+      ageAttestationVersion: CURRENT_TOS_VERSION,
+      tosAcceptedAt: now,
+      tosVersion: CURRENT_TOS_VERSION,
     },
   });
-
-  if (listingsAwaitingConsent.length > 0 && formData.get("listingConsent") !== "on") {
-    throw new Error("You must consent to publishing your professional listing.");
-  }
-  if (
-    listingsAwaitingConsent.some((listing) => listing.user.mosqueId !== null) &&
-    formData.get("mosqueAffiliationConsent") !== "on"
-  ) {
-    throw new Error("You must confirm and consent to displaying your mosque affiliation.");
-  }
-  const now = new Date();
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { supabaseId: user.id },
-      data: {
-        ageAttestedAt: now,
-        ageAttestationVersion: CURRENT_TOS_VERSION,
-        tosAcceptedAt: now,
-        tosVersion: CURRENT_TOS_VERSION,
-      },
-    }),
-    ...listingsAwaitingConsent.map((listing) =>
-      prisma.professional.updateMany({
-        where: {
-          id: listing.id,
-          user: { supabaseId: user.id },
-          status: "SUSPENDED",
-          rejectionReason: LEGACY_LISTING_CONSENT_SUSPENSION_REASON,
-          listingConsentAt: null,
-        },
-        data: {
-          status: "APPROVED",
-          approvedAt: now,
-          mosqueId: listing.user.mosqueId,
-          listingConsentAt: now,
-          listingConsentVersion: CURRENT_TOS_VERSION,
-          mosqueAffiliationConsentAt: listing.user.mosqueId ? now : null,
-          rejectionReason: LEGACY_LISTING_CONSENT_RECEIVED_REASON,
-        },
-      }),
-    ),
-  ]);
 
   redirect("/dashboard");
-}
-
-export async function getLegacyListingConsentContext() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { listingCount: 0, mosqueNames: [] as string[] };
-
-  const listings = await prisma.professional.findMany({
-    where: {
-      user: { supabaseId: user.id },
-      status: "SUSPENDED",
-      rejectionReason: LEGACY_LISTING_CONSENT_SUSPENSION_REASON,
-      listingConsentAt: null,
-    },
-    select: {
-      id: true,
-      user: { select: { mosque: { select: { name: true } } } },
-    },
-  });
-
-  return {
-    listingCount: listings.length,
-    mosqueNames: [...new Set(listings.flatMap((listing) => listing.user.mosque?.name ?? []))],
-  };
 }
 
 export async function updateUserProfile(data: {
