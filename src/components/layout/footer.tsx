@@ -58,19 +58,23 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30">
+        <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
           <span>© {new Date().getFullYear()} Minaret Network. All rights reserved.</span>
-          <span>
-            Location data ©{" "}
-            <a
-              href="https://www.openstreetmap.org/copyright"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-emerald-400"
-            >
-              OpenStreetMap contributors
-            </a>
-          </span>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-end">
+            <Link href="/terms" className="hover:text-emerald-400">Terms</Link>
+            <Link href="/privacy" className="hover:text-emerald-400">Privacy</Link>
+            <span>
+              Location data ©{" "}
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-emerald-400"
+              >
+                OpenStreetMap contributors
+              </a>
+            </span>
+          </div>
         </div>
       </div>
     </footer>

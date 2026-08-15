@@ -1,25 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Script from "next/script";
-import { getCookieConsent, CookieBanner, type CookieConsent } from "./cookie-banner";
+import { CookieBanner, useCookieConsent } from "./cookie-banner";
 
 const GA_ID = "G-6NWWGPL859";
 
+const subscribeToHostname = () => () => {};
+
+function isAnalyticsHost() {
+  const hostname = window.location.hostname.toLowerCase();
+  return (
+    hostname === "staging.minaretnetwork.ca" ||
+    hostname === "www.staging.minaretnetwork.ca" ||
+    hostname === "localhost" ||
+    hostname === "127.0.0.1"
+  );
+}
+
 export function GoogleAnalyticsWithConsent() {
-  const [consent, setConsent] = useState<CookieConsent>(null);
+  const consent = useCookieConsent();
+  const analyticsHost = useSyncExternalStore(subscribeToHostname, isAnalyticsHost, () => false);
 
-  useEffect(() => {
-    setConsent(getCookieConsent());
-  }, []);
-
-  function handleConsent(c: CookieConsent) {
-    setConsent(c);
-  }
+  if (!analyticsHost) return null;
 
   return (
     <>
-      <CookieBanner onConsent={handleConsent} />
+      <CookieBanner />
       {consent === "all" && (
         <>
           <Script

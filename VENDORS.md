@@ -8,13 +8,12 @@ Internal reference document. Update whenever a new third-party data processor is
 
 | Item | Value |
 |------|-------|
-| Provider | Supabase |
-| Region | `us-east-1` (AWS) |
-| Plan | Free / Pro — confirm in Supabase dashboard |
+| Provider | Self-hosted Supabase |
+| Hosting | Local Docker stack on the Minaret Network Windows host |
+| Managed region/plan | Not applicable; this is not a Supabase-hosted project |
 | Data processed | All application data: users, professionals, service requests, messages, recommendations |
-| Connection | App uses the pgbouncer pooler URL for queries; `DIRECT_URL` for Prisma migrations |
-| Data residency | United States |
-| DPA | Supabase Data Processing Agreement — available at supabase.com/legal |
+| Connection | App and Prisma connect to the local Supabase/PostgreSQL services |
+| Data residency | The local Windows host and off-repository backup location; confirm any future cloud migration separately |
 
 ---
 
@@ -22,9 +21,9 @@ Internal reference document. Update whenever a new third-party data processor is
 
 | Item | Value |
 |------|-------|
-| Provider | Supabase |
+| Provider | Self-hosted Supabase Auth; Google is available as an OAuth identity provider |
 | Data processed | Email, password hash, OAuth tokens, session metadata |
-| Retention | Sessions expire per Supabase defaults; deleted accounts purge on Supabase's schedule |
+| Retention | Controlled by the locally configured Auth service and application deletion workflows |
 
 ---
 
@@ -32,23 +31,25 @@ Internal reference document. Update whenever a new third-party data processor is
 
 | Item | Value |
 |------|-------|
-| Provider | Supabase Storage (backed by S3 in `us-east-1`) |
+| Provider | Self-hosted Supabase Storage backed by a local Docker volume |
 | Data processed | Profile photos, business logos, gallery images, credential documents |
 | Access control | Policies configured in Supabase dashboard — confirm public vs. private bucket settings |
 
 ---
 
-## AI / LLM — (none currently connected)
+## AI / LLM — OpenAI
 
-No OpenAI, Anthropic, or other LLM API is currently wired into the application.
+The AI match assistant sends the visitor's service issue, approximate location text, and available category names to the OpenAI Responses API for classification. It does not send the visitor's account email or phone number to OpenAI in the matching request. If the API is unavailable, the application falls back to local keyword matching.
 
 ---
 
 ## WhatsApp / Broadcast Notifications
 
-**Current status: not implemented.**
+**Outbound broadcast status: not implemented.**
 
 The "broadcast" feature (service requests visible to matching professionals) currently operates through the in-app leads dashboard only. No messages are sent via WhatsApp or any external channel.
+
+The site does provide user-initiated WhatsApp links on eligible professional discovery/contact surfaces. Those links open WhatsApp directly and are separate from the broadcast system.
 
 When WhatsApp is added, document here:
 - Whether it uses the Meta Cloud API directly or a Business Solution Provider (BSP)
@@ -58,9 +59,9 @@ When WhatsApp is added, document here:
 
 ---
 
-## Analytics — (none currently)
+## Analytics — Google Analytics and Contentsquare
 
-No Google Analytics, GA4, Mixpanel, or other analytics vendor is currently integrated.
+Google Analytics and Contentsquare are integrated on the real staging application. Contentsquare may provide heatmaps, session replay, and Voice of Customer feedback. Both tools load only after the visitor selects **Accept all** in the cookie banner. Selecting **Essential only** prevents them from loading. The apex and `www` holding-page hosts must not load analytics.
 
 ---
 

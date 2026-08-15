@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Cookie } from "lucide-react";
 
-const CONSENT_KEY = "mn_cookie_consent";
+// Version the key whenever the disclosed analytics vendors or purposes change.
+// This prevents an older consent choice from silently authorizing a new processor.
+const CONSENT_KEY = "mn_cookie_consent_v2";
+const CONSENT_EVENT = "mn-cookie-consent-change";
 
 export type CookieConsent = "all" | "essential" | null;
 
@@ -17,20 +20,29 @@ export function getCookieConsent(): CookieConsent {
   return null;
 }
 
-export function CookieBanner({ onConsent }: { onConsent?: (consent: CookieConsent) => void }) {
-  const [visible, setVisible] = useState(false);
+function subscribeToCookieConsent(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(CONSENT_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(CONSENT_EVENT, callback);
+  };
+}
 
-  useEffect(() => {
-    if (getCookieConsent() === null) setVisible(true);
-  }, []);
+export function useCookieConsent() {
+  return useSyncExternalStore(subscribeToCookieConsent, getCookieConsent, () => null);
+}
+
+export function CookieBanner({ onConsent }: { onConsent?: (consent: CookieConsent) => void }) {
+  const consent = useCookieConsent();
 
   function accept(consent: "all" | "essential") {
     try { window.localStorage.setItem(CONSENT_KEY, consent); } catch {}
-    setVisible(false);
+    window.dispatchEvent(new Event(CONSENT_EVENT));
     onConsent?.(consent);
   }
 
-  if (!visible) return null;
+  if (consent !== null) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[200] p-4 sm:p-6">
@@ -42,7 +54,7 @@ export function CookieBanner({ onConsent }: { onConsent?: (consent: CookieConsen
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white">We use cookies</p>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-              We use <strong className="font-medium text-gray-700 dark:text-gray-300">essential cookies</strong> to keep you signed in and remember your preferences. With your permission, we also use <strong className="font-medium text-gray-700 dark:text-gray-300">analytics cookies</strong> (Google Analytics) to understand how the site is used — no personal data is sold or shared.{" "}
+              We use <strong className="font-medium text-gray-700 dark:text-gray-300">essential cookies</strong> to keep you signed in and remember your preferences. With your permission, analytics cookies enable Google Analytics and Contentsquare, including heatmaps and session replay, to help us understand how the site is used. Choosing Essential only prevents these tools from loading, and we do not sell personal data.{" "}
               <Link href="/privacy" className="underline hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
                 Privacy Policy
               </Link>

@@ -9,8 +9,6 @@ import { LazyAssistantBubble } from "@/components/ai/lazy-assistant-bubble";
 import { GoogleAnalyticsWithConsent } from "@/components/google-analytics";
 import "./globals.css";
 
-const enableGoogleAnalytics = process.env.NEXT_PUBLIC_SITE_URL === "https://minaretnetwork.ca";
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -44,7 +42,7 @@ export default function RootLayout({
         <Suspense>
           <FlashToast />
         </Suspense>
-        {enableGoogleAnalytics && <GoogleAnalyticsWithConsent />}
+        <GoogleAnalyticsWithConsent />
       </body>
     </html>
   );
