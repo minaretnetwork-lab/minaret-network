@@ -42,6 +42,7 @@ export function Footer() {
                 { href: "/advertise", label: "Advertise with Us" },
                 { href: "/auth/login", label: "Member Login" },
                 { href: "/auth/signup", label: "Create Account" },
+                { href: "/mission", label: "Our Mission" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-white/50 hover:text-emerald-400 transition-colors">
