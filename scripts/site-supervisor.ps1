@@ -53,6 +53,32 @@ function Test-HttpReady {
   }
 }
 
+function Test-CloudflaredProcess {
+  $processes = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -eq "cloudflared.exe" -and $_.CommandLine -like '*config.yml*' }
+  return @($processes).Count -gt 0
+}
+
+function Start-CloudflaredIfNeeded {
+  $cloudflaredPath = "C:\Users\aftab\Documents\Codex\Tools\cloudflared\cloudflared.exe"
+  $configPath = "C:\Users\aftab\.cloudflared\config.yml"
+
+  if (Test-CloudflaredProcess) {
+    return
+  }
+
+  if (-not (Test-Path -LiteralPath $cloudflaredPath) -or -not (Test-Path -LiteralPath $configPath)) {
+    throw "Cloudflared is not configured. Expected $cloudflaredPath and $configPath."
+  }
+
+  Start-Process -FilePath $cloudflaredPath -ArgumentList @(
+    "tunnel",
+    "--config",
+    $configPath,
+    "run"
+  ) -WorkingDirectory (Split-Path -Parent $cloudflaredPath) -WindowStyle Hidden | Out-Null
+}
+
 function Get-MinaretServerPid {
   param([string]$Path)
 
@@ -141,6 +167,8 @@ if (-not (Test-Path -LiteralPath $runDirectory)) {
 
 while ($true) {
   try {
+    Start-CloudflaredIfNeeded
+
     $authHealthy = Test-HttpReady -Url $authHealthUrl -TimeoutSeconds $RequestTimeoutSeconds
     if (-not $authHealthy) {
       Start-Sleep -Seconds $CheckIntervalSeconds

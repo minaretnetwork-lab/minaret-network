@@ -164,6 +164,12 @@ Write-Host "Wrote $($settings.EnvFile) for $Environment (secrets omitted)."
 
 Set-ProcessEnvFromMap -Values $managed
 
+Write-Host "Configuring consent-hosted Auth..."
+& (Join-Path $workspace "scripts\configure-consent-auth.ps1") -Environment $Environment
+
+Write-Host "Syncing cloudflared config..."
+& (Join-Path $workspace "scripts\sync-cloudflared-config.ps1")
+
 Write-Host "Applying Prisma schema to $Environment..."
 $dbPush = Invoke-ExperimentNativeQuiet -FilePath $npxPath -Arguments @("prisma", "db", "push")
 if ($dbPush.ExitCode -ne 0) {
