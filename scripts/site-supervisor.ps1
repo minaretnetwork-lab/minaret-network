@@ -71,17 +71,17 @@ function Get-MinaretServerPid {
 
 function Test-MinaretServerProcess {
   param(
-    [int]$Pid,
+    [int]$ProcessId,
     [string]$Workspace,
     [int]$Port
   )
 
-  if ($Pid -le 0) {
+  if ($ProcessId -le 0) {
     return $false
   }
 
   try {
-    $process = Get-CimInstance Win32_Process -Filter "ProcessId = $Pid" -ErrorAction Stop
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId = $ProcessId" -ErrorAction Stop
     if (-not $process -or -not $process.CommandLine) {
       return $false
     }
@@ -109,7 +109,7 @@ function Stop-MinaretServerIfPresent {
     return
   }
 
-  if (Test-MinaretServerProcess -Pid $existingPid -Workspace $Workspace -Port $Port) {
+  if (Test-MinaretServerProcess -ProcessId $existingPid -Workspace $Workspace -Port $Port) {
     try {
       Stop-Process -Id $existingPid -Force -ErrorAction Stop
     }

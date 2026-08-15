@@ -5,6 +5,21 @@ export const DEFAULT_MOSQUE_SLUG =
 // Users whose stored tosVersion !== CURRENT_TOS_VERSION are redirected to re-accept before using the app.
 export const CURRENT_TOS_VERSION = "1.0";
 
+// Identifies the small set of legacy listings paused before explicit listing
+// and mosque-affiliation consent was collected. Keep this exact so ordinary
+// admin suspensions can never be restored by the self-service consent flow.
+export const LEGACY_LISTING_CONSENT_SUSPENSION_REASON =
+  "Temporarily disabled on August 15, 2026 pending mosque affiliation consent verification.";
+
+// After consent is collected from the paused August 15, 2026 cohort, keep the
+// listing live again while preserving an audit note about the restoration.
+export const LEGACY_LISTING_CONSENT_RECEIVED_REASON =
+  "Consent received on August 15, 2026. Listing restored to live status.";
+
+export const CONSENT_HOST = "consent.minaretnetwork.ca";
+export const CONSENT_FLOW_PATH = "/auth/re-consent?source=listing-restoration";
+export const CONSENT_COMPLETE_PATH = "/auth/re-consent/complete";
+
 // Bump this whenever the broadcast consent disclosure wording materially changes.
 // Stored on each service request so we can tell which users saw which version.
 export const CURRENT_BROADCAST_CONSENT_VERSION = "1.0";

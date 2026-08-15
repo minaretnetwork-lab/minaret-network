@@ -3,6 +3,8 @@ import { createServerClient } from "@supabase/ssr";
 import { prisma } from "@/lib/prisma";
 import { writeAuthDebugLog } from "@/lib/auth-debug-log";
 import { getRequestOrigin } from "@/lib/site-origin";
+import { CONSENT_HOST } from "@/lib/constants";
+import { getForwardedHostname, getSupabaseUrlForHostname } from "@/lib/supabase/url";
 
 export const runtime = "nodejs";
 
@@ -12,13 +14,17 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const rawNext = searchParams.get("next") ?? "/dashboard";
   const next = rawNext.startsWith("/") ? rawNext : "/dashboard";
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
+  const requestHost = getForwardedHostname((name) => request.headers.get(name), requestUrl.host);
+  const consentHostVariants = new Set([CONSENT_HOST, `www.${CONSENT_HOST}`]);
+  const siteUrl = consentHostVariants.has(requestHost)
+    ? getRequestOrigin(request)
+    : process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
   const requestId = crypto.randomUUID().slice(0, 8);
 
   function log(message: string, details: Record<string, unknown> = {}) {
     const payload = {
       requestId,
-      host: requestUrl.host,
+      host: requestHost,
       publicOrigin: siteUrl,
       hasCode: Boolean(code),
       next,
@@ -33,7 +39,7 @@ export async function GET(request: NextRequest) {
     const redirectResponse = NextResponse.redirect(redirectUrl);
     let cookiesSet = 0;
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      getSupabaseUrlForHostname(requestHost),
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {

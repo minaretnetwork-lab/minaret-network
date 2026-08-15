@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { writeAuthDebugLog } from "@/lib/auth-debug-log";
 import { getRequestOrigin } from "@/lib/site-origin";
+import { CONSENT_HOST } from "@/lib/constants";
+import { getForwardedHostname, getSupabaseUrlForHostname } from "@/lib/supabase/url";
 
 export const runtime = "nodejs";
 
@@ -13,7 +15,11 @@ export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8);
   const requestUrl = new URL(request.url);
   const next = safeNext(requestUrl.searchParams.get("next"));
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
+  const requestHost = getForwardedHostname((name) => request.headers.get(name), requestUrl.host);
+  const consentHostVariants = new Set([CONSENT_HOST, `www.${CONSENT_HOST}`]);
+  const siteUrl = consentHostVariants.has(requestHost)
+    ? getRequestOrigin(request)
+    : process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
   const callbackUrl = new URL("/auth/callback", siteUrl);
   callbackUrl.searchParams.set("next", next);
   const cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }> = [];
@@ -21,7 +27,7 @@ export async function GET(request: NextRequest) {
   function log(event: string, details: Record<string, unknown> = {}) {
     const payload = {
       requestId,
-      host: requestUrl.host,
+      host: requestHost,
       publicOrigin: siteUrl,
       next,
       callbackUrl: callbackUrl.toString(),
@@ -32,7 +38,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    getSupabaseUrlForHostname(requestHost),
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {

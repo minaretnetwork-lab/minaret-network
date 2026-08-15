@@ -28,6 +28,7 @@ function LoginForm() {
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
   const idleSignOut = searchParams.get("reason") === "idle";
   const passwordUpdated = searchParams.get("password") === "updated";
+  const isConsentFlow = redirectTo.startsWith("/auth/re-consent");
 
   const clearedOnFocusRef = useRef({ email: false, password: false });
 
@@ -107,6 +108,11 @@ function LoginForm() {
       {passwordUpdated && (
         <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
           Your password was updated. Sign in with the new password.
+        </div>
+      )}
+      {isConsentFlow && (
+        <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+          Sign in to confirm your consent for your Minaret Network listing.
         </div>
       )}
 
