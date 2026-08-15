@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { ContactGateModal } from "@/components/ui/contact-gate-modal";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
+import { ProfilePhotoLightbox } from "@/components/professionals/profile-photo-lightbox";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { ReportRecommendationButton } from "@/components/professionals/report-recommendation-button";
@@ -18,11 +18,21 @@ import { PendingChatRedirect } from "@/components/professionals/pending-chat-red
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getExistingConversationWithProfessional } from "@/lib/actions/messages";
+import { getProfessionalDisplayPhotoUrl } from "@/lib/public-asset-url";
 import { getInitials, buildWhatsAppUrl, formatDate } from "@/lib/utils";
 import type { BadgeType } from "@/types";
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+function getWebsiteLabel(website: string) {
+  try {
+    const url = new URL(website);
+    return url.hostname.replace(/^www\./i, "");
+  } catch {
+    return website.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/.*$/, "");
+  }
 }
 
 export default async function ProfessionalProfilePage({ params }: Props) {
@@ -45,10 +55,14 @@ export default async function ProfessionalProfilePage({ params }: Props) {
     user.displayName ??
     [user.firstName, user.lastName].filter(Boolean).join(" ") ??
     user.email;
-  const photoUrl = professional.photoUrl ?? user.avatarUrl;
+  const photoUrl = getProfessionalDisplayPhotoUrl({
+    photoUrl: professional.photoUrl,
+    avatarUrl: user.avatarUrl,
+  });
   const mapsUrl = professional.businessAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(professional.businessAddress)}`
     : null;
+  const websiteLabel = professional.website ? getWebsiteLabel(professional.website) : null;
 
   const approvedRecommendations = professional.recommendations.filter(
     (r) => r.status === "APPROVED"
@@ -72,12 +86,11 @@ export default async function ProfessionalProfilePage({ params }: Props) {
         <aside className="lg:col-span-1 space-y-5">
           {/* Profile card */}
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 text-center shadow-sm">
-            <Avatar className="h-24 w-24 mx-auto mb-4 border-4 border-green-100">
-              <AvatarImage src={photoUrl ?? undefined} alt={name} />
-              <AvatarFallback className="bg-green-100 text-green-700 font-bold text-2xl">
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar>
+            <ProfilePhotoLightbox
+              photoUrl={photoUrl}
+              name={name}
+              initials={getInitials(name)}
+            />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{name}</h1>
             {professional.businessName && (
               <p className="text-sm text-gray-500 dark:text-gray-400">{professional.businessName}</p>
@@ -133,7 +146,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               {professional.website && (
                 <a href={professional.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
                   <Globe className="h-4 w-4 flex-shrink-0" />
-                  Website
+                  {websiteLabel}
                 </a>
               )}
             </div>

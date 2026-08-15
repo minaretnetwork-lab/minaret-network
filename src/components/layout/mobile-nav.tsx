@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Shield, Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
+import { getAccountNavigation, getExploreNavigation } from "@/components/layout/account-navigation";
 
 interface MobileNavProps {
   isAdmin: boolean;
@@ -39,6 +40,14 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
   const messageHref = messageNotification.latestConversationId
     ? `/dashboard/messages/${messageNotification.latestConversationId}`
     : "/dashboard/messages";
+  const exploreGroups = getExploreNavigation();
+  const accountGroups = getAccountNavigation({
+    isAdmin,
+    isProfessional,
+    messageHref,
+    messageBadge: messageNotification.messagesCount,
+    adminBadge: messageNotification.adminCount,
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -95,30 +104,23 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
       {open && (
       <div className="fixed inset-x-0 top-16 z-[90] bg-[#14532d] border-b border-white/10 shadow-lg">
         <div className="container mx-auto px-4 py-5 flex flex-col gap-1">
-          {[
-            { href: "/professionals", label: "Find Professionals" },
-            { href: "/categories", label: "Categories" },
-            { href: "/request", label: "Service Request" },
-          ].map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={closeMenu}
-              className="py-3 px-3 rounded-lg text-base font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              {link.label}
-            </Link>
+          {exploreGroups.map((group) => (
+            <div key={group.id} className="flex flex-col gap-1">
+              <p className="px-3 pt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
+                {group.label}
+              </p>
+              {group.items.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={closeMenu}
+                  className="py-3 px-3 rounded-lg text-base font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           ))}
-
-          {isAdmin && (
-            <Link
-              href="/admin"
-              onClick={closeMenu}
-              className="py-3 px-3 rounded-lg text-base font-medium text-white hover:bg-white/10 flex items-center gap-2 transition-colors"
-            >
-              <Shield className="h-4 w-4" /> Admin Panel
-            </Link>
-          )}
 
           <div className="mt-3 pt-4 border-t border-white/10 flex flex-col gap-1">
             {user ? (
@@ -136,36 +138,25 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                   </div>
                   <span className="text-sm font-medium text-white truncate">{displayName}</span>
                 </div>
-                {[
-                  { href: "/dashboard", label: "My Dashboard" },
-                  { href: "/dashboard/profile", label: "My Profile" },
-                  { href: "/dashboard/requests", label: "My Requests" },
-                  { href: messageHref, label: "Messages", badge: messageNotification.messagesCount },
-                  ...(isProfessional ? [{ href: "/dashboard/leads", label: "Incoming Requests" }] : []),
-                ].map((link) => (
-                  <Link key={link.href} href={link.href}
-                    onClick={closeMenu}
-                    className="flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">
-                    <span className="flex-1">{link.label}</span>
-                    {typeof link.badge === "number" && link.badge > 0 && (
-                      <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                        {link.badge > 9 ? "9+" : link.badge}
-                      </span>
-                    )}
-                  </Link>
+                {accountGroups.map((group) => (
+                  <div key={group.id} className="flex flex-col gap-1">
+                    <p className="px-3 pt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
+                      {group.label}
+                    </p>
+                    {group.items.map((link) => (
+                      <Link key={link.href} href={link.href}
+                        onClick={closeMenu}
+                        className="flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+                        <span className="flex-1">{link.label}</span>
+                        {typeof link.badge === "number" && link.badge > 0 && (
+                          <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                            {link.badge > 9 ? "9+" : link.badge}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
                 ))}
-                {isAdmin && (
-                  <Link href="/admin"
-                    onClick={closeMenu}
-                    className="flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors">
-                    <span className="flex-1">Admin Panel</span>
-                    {messageNotification.adminCount > 0 && (
-                      <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                        {messageNotification.adminCount > 9 ? "9+" : messageNotification.adminCount}
-                      </span>
-                    )}
-                  </Link>
-                )}
                 <form action="/auth/signout" method="post" className="mt-2">
                   <button
                     type="submit"
@@ -176,7 +167,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                 </form>
               </>
             ) : (
-              <>
+              <div className="mt-2 flex flex-col gap-3">
                 <Link href="/auth/login" onClick={closeMenu}>
                   <Button
                     size="sm"
@@ -190,7 +181,7 @@ export function MobileNav({ isAdmin, isProfessional = false, user }: MobileNavPr
                     Join as Professional
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

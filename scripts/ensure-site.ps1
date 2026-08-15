@@ -78,9 +78,20 @@ if ($siteHealthy) {
 }
 
 Write-Host "Site is not responding, but Auth is healthy. Restarting the local site..."
-& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $startScript -Environment $Environment
-if ($LASTEXITCODE -ne 0) {
-  throw "The local site launcher exited with code $LASTEXITCODE."
+$restartProcess = Start-Process -FilePath "powershell.exe" -ArgumentList @(
+  "-NoProfile",
+  "-NonInteractive",
+  "-WindowStyle",
+  "Hidden",
+  "-ExecutionPolicy",
+  "Bypass",
+  "-File",
+  $startScript,
+  "-Environment",
+  $Environment
+) -WorkingDirectory $workspace -WindowStyle Hidden -PassThru -Wait
+if ($restartProcess.ExitCode -ne 0) {
+  throw "The local site launcher exited with code $($restartProcess.ExitCode)."
 }
 
 $deadline = (Get-Date).AddSeconds(45)

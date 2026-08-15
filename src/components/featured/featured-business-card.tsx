@@ -6,7 +6,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
 import { trackFeaturedCardClick } from "@/lib/actions/featured";
-import { normalizePublicAssetUrl } from "@/lib/public-asset-url";
+import { getProfessionalDisplayPhotoUrl } from "@/lib/public-asset-url";
 
 type FeaturedCardData = {
   id: string;
@@ -32,8 +32,10 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
     || user.displayName
     || [user.firstName, user.lastName].filter(Boolean).join(" ")
     || "Business";
-  // Prefer logo for featured cards (business brand), fall back to profile photo then Google avatar
-  const photoUrl = normalizePublicAssetUrl(professional.logoUrl ?? professional.photoUrl ?? user.avatarUrl);
+  const photoUrl = getProfessionalDisplayPhotoUrl({
+    photoUrl: professional.photoUrl,
+    avatarUrl: user.avatarUrl,
+  });
   const isMosqueAffiliated = professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED");
 
   async function handleClick() {

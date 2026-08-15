@@ -51,20 +51,26 @@ function Register-MinaretTask {
   param([System.Collections.IDictionary]$Settings)
 
   $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-  $scriptPath = Join-Path $workspace "scripts\ensure-site.ps1"
+  $taskPath = "\"
+  $scriptPath = Join-Path $workspace "scripts\site-supervisor.ps1"
+  $currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+  $currentUser = $currentIdentity.Name
   $argument = "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`" -Environment $($Settings.Name)"
   $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $argument -WorkingDirectory $workspace
-  $trigger = New-ScheduledTaskTrigger -AtLogOn
+  $trigger = New-ScheduledTaskTrigger -AtLogOn -User $currentUser
   $trigger.Delay = "PT45S"
-  $trigger.Repetition = New-CimInstance -Namespace root/Microsoft/Windows/TaskScheduler -ClassName MSFT_TaskRepetitionPattern -ClientOnly -Property @{
-    Interval = "PT5M"
-    Duration = "P1D"
-    StopAtDurationEnd = $false
-  }
-  $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
+  $principal = New-ScheduledTaskPrincipal -UserId $currentUser -LogonType Interactive -RunLevel Limited
   $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -StartWhenAvailable -MultipleInstances IgnoreNew -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 2)
+  $existingTask = Get-ScheduledTask -TaskName ([string]$Settings.TaskName) -TaskPath $taskPath -ErrorAction SilentlyContinue
+  if ($existingTask) {
+    if ($existingTask.State -eq "Running") {
+      Stop-ScheduledTask -TaskName ([string]$Settings.TaskName) -TaskPath $taskPath -ErrorAction SilentlyContinue
+      Start-Sleep -Seconds 2
+    }
+    Unregister-ScheduledTask -TaskName ([string]$Settings.TaskName) -TaskPath $taskPath -Confirm:$false
+  }
 
-  Register-ScheduledTask -TaskName ([string]$Settings.TaskName) -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -Description "Runs the Minaret Network $($Settings.Name) site on localhost." -Force | Out-Null
+  Register-ScheduledTask -TaskName ([string]$Settings.TaskName) -TaskPath $taskPath -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -Description "Runs the Minaret Network $($Settings.Name) site on localhost." -Force | Out-Null
 }
 
 function Start-MinaretTransient {

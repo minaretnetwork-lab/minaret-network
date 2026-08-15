@@ -34,3 +34,15 @@ export function normalizePublicAssetUrl(url: string | null | undefined) {
   }
 }
 
+type ProfessionalPhotoSources = {
+  photoUrl?: string | null;
+  avatarUrl?: string | null;
+};
+
+export function getProfessionalDisplayPhotoUrl({
+  photoUrl,
+  avatarUrl,
+}: ProfessionalPhotoSources) {
+  return normalizePublicAssetUrl(photoUrl ?? avatarUrl);
+}
+

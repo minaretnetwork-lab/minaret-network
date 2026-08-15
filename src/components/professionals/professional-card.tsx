@@ -8,6 +8,7 @@ import { ContactGateModal } from "@/components/ui/contact-gate-modal";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials, buildWhatsAppUrl } from "@/lib/utils";
+import { getProfessionalDisplayPhotoUrl } from "@/lib/public-asset-url";
 import type { ProfessionalWithRelations } from "@/types";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -89,7 +90,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
     ? Math.round((approvedRecs.reduce((sum, r) => sum + r.rating, 0) / recCount) * 10) / 10
     : null;
 
-  const photoUrl = professional.photoUrl ?? user.avatarUrl;
+  const photoUrl = getProfessionalDisplayPhotoUrl({
+    photoUrl: professional.photoUrl,
+    avatarUrl: user.avatarUrl,
+  });
   const profileUrl = `/professionals/${professional.id}`;
   const whatsappPhone = professional.whatsapp || professional.phone;
   const defaultLocation = serviceAreas[0]?.name ?? "";

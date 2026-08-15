@@ -72,6 +72,8 @@ This creates or updates:
 - production Supabase database/schema
 - `.next-production` build
 - Windows scheduled task: `Minaret Network Local Site`
+  - starts a hidden background site supervisor at logon
+  - no repeating visible PowerShell health-check window
 
 Start production manually:
 

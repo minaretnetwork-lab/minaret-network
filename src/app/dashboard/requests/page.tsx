@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getMyServiceRequests } from "@/lib/actions/service-requests";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
@@ -29,8 +30,13 @@ interface MyRequestsPageProps {
 
 export default async function MyRequestsPage({ searchParams }: MyRequestsPageProps) {
   const params = await searchParams;
-  const statusFilter: StatusFilter =
-    params?.status === "open" || params?.status === "closed" || params?.status === "archived" ? params.status : "all";
+  const rawStatus = params?.status;
+  const hasExplicitStatusFilter =
+    rawStatus === "open" || rawStatus === "closed" || rawStatus === "archived";
+  if (!hasExplicitStatusFilter) {
+    redirect("/dashboard/requests?status=open");
+  }
+  const statusFilter: StatusFilter = rawStatus;
   const requests = await getMyServiceRequests({ includeArchived: true });
 
   const open = requests.filter((r) => !["CLOSED", "CANCELLED"].includes(r.status) && !r.requesterArchivedAt).length;
@@ -90,16 +96,14 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
         </div>
       ) : (
         <div className="space-y-3">
-          {statusFilter !== "all" && (
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-900">
-              <span className="text-gray-600 dark:text-gray-400">
-                Showing {statusFilter === "open" ? "open" : statusFilter === "closed" ? "closed/cancelled" : "archived"} requests
-              </span>
-              <Link href="/dashboard/requests" className="font-medium text-emerald-700 hover:underline">
-                Clear filter
-              </Link>
-            </div>
-          )}
+          <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-900">
+            <span className="text-gray-600 dark:text-gray-400">
+              Showing {statusFilter === "open" ? "open" : statusFilter === "closed" ? "closed/cancelled" : "archived"} requests
+            </span>
+            <Link href="/dashboard/requests?status=open" className="font-medium text-emerald-700 hover:underline">
+              Show open
+            </Link>
+          </div>
 
           {filteredRequests.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-400 dark:border-gray-800 dark:bg-gray-900">

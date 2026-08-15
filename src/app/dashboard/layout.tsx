@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { CURRENT_TOS_VERSION } from "@/lib/constants";
-import { LayoutDashboard, User, FileText, Shield, Sparkles, Star, Send, MessageCircle } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { getAccountNavigation } from "@/components/layout/account-navigation";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -16,21 +16,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   const hasProfessionalListings = user.professionals.length > 0;
-  const links = [
-    { href: "/dashboard", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
-    { href: "/dashboard/profile", label: "My Profile", icon: <User className="h-4 w-4" /> },
-    { href: "/dashboard/requests", label: "My Requests", icon: <FileText className="h-4 w-4" /> },
-    { href: "/dashboard/messages", label: "Messages", icon: <MessageCircle className="h-4 w-4" /> },
-    ...(user.role === "PROFESSIONAL" || hasProfessionalListings ? [
-      { href: "/dashboard/professional", label: "Professional Profile", icon: <Shield className="h-4 w-4" /> },
-      { href: "/dashboard/leads", label: "Incoming Requests", icon: <Send className="h-4 w-4" /> },
-      { href: "/dashboard/promote", label: "Sponsored Listing", icon: <Sparkles className="h-4 w-4" /> },
-      { href: "/dashboard/featured", label: "Featured Business", icon: <Star className="h-4 w-4" /> },
-    ] : []),
-    ...(user.role === "ADMIN" || user.role === "SUPER_ADMIN" ? [
-      { href: "/admin", label: "Admin Panel", icon: <Shield className="h-4 w-4" /> },
-    ] : []),
-  ];
+  const navGroups = getAccountNavigation({
+    isAdmin: user.role === "ADMIN" || user.role === "SUPER_ADMIN",
+    isProfessional: user.role === "PROFESSIONAL" || hasProfessionalListings,
+    messageHref: user.latestUnreadConversationId ? `/dashboard/messages/${user.latestUnreadConversationId}` : "/dashboard/messages",
+    messageBadge: user.unreadMessageCount,
+  });
+  const flatLinks = navGroups.flatMap((group) => group.items);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
@@ -50,31 +42,44 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Mobile tab bar */}
       <div className="md:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
         <nav className="flex px-4 gap-1 min-w-max">
-          {links.map((link) => (
+          {flatLinks.map((link) => {
+            const Icon = link.icon;
+            return (
             <Link
               key={link.href}
               href={link.href}
               className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[#14532d] whitespace-nowrap border-b-2 border-transparent hover:border-[#14532d] transition-colors"
             >
-              {link.icon}
+              <Icon className="h-4 w-4" />
               {link.label}
             </Link>
-          ))}
+            );
+          })}
         </nav>
       </div>
 
       <div className="container mx-auto px-4 py-6 md:py-8 flex gap-8 flex-1">
         <aside className="w-52 flex-shrink-0 hidden md:block">
-          <nav className="space-y-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:text-[#14532d] dark:hover:text-emerald-400 transition-colors"
-              >
-                {link.icon}
-                {link.label}
-              </Link>
+          <nav className="space-y-5">
+            {navGroups.map((group) => (
+              <div key={group.id} className="space-y-1">
+                <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
+                  {group.label}
+                </p>
+                {group.items.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:text-[#14532d] dark:hover:text-emerald-400 transition-colors"
+                    >
+                      <Icon className="h-4 w-4" />
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </div>
             ))}
           </nav>
         </aside>

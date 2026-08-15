@@ -64,12 +64,12 @@ What the current scheduled task does:
 
 - scheduled task name: `Minaret Network Local Site`
 - delayed startup after logon
-- uses a health-check wrapper instead of blindly starting the app
-- only restarts the site if:
+- starts a hidden site supervisor instead of a visible repeating check
+- the supervisor keeps running quietly in the background
+- it only restarts the site if:
   - Supabase auth is healthy
   - but the local site is not responding
-- repeats periodically
-- avoids duplicate instances
+- avoids duplicate instances without reopening a console every five minutes
 
 This was added specifically to reduce flaky reboot/login behavior and intermittent Google auth failures caused by dependencies not being ready yet.
 
