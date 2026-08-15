@@ -80,7 +80,14 @@ function CategoryIcon({ slug, className }: { slug?: string; className?: string }
   return <Icon className={className} />;
 }
 
-interface Category { id: string; name: string; icon?: string | null; slug?: string; isRegulatedProfession?: boolean }
+interface Category {
+  id: string;
+  name: string;
+  icon?: string | null;
+  slug?: string;
+  isRegulatedProfession?: boolean;
+  professionalCount: number;
+}
 interface ServiceArea { id: string; name: string }
 interface Props {
   categories: Category[];
@@ -232,6 +239,7 @@ export function ServiceRequestForm({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [onlyWithProfessionals, setOnlyWithProfessionals] = useState(false);
   const [areaQuery, setAreaQuery] = useState("");
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [form, setForm] = useState<FormState>(mergedDraft?.form ?? emptyForm);
@@ -246,6 +254,8 @@ export function ServiceRequestForm({
   const requestableCategories = categories.filter((c) => !c.isRegulatedProfession);
 
   const filteredCategories = requestableCategories.filter((category) => {
+    if (onlyWithProfessionals && category.professionalCount === 0) return false;
+
     const query = categoryQuery.trim().toLowerCase();
     if (!query) return true;
 
@@ -433,7 +443,7 @@ export function ServiceRequestForm({
             What type of professional do you need?
           </h2>
           <p className="text-sm text-gray-400 mb-6">Select one to continue.</p>
-          <div className="relative mb-4">
+          <div className="relative mb-3">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="search"
@@ -443,10 +453,24 @@ export function ServiceRequestForm({
               className="h-12 rounded-xl pl-10 text-base"
             />
           </div>
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setOnlyWithProfessionals((current) => !current)}
+              aria-pressed={onlyWithProfessionals}
+              className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition ${
+                onlyWithProfessionals
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:border-emerald-400 dark:bg-emerald-900/20 dark:text-emerald-300"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-300"
+              }`}
+            >
+              Show only categories with professionals
+            </button>
+          </div>
           {filteredCategories.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center dark:border-gray-700 dark:bg-gray-800/40">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No categories match “{categoryQuery}”.</p>
-              <p className="mt-1 text-xs text-gray-400">Try a broader term like plumber, doctor, realtor, or childcare.</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No categories match your filters.</p>
+              <p className="mt-1 text-xs text-gray-400">Try showing all categories or using a broader search term.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">

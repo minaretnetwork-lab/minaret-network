@@ -16,7 +16,14 @@ export default async function RequestPage() {
         categories: {
           where: { isActive: true },
           orderBy: { name: "asc" },
-          select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            icon: true,
+            isRegulatedProfession: true,
+            _count: { select: { professionals: { where: { status: "APPROVED" } } } },
+          },
         },
         serviceAreas: { orderBy: { name: "asc" } },
       },
@@ -36,7 +43,10 @@ export default async function RequestPage() {
         </div>
 
         <ServiceRequestForm
-          categories={mosque?.categories ?? []}
+          categories={(mosque?.categories ?? []).map(({ _count, ...category }) => ({
+            ...category,
+            professionalCount: _count.professionals,
+          }))}
           serviceAreas={mosque?.serviceAreas ?? []}
           isAuthenticated={!!user}
           defaultName={user?.displayName ?? [user?.firstName, user?.lastName].filter(Boolean).join(" ") ?? ""}
