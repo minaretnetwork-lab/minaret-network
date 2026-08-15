@@ -117,6 +117,8 @@ export async function POST(request: Request) {
     }
 
     const mosqueAffiliationConsent = formData.get("mosqueAffiliationConsent") === "true";
+    const { CURRENT_TOS_VERSION } = await import("@/lib/constants");
+    const now = new Date();
     const data = {
       mosqueId: mosque?.id ?? null,
       categoryId,
@@ -137,7 +139,9 @@ export async function POST(request: Request) {
       acceptsWalkIns: formData.get("acceptsWalkIns") === "true",
       availability: formData.get("availability") as string || null,
       status: "PENDING" as const,
-      mosqueAffiliationConsentAt: (mosque?.id && mosqueAffiliationConsent) ? new Date() : null,
+      mosqueAffiliationConsentAt: (mosque?.id && mosqueAffiliationConsent) ? now : null,
+      listingConsentAt: now,
+      listingConsentVersion: CURRENT_TOS_VERSION,
     };
 
     if (professionalId) {

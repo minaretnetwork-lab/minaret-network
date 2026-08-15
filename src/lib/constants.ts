@@ -1,6 +1,10 @@
 export const DEFAULT_MOSQUE_SLUG =
   process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
 
+// Bump this whenever Terms of Service or Privacy Policy materially changes.
+// Users whose stored tosVersion !== CURRENT_TOS_VERSION are redirected to re-accept before using the app.
+export const CURRENT_TOS_VERSION = "1.0";
+
 export const CATEGORIES = [
   // Healthcare
   { name: "Doctor", slug: "doctor", icon: "🩺" },

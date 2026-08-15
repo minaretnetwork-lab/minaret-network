@@ -93,6 +93,13 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                   mosqueName={(professional as typeof professional & { mosque?: { name: string } }).mosque?.name}
                   size="sm"
                 />
+                {professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED") && (
+                  <p className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 leading-snug text-center px-2">
+                    Mosque affiliation is self-reported and not verified or endorsed by{" "}
+                    {(professional as typeof professional & { mosque?: { name: string } }).mosque?.name ?? "the mosque"}{" "}
+                    or Minaret Network.
+                  </p>
+                )}
               </div>
             )}
 

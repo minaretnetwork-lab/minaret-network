@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/utils";
 import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, ArrowRight, User, Plus, Megaphone } from "lucide-react";
 import type { BadgeType } from "@/types";
 import { withdrawProfessionalApplication } from "@/lib/actions/professionals";
+import { AffiliationVisibilityToggle } from "@/components/dashboard/affiliation-visibility-toggle";
 
 export const metadata = { title: "My Professional Listings" };
 
@@ -56,6 +57,7 @@ export default async function ProfessionalDashboardPage() {
       category: true,
       serviceAreas: true,
       badges: true,
+      mosque: { select: { name: true } },
       recommendations: { where: { status: "APPROVED" } },
       galleryImages: true,
       credentials: true,
@@ -156,6 +158,15 @@ export default async function ProfessionalDashboardPage() {
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Your Verification Badges</h3>
           <VerificationBadges badges={professional.badges as { id: string; type: BadgeType }[]} />
+          {professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED") && professional.mosque && (
+            <div className="mt-3">
+              <AffiliationVisibilityToggle
+                professionalId={professional.id}
+                initialVisible={professional.mosqueAffiliationVisible}
+                mosqueName={professional.mosque.name}
+              />
+            </div>
+          )}
         </div>
       )}
 

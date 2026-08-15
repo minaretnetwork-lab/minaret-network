@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
+import { CURRENT_TOS_VERSION } from "@/lib/constants";
 import { LayoutDashboard, User, FileText, Shield, Sparkles, Star, Send, MessageCircle } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -8,6 +9,11 @@ import { Footer } from "@/components/layout/footer";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login?redirectTo=/dashboard");
+
+  // Redirect to re-consent page if user hasn't accepted the current ToS version
+  if (!user.tosVersion || user.tosVersion !== CURRENT_TOS_VERSION) {
+    redirect("/auth/re-consent");
+  }
 
   const hasProfessionalListings = user.professionals.length > 0;
   const links = [

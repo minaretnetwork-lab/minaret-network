@@ -364,3 +364,25 @@ export async function submitProfessionalApplication(
     return { ok: false, error: message };
   }
 }
+
+export async function toggleMosqueAffiliationVisibility(professionalId: string, visible: boolean) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser) throw new Error("User not found");
+
+  const professional = await prisma.professional.findFirst({
+    where: { id: professionalId, userId: dbUser.id },
+  });
+  if (!professional) throw new Error("Listing not found");
+
+  await prisma.professional.update({
+    where: { id: professionalId },
+    data: { mosqueAffiliationVisible: visible },
+  });
+
+  revalidatePath("/dashboard/professional");
+  revalidatePath(`/professionals/${professionalId}`);
+}

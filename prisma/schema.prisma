@@ -158,6 +158,9 @@ model Professional {
   availability                  String?
   rejectionReason               String?
   mosqueAffiliationConsentAt    DateTime?
+  mosqueAffiliationVisible      Boolean            @default(true)
+  listingConsentAt              DateTime?
+  listingConsentVersion         String?
   submittedAt                   DateTime           @default(now())
   approvedAt                    DateTime?
   createdAt                     DateTime           @default(now())

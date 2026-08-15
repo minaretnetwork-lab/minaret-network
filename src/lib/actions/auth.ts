@@ -155,6 +155,24 @@ export async function deleteCurrentUserAccount(confirmText: string) {
   }
 }
 
+export async function reAcceptTos() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { CURRENT_TOS_VERSION } = await import("@/lib/constants");
+  const now = new Date();
+  await prisma.user.update({
+    where: { supabaseId: user.id },
+    data: {
+      ageAttestedAt: now,
+      ageAttestationVersion: CURRENT_TOS_VERSION,
+      tosAcceptedAt: now,
+      tosVersion: CURRENT_TOS_VERSION,
+    },
+  });
+}
+
 export async function updateUserProfile(data: {
   firstName: string;
   lastName: string;
