@@ -207,6 +207,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const logoInputRef = useRef<HTMLInputElement>(null);
   const goNextPending = useRef(false);
   const [termsAccepted, setTermsAccepted] = useState(Boolean(isEdit));
+  const [affiliationConsent, setAffiliationConsent] = useState(Boolean(isEdit));
 
   const [avSchedules, setAvSchedules] = useState<Record<string, DaySchedule>>({});
   const [avEmergency, setAvEmergency] = useState(false);
@@ -436,6 +437,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       if (photoFile) fd.append("photo", photoFile);
       if (logoFile) fd.append("logo", logoFile);
       if (initialData?.id) fd.append("professionalId", initialData.id);
+      if (affiliationConsent) fd.append("mosqueAffiliationConsent", "true");
       const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
       const contentType = res.headers.get("content-type") ?? "";
       const result: { ok: boolean; error?: string } = contentType.includes("application/json")
@@ -1019,6 +1021,22 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <p className="text-xs text-gray-400 mt-2">
                   An admin will verify your affiliation before approving your listing. If your mosque isn&apos;t listed, your profile can still be approved — the affiliation badge will not appear until your mosque is onboarded.
                 </p>
+
+                {selectedMosqueId && selectedMosqueId !== "unlisted" && (
+                  <div className="mt-3 rounded-lg border border-emerald-200 bg-white dark:bg-gray-900 p-3">
+                    <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={affiliationConsent}
+                        onChange={(e) => setAffiliationConsent(e.target.checked)}
+                        className="mt-0.5 flex-shrink-0 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <span className="text-xs text-gray-700 dark:text-gray-300">
+                        I confirm I am an active member of this mosque community (regular attendee or community channel member), and I consent to this affiliation being displayed publicly on my listing. I understand I can update or remove this at any time.
+                      </span>
+                    </label>
+                  </div>
+                )}
               </div>
 
               {/* Business logo */}

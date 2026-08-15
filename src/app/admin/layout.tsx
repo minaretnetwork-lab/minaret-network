@@ -5,7 +5,7 @@ import { getAdminStats } from "@/lib/actions/admin";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import {
   LayoutDashboard, Users, MessageSquare,
-  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound
+  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound, Flag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +17,7 @@ const navLinks = [
   { href: "/admin/sponsored", label: "Sponsored", icon: <Sparkles className="h-4 w-4" /> },
   { href: "/admin/featured", label: "Featured Biz", icon: <Star className="h-4 w-4" /> },
   { href: "/admin/recommendations", label: "Recommendations", icon: <MessageSquare className="h-4 w-4" /> },
+  { href: "/admin/reports", label: "Review Reports", icon: <Flag className="h-4 w-4" /> },
   { href: "/admin/requests", label: "Service Requests", icon: <FileText className="h-4 w-4" /> },
   { href: "/admin/categories", label: "Categories", icon: <Tag className="h-4 w-4" /> },
   { href: "/admin/category-suggestions", label: "Category Requests", icon: <Tag className="h-4 w-4" /> },
@@ -32,10 +33,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const stats = await getAdminStats(DEFAULT_MOSQUE_SLUG);
   const pendingProfessionalReviews = stats?.pendingProfessionalReviews ?? stats?.pendingProfessionals ?? 0;
   const pendingRecommendations = stats?.pendingRecommendations ?? 0;
+  const openReports = stats?.openReports ?? 0;
 
   function badgeForHref(href: string) {
     if (href === "/admin/professionals") return pendingProfessionalReviews;
     if (href === "/admin/recommendations") return pendingRecommendations;
+    if (href === "/admin/reports") return openReports;
     return 0;
   }
 

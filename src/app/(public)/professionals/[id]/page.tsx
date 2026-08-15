@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
+import { ReportRecommendationButton } from "@/components/professionals/report-recommendation-button";
 import { PendingChatRedirect } from "@/components/professionals/pending-chat-redirect";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
@@ -327,6 +328,10 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                         )}
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{rec.content}</p>
+                      <ReportRecommendationButton
+                        recommendationId={rec.id}
+                        isLoggedIn={!!currentUser}
+                      />
                     </div>
                   );
                 })}

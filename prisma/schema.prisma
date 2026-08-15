@@ -38,31 +38,36 @@ model Mosque {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  supabaseId    String   @unique
-  email         String   @unique
-  firstName     String?
-  lastName      String?
-  displayName   String?
-  avatarUrl     String?
-  phone         String?
-  whatsapp      String?
-  preferredContact ContactMethod?
-  role          UserRole @default(MEMBER)
-  mosqueId      String?
-  mosque        Mosque?  @relation(fields: [mosqueId], references: [id])
-  isActive      Boolean  @default(true)
-  emailVerified Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                      String    @id @default(cuid())
+  supabaseId              String    @unique
+  email                   String    @unique
+  firstName               String?
+  lastName                String?
+  displayName             String?
+  avatarUrl               String?
+  phone                   String?
+  whatsapp                String?
+  preferredContact        ContactMethod?
+  role                    UserRole  @default(MEMBER)
+  mosqueId                String?
+  mosque                  Mosque?   @relation(fields: [mosqueId], references: [id])
+  isActive                Boolean   @default(true)
+  emailVerified           Boolean   @default(false)
+  ageAttestedAt           DateTime?
+  ageAttestationVersion   String?
+  tosAcceptedAt           DateTime?
+  tosVersion              String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
-  professionals        Professional[]
-  recommendations      Recommendation[]
-  serviceRequests      ServiceRequest[]
-  categorySuggestions  CategorySuggestion[]
-  mosqueSuggestions    MosqueSuggestion[]
-  requesterConversations Conversation[] @relation("RequesterConversations")
-  sentMessages           Message[]
+  professionals              Professional[]
+  recommendations            Recommendation[]
+  recommendationReports      RecommendationReport[] @relation("ReportedByUser")
+  serviceRequests            ServiceRequest[]
+  categorySuggestions        CategorySuggestion[]
+  mosqueSuggestions          MosqueSuggestion[]
+  requesterConversations     Conversation[] @relation("RequesterConversations")
+  sentMessages               Message[]
 
   @@map("users")
 }
@@ -150,12 +155,13 @@ model Professional {
   profileViews      Int                @default(0)
   searchAppearances Int                @default(0)
   contactClicks     Int                @default(0)
-  availability      String?
-  rejectionReason   String?
-  submittedAt       DateTime           @default(now())
-  approvedAt        DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  availability                  String?
+  rejectionReason               String?
+  mosqueAffiliationConsentAt    DateTime?
+  submittedAt                   DateTime           @default(now())
+  approvedAt                    DateTime?
+  createdAt                     DateTime           @default(now())
+  updatedAt                     DateTime           @updatedAt
 
   serviceAreas      ServiceArea[]
   badges            VerificationBadge[]
@@ -266,8 +272,34 @@ model Recommendation {
   moderatorNote     String?
   createdAt         DateTime             @default(now())
   approvedAt        DateTime?
+  reports           RecommendationReport[]
 
   @@map("recommendations")
+}
+
+model RecommendationReport {
+  id               String                       @id @default(cuid())
+  recommendationId String
+  recommendation   Recommendation               @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  reportedById     String
+  reportedBy       User                         @relation("ReportedByUser", fields: [reportedById], references: [id])
+  reason           String
+  detail           String?
+  status           RecommendationReportStatus   @default(OPEN)
+  resolutionNote   String?
+  createdAt        DateTime                     @default(now())
+  resolvedAt       DateTime?
+
+  @@unique([recommendationId, reportedById])
+  @@index([status, createdAt])
+  @@map("recommendation_reports")
+}
+
+enum RecommendationReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
 }
 
 enum RecommendationStatus {

@@ -116,6 +116,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const mosqueAffiliationConsent = formData.get("mosqueAffiliationConsent") === "true";
     const data = {
       mosqueId: mosque?.id ?? null,
       categoryId,
@@ -136,6 +137,7 @@ export async function POST(request: Request) {
       acceptsWalkIns: formData.get("acceptsWalkIns") === "true",
       availability: formData.get("availability") as string || null,
       status: "PENDING" as const,
+      mosqueAffiliationConsentAt: (mosque?.id && mosqueAffiliationConsent) ? new Date() : null,
     };
 
     if (professionalId) {

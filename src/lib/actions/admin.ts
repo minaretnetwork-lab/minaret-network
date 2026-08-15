@@ -315,6 +315,7 @@ export async function getAdminStats(mosqueSlug: string) {
     openRequests,
     pendingRecommendations,
     pendingProfessionalEdits,
+    openReports,
   ] = await Promise.all([
     prisma.professional.count({ where: { mosqueId: mosque.id, status: { not: "WITHDRAWN" } } }),
     prisma.professional.count({ where: { mosqueId: mosque.id, status: "PENDING" } }),
@@ -323,6 +324,7 @@ export async function getAdminStats(mosqueSlug: string) {
     prisma.serviceRequest.count({ where: { mosqueId: mosque.id, status: "OPEN" } }),
     prisma.recommendation.count({ where: { status: "PENDING" } }),
     prisma.professionalEditDraft.count({ where: { status: "PENDING", professional: { mosqueId: mosque.id } } }),
+    prisma.recommendationReport.count({ where: { status: { in: ["OPEN", "REVIEWING"] } } }),
   ]);
   const pendingProfessionalReviews = pendingProfessionals + pendingProfessionalEdits;
 
@@ -335,6 +337,7 @@ export async function getAdminStats(mosqueSlug: string) {
     totalMembers,
     openRequests,
     pendingRecommendations,
+    openReports,
   };
 }
 
