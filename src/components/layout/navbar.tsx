@@ -3,6 +3,7 @@ import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
+import { MinaretLogo } from "@/components/ui/minaret-logo";
 
 interface NavbarProps {
   user?: {
@@ -30,18 +31,8 @@ export function Navbar({ user }: NavbarProps) {
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-6">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white font-bold text-sm">
-              <span style={{ fontFamily: "var(--font-lora)" }}>MN</span>
-            </div>
-            <div>
-              <span className="text-[15px] font-semibold text-white leading-none" style={{ fontFamily: "var(--font-lora)" }}>
-                Minaret Network
-              </span>
-              <p className="text-[10px] text-white/50 leading-none mt-0.5 tracking-widest uppercase">
-                Mosque Professionals
-              </p>
-            </div>
+          <Link href="/" className="flex-shrink-0">
+            <MinaretLogo />
           </Link>
 
           {/* Desktop Nav */}
