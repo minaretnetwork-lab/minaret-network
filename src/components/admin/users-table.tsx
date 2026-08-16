@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, ShieldCheck, UserRound, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search, ShieldCheck, UserRound, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,30 +44,15 @@ export type AdminUserRow = {
 
 const ROLE_OPTIONS = ["ALL", "MEMBER", "PROFESSIONAL", "ADMIN", "SUPER_ADMIN"];
 
+type SortKey = "user" | "role" | "contact" | "listings" | "requests" | "messages" | "joined" | "activity";
+type SortDirection = "asc" | "desc";
+
 const ROLE_BADGE: Record<string, string> = {
   MEMBER: "bg-gray-100 text-gray-700 border-gray-200",
   PROFESSIONAL: "bg-emerald-100 text-emerald-700 border-emerald-200",
   ADMIN: "bg-blue-100 text-blue-700 border-blue-200",
   SUPER_ADMIN: "bg-amber-100 text-amber-800 border-amber-200",
 };
-
-function formatShortDate(date: Date | string) {
-  return new Date(date).toLocaleDateString("en-CA", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "America/Toronto",
-  });
-}
-
-function formatLongDate(date: Date | string) {
-  return new Date(date).toLocaleDateString("en-CA", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "America/Toronto",
-  });
-}
 
 function formatTorontoDateTime(date: Date | string) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -107,14 +92,81 @@ function displayedRoles(user: AdminUserRow) {
     : [primaryRole];
 }
 
+function sortValue(user: AdminUserRow, key: SortKey): string | number {
+  switch (key) {
+    case "user":
+      return normalize(displayName(user));
+    case "role":
+      return displayedRoles(user).join(" ");
+    case "contact":
+      return normalize(user.phone || user.whatsapp || user.email);
+    case "listings":
+      return user._count.professionals;
+    case "requests":
+      return user._count.serviceRequests;
+    case "messages":
+      return user._count.sentMessages;
+    case "joined":
+      return new Date(user.createdAt).getTime();
+    case "activity":
+      return new Date(user.lastActivityAt).getTime();
+  }
+}
+
+function SortableColumnHeader({
+  label,
+  column,
+  sortKey,
+  sortDirection,
+  onSort,
+}: {
+  label: string;
+  column: SortKey;
+  sortKey: SortKey | null;
+  sortDirection: SortDirection;
+  onSort: (column: SortKey) => void;
+}) {
+  const active = sortKey === column;
+  const SortIcon = active ? (sortDirection === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+
+  return (
+    <th
+      scope="col"
+      aria-sort={active ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+      className="px-4 py-3 font-semibold"
+    >
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className="group inline-flex items-center gap-1.5 rounded-sm text-left transition hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+        title={`Sort ${label} ${active && sortDirection === "asc" ? "descending" : "ascending"}`}
+      >
+        <span>{label}</span>
+        <SortIcon className={`h-3.5 w-3.5 ${active ? "text-emerald-600" : "text-gray-300 group-hover:text-emerald-500"}`} />
+      </button>
+    </th>
+  );
+}
+
 export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("ALL");
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  function handleSort(column: SortKey) {
+    if (sortKey === column) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+      return;
+    }
+    setSortKey(column);
+    setSortDirection("asc");
+  }
 
   const filteredUsers = useMemo(() => {
     const needle = normalize(query);
 
-    return users.filter((user) => {
+    const matches = users.filter((user) => {
       const userRoles = displayedRoles(user);
       const matchesRole = role === "ALL" || userRoles.includes(role);
       if (!matchesRole) return false;
@@ -141,7 +193,19 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
         user.supabaseId,
       ].some((value) => normalize(value).includes(needle));
     });
-  }, [query, role, users]);
+
+    if (!sortKey) return matches;
+
+    return [...matches].sort((left, right) => {
+      const leftValue = sortValue(left, sortKey);
+      const rightValue = sortValue(right, sortKey);
+      const comparison = typeof leftValue === "number" && typeof rightValue === "number"
+        ? leftValue - rightValue
+        : String(leftValue).localeCompare(String(rightValue), "en-CA", { numeric: true, sensitivity: "base" });
+      if (comparison !== 0) return sortDirection === "asc" ? comparison : -comparison;
+      return displayName(left).localeCompare(displayName(right), "en-CA", { sensitivity: "base" });
+    });
+  }, [query, role, sortDirection, sortKey, users]);
 
   const activeCount = filteredUsers.filter((user) => user.isActive).length;
   const professionalCount = filteredUsers.filter(hasApprovedProfessionalListing).length;
@@ -242,14 +306,14 @@ export function AdminUsersTable({ users }: { users: AdminUserRow[] }) {
             <table className="min-w-[1260px] w-full text-left text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-900/60">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">User</th>
-                  <th className="px-4 py-3 font-semibold">Role</th>
-                  <th className="px-4 py-3 font-semibold">Contact</th>
-                  <th className="px-4 py-3 font-semibold">Listings</th>
-                  <th className="px-4 py-3 font-semibold">Requests</th>
-                  <th className="px-4 py-3 font-semibold">Messages</th>
-                  <th className="px-4 py-3 font-semibold">Joined</th>
-                  <th className="px-4 py-3 font-semibold">Last activity</th>
+                  <SortableColumnHeader label="User" column="user" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableColumnHeader label="Role" column="role" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableColumnHeader label="Contact" column="contact" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableColumnHeader label="Listings" column="listings" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableColumnHeader label="Requests" column="requests" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableColumnHeader label="Messages" column="messages" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableColumnHeader label="Joined" column="joined" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableColumnHeader label="Last activity" column="activity" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
