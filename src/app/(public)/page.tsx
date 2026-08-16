@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Search, Phone, Handshake, Star, Users,
-  Building2, ShieldCheck, ArrowRight,
+  Building2, ShieldCheck, ArrowRight, CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
@@ -255,6 +255,39 @@ export default async function HomePage() {
 
       {/* ── Community Circle ─────────────────────────────────── */}
       <CommunityCycle />
+
+      {/* ── Community Events CTA ─────────────────────────────── */}
+      <section className="bg-emerald-50 dark:bg-emerald-950/30 border-y border-emerald-100 dark:border-emerald-900/50 py-20">
+        <div className="container mx-auto px-4 lg:px-6 max-w-5xl">
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            <div className="flex-shrink-0 flex items-center justify-center h-24 w-24 rounded-3xl bg-emerald-700 shadow-lg">
+              <CalendarDays className="h-12 w-12 text-white" />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-2">Community events</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-snug" style={{ fontFamily: "var(--font-lora)" }}>
+                Reach GTA mosque communities with your event.
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6 max-w-lg">
+                Whether it&apos;s a fundraiser, bazaar, lecture, or community dinner — post it here and get it in front of thousands of GTA Muslims who are actively looking for events like yours.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                <Link href="/events/submit">
+                  <Button size="lg" className="bg-emerald-700 hover:bg-emerald-800 text-white h-12 px-8 shadow-sm font-semibold">
+                    Post an Event
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/events">
+                  <Button size="lg" variant="outline" className="h-12 px-8 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:border-emerald-300 font-medium">
+                    Browse events
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── CTA ──────────────────────────────────────────────── */}
       <section className="container mx-auto px-4 lg:px-6 py-24 text-center">
