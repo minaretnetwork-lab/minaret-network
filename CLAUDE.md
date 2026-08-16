@@ -1,3 +1,3 @@
 @AGENTS.md
 
-Before working on this repository, read `CLAUDE_HANDOFF_2026-08-15.md` completely. Treat it as the current source of truth where older project documentation conflicts.
+Before working on this repository, read `README.md` completely. It is the current source of truth for product behavior, infrastructure, deployment, known gotchas, and project history. Dated handoff documents are historical snapshots only.

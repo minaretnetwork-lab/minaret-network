@@ -1,6 +1,8 @@
 # Minaret local-stack experiment
 
-This runbook operates only the `agent/local-self-hosting-experiments` stack. It does not replace the hosted upstream project, and its scripts are scoped to the Minaret application, local Supabase services, Nominatim, and the Minaret Funnel routes.
+> **Historical prototype runbook.** The experiment became the active self-hosted production stack, Tailscale Funnel is no longer the public ingress, and the old experiment task name was retired. Do not execute this file as a current runbook. Use `README.md` and the tracked `scripts/install-windows-startup.ps1` workflow instead.
+
+At the time it was written, this runbook operated the `agent/local-self-hosting-experiments` prototype. That prototype later became the active self-hosted stack, with Cloudflare replacing the Funnel-based public routes described below.
 
 ## What is self-hosted
 

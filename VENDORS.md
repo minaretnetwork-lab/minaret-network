@@ -2,6 +2,21 @@
 
 Internal reference document. Update whenever a new third-party data processor is added or its configuration changes.
 
+The canonical deployment and product overview is `README.md`.
+
+---
+
+## Public ingress — Cloudflare
+
+| Item | Value |
+|------|-------|
+| Provider | Cloudflare Tunnel and DNS |
+| Purpose | Public HTTPS ingress for the self-hosted application plus scoped Supabase Auth/Storage paths |
+| Public application host | `staging.minaretnetwork.ca` |
+| Apex behavior | `minaretnetwork.ca` and `www` remain on the application holding page |
+| Credentials | Machine-level secret; intentionally not committed |
+| Restricted services | PostgreSQL, Studio, Mailpit, Nominatim, and service-role credentials must remain host-only |
+
 ---
 
 ## Database — Supabase (PostgreSQL)
@@ -84,7 +99,7 @@ Google Analytics and Contentsquare are integrated on the real staging applicatio
 | Data sent | Listing metadata (title, organizer name, listing type) via Stripe Checkout `line_items` and `metadata`; no PII beyond organizer contact (stored locally, not sent to Stripe) |
 | Webhook | `checkout.session.completed` — Stripe calls our webhook endpoint; signature verified with `stripe.webhooks.constructEvent` before any DB write |
 | Price security | Server-side only — `computeEventListingPriceCents()` in `src/lib/stripe.ts`; client never supplies a price |
-| Key env vars | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL` |
+| Key env vars | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_BASE_URL` |
 | Data residency | Stripe US (default); confirm in Stripe Dashboard &gt; Settings &gt; Data localization |
 | DPA | Stripe Data Processing Agreement — stripe.com/legal/dpa |
 | Last verified | 2026-08-15 |

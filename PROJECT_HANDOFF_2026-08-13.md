@@ -1,8 +1,10 @@
 # Minaret Network handoff
 
+> **Historical snapshot (August 13, 2026).** Do not use this file as a deployment runbook. Read `README.md` for the current architecture, features, startup tasks, domains, and gotchas.
+
 Last updated: August 13, 2026
 
-This file is the clean handoff for a fresh Codex task on this repo. It summarizes the current state of the project, what is live, what is intentionally disabled, how the local hosting works, and the main open threads.
+This file captured the project state for a Codex handoff on August 13, 2026. It is retained as historical context; later changes are documented in the root README and Git history.
 
 ## Project identity
 

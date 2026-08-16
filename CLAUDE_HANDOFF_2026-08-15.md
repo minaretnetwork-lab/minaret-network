@@ -1,10 +1,12 @@
 # Minaret Network: comprehensive Claude handoff
 
+> **Historical snapshot (August 15, 2026).** This file is retained for audit context and is no longer operational guidance. Infrastructure and product behavior changed after it was written. Read `README.md` for the current source of truth.
+
 Last verified: August 15, 2026 (America/Toronto)
 
-This document is the primary handoff for a new Claude project or coding session working on this repository. Treat it as the source of truth for the current architecture, deployment state, deliberate product decisions, and unfinished work.
+This document captured a detailed Claude handoff on August 15, 2026. It is useful for reconstructing decisions made by that date, but it is not the current source of truth.
 
-If this file conflicts with `README.md` or `PROJECT_HANDOFF_2026-08-13.md`, this file wins. Those documents contain useful historical context, but parts of their hosting and open-work descriptions are stale.
+If this file conflicts with `README.md` or the current code/configuration, `README.md` and the verified current state win. `PROJECT_HANDOFF_2026-08-13.md` is an even earlier historical snapshot.
 
 ## 1. Executive summary
 

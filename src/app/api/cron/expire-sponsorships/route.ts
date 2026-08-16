@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Called hourly by Vercel Cron (see vercel.json).
-// Also callable manually by an admin hitting this endpoint with the CRON_SECRET.
+// Called hourly by the local Windows scheduled task through
+// scripts/run-expire-sponsorships.ps1. It can also be invoked manually with
+// the CRON_SECRET bearer token.
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization");
   if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {

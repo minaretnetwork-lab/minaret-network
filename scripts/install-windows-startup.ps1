@@ -16,16 +16,70 @@ $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $powershellPath = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe"
 $infrastructureScript = Join-Path $PSScriptRoot "startup-infrastructure.ps1"
 $siteScript = Join-Path $PSScriptRoot "site-supervisor.ps1"
+$expiryScript = Join-Path $PSScriptRoot "run-expire-sponsorships.ps1"
 $currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
 $currentUser = $currentIdentity.Name
 $taskPath = "\"
 
-foreach ($requiredPath in @($powershellPath, $infrastructureScript, $siteScript)) {
+foreach ($requiredPath in @($powershellPath, $infrastructureScript, $siteScript, $expiryScript)) {
   if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
     throw "Required startup file was not found: $requiredPath"
   }
   if ($requiredPath.Contains('"')) {
     throw "Startup paths cannot contain a double quote: $requiredPath"
+  }
+}
+
+function Register-MinaretExpiryTask {
+  $taskName = "Minaret Network Expiry Sweep"
+  $arguments = "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$expiryScript`" -Environment production"
+  $action = New-ScheduledTaskAction `
+    -Execute $powershellPath `
+    -Argument $arguments `
+    -WorkingDirectory $workspace
+  $trigger = New-ScheduledTaskTrigger `
+    -Once `
+    -At (Get-Date).AddHours(1) `
+    -RepetitionInterval (New-TimeSpan -Hours 1)
+  $principal = New-ScheduledTaskPrincipal `
+    -UserId $currentUser `
+    -LogonType Interactive `
+    -RunLevel Limited
+  $settings = New-ScheduledTaskSettingsSet `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries `
+    -StartWhenAvailable `
+    -MultipleInstances IgnoreNew `
+    -RestartCount 3 `
+    -RestartInterval (New-TimeSpan -Minutes 2) `
+    -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
+
+  try {
+    Register-ScheduledTask `
+      -TaskName $taskName `
+      -TaskPath $taskPath `
+      -Action $action `
+      -Trigger $trigger `
+      -Principal $principal `
+      -Settings $settings `
+      -Description "Expires stale Minaret promotion flags and event listings once per hour." `
+      -Force `
+      -ErrorAction Stop | Out-Null
+  }
+  catch {
+    $retained = Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction SilentlyContinue
+    $retainedAction = if ($retained) { @($retained.Actions) } else { @() }
+    $retainedTrigger = if ($retained) { @($retained.Triggers) } else { @() }
+    $definitionMatches = $retainedAction.Count -eq 1 -and
+      $retainedAction[0].Arguments -like "*-File `"$expiryScript`"*" -and
+      $retainedTrigger.Count -eq 1 -and
+      $retainedTrigger[0].CimClass.CimClassName -eq "MSFT_TaskTimeTrigger" -and
+      $retainedTrigger[0].Repetition.Interval -eq "PT1H"
+    $accessWasDenied = $_.Exception.Message -match "access.*denied|unauthorized"
+    if (-not $accessWasDenied -or -not $definitionMatches) {
+      throw
+    }
+    Write-Warning "Retained ACL-protected task '$taskName' because its hourly definition already matches."
   }
 }
 
@@ -129,6 +183,8 @@ Register-MinaretStartupTask `
   -ExecutionTimeLimit ([TimeSpan]::Zero) `
   -ScriptArguments @("-Environment production")
 
+Register-MinaretExpiryTask
+
 if (-not $KeepLegacyStartupShortcuts) {
   $startupDirectory = [Environment]::GetFolderPath("Startup")
   $shortcutBackupDirectory = Join-Path $workspace "run\disabled-startup-shortcuts"
@@ -164,5 +220,23 @@ foreach ($taskName in @("Minaret Network Infrastructure", "Minaret Network Local
   }
 }
 
-Write-Host "Minaret startup tasks were registered and verified for $currentUser."
+$expiryTask = Get-ScheduledTask -TaskName "Minaret Network Expiry Sweep" -TaskPath $taskPath -ErrorAction Stop
+$expiryTrigger = @($expiryTask.Triggers)
+$expiryAction = @($expiryTask.Actions)
+if (
+  $expiryTrigger.Count -ne 1 -or
+  $expiryTrigger[0].CimClass.CimClassName -ne "MSFT_TaskTimeTrigger" -or
+  $expiryTrigger[0].Repetition.Interval -ne "PT1H"
+) {
+  throw "Startup verification failed for 'Minaret Network Expiry Sweep': expected one hourly trigger."
+}
+if (
+  $expiryAction.Count -ne 1 -or
+  $expiryAction[0].WorkingDirectory -ine $workspace -or
+  $expiryAction[0].Arguments -notlike "*-File `"$expiryScript`"*"
+) {
+  throw "Startup verification failed for 'Minaret Network Expiry Sweep': action or working directory is incorrect."
+}
+
+Write-Host "Minaret startup and hourly maintenance tasks were registered and verified for $currentUser."
 Write-Host "They were not started; they will run automatically after the next sign-in."

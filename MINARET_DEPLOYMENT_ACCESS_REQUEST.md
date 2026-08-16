@@ -1,5 +1,7 @@
 # Minaret Network — Deployment Access Request
 
+> **Archived request.** This document predates the move away from hosted/Vercel deployment. Minaret Network now runs on the self-hosted Windows/Supabase/Cloudflare architecture documented in `README.md`. Do not send this access request or use it as current setup guidance.
+
 Hi,
 
 We have forked `nafeeshaq-nuvaro/minaret-network` and are hosting the fork on a private Windows machine. The public HTTPS address is:
