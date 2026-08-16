@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { getStripeClient } from "@/lib/stripe";
 
 // Stripe requires the raw body for signature verification — disable Next.js body parsing.
 export const config = { api: { bodyParser: false } };
-
-function getStripe() {
-  if (!process.env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY not set");
-  return new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2026-07-29.dahlia" });
-}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -21,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event;
   try {
-    event = getStripe().webhooks.constructEvent(body, sig, webhookSecret);
+    event = getStripeClient().webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
     console.error("Stripe webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });

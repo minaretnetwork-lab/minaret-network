@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Info, ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
 
 export function ListingDisclaimer() {
   const [expanded, setExpanded] = useState(false);
@@ -15,7 +16,10 @@ export function ListingDisclaimer() {
           <div className="flex-1 min-w-0">
             <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
               <span className="font-semibold">Professionals listed here self-report their credentials and mosque affiliation.</span>{" "}
-              Minaret Network does not verify, endorse, or guarantee any professional — please do your own checks before hiring.
+              Minaret Network does not verify, endorse, or guarantee any professional — please do your own checks before hiring.{" "}
+              <Link href="/before-you-hire" className="font-medium underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100 whitespace-nowrap">
+                Before You Hire →
+              </Link>
             </p>
 
             {/* Tier 2 — expandable */}

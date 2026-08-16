@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getAdminStats } from "@/lib/actions/admin";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
+import { DEFAULT_MOSQUE_SLUG, CURRENT_TOS_VERSION } from "@/lib/constants";
 import {
   LayoutDashboard, Users, MessageSquare,
   FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound, Flag, CalendarDays
@@ -29,6 +29,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await getCurrentUser();
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
     redirect("/dashboard");
+  }
+  if (!user.tosVersion || user.tosVersion !== CURRENT_TOS_VERSION) {
+    redirect("/auth/re-consent");
   }
   const isSuperAdmin = user.role === "SUPER_ADMIN";
   const stats = await getAdminStats(DEFAULT_MOSQUE_SLUG);

@@ -4,13 +4,14 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { ProfessionalRegisterShell } from "@/components/professionals/professional-register-shell";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
+import { DEFAULT_MOSQUE_SLUG, CURRENT_TOS_VERSION } from "@/lib/constants";
 
 export const metadata = { title: "Register as Professional" };
 
 export default async function ProfessionalRegisterPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login?redirectTo=/professionals/register");
+  if (!user.tosVersion || user.tosVersion !== CURRENT_TOS_VERSION) redirect("/auth/re-consent");
 
   let mosques: { id: string; name: string; city: string | null }[] = [];
   let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];

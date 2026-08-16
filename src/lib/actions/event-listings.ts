@@ -1,17 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { computeEventListingPriceCents } from "@/lib/stripe";
+import { computeEventListingPriceCents, getStripeClient } from "@/lib/stripe";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import Stripe from "stripe";
-
-// Lazy Stripe init — only imported server-side when STRIPE_SECRET_KEY is present.
-function getStripe(): Stripe {
-  if (!process.env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY not set");
-  return new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2026-07-29.dahlia" });
-}
 
 export interface SubmitEventListingInput {
   organizerName: string;
@@ -96,7 +89,7 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
     },
   });
 
-  const stripe = getStripe();
+  const stripe = getStripeClient();
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
   const session = await stripe.checkout.sessions.create({

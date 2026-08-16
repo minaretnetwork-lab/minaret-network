@@ -1,5 +1,6 @@
 "use server";
 
+import { getCurrentUser } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -327,6 +328,32 @@ export async function getCategoriesForAdmin() {
     },
     orderBy: { name: "asc" },
   });
+}
+
+export async function createCategory(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
+
+  const name = String(formData.get("name") ?? "").trim();
+  const icon = String(formData.get("icon") ?? "").trim() || null;
+  if (!name) throw new Error("Name is required.");
+
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  const mosque = await prisma.mosque.findUnique({
+    where: { slug: (await import("@/lib/constants")).DEFAULT_MOSQUE_SLUG },
+    select: { id: true },
+  });
+
+  await prisma.category.create({
+    data: { name, slug, icon, mosqueId: mosque?.id ?? null },
+  });
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
 }
 
 export async function toggleCategoryRegulatedStatus(categoryId: string, isRegulated: boolean) {

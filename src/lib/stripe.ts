@@ -2,7 +2,7 @@ import Stripe from "stripe";
 
 let stripeInstance: Stripe | null = null;
 
-export function getStripe() {
+export function getStripeClient(): Stripe {
   if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error("STRIPE_SECRET_KEY is not set");
   }
@@ -14,6 +14,10 @@ export function getStripe() {
   }
 
   return stripeInstance;
+}
+
+export function getStripe(): Stripe {
+  return getStripeClient();
 }
 
 /** Server-side price computation — never trust a client-supplied price. */

@@ -40,6 +40,7 @@ export function Navbar({ user }: NavbarProps) {
             {[
               { href: "/professionals", label: "Find Professionals" },
               { href: "/categories", label: "Categories" },
+              { href: "/events", label: "Events" },
               { href: "/request", label: "Service Request" },
             ].map((link) => (
               <Link
@@ -76,12 +77,12 @@ export function Navbar({ user }: NavbarProps) {
             ) : (
               <>
                 <Link href="/auth/login">
-                  <Button variant="ghost" size="sm" className="h-9 text-sm text-white/80 hover:text-white hover:bg-white/10">
+                  <Button variant="ghost" size="sm" className="h-9 text-sm text-white/80 hover:text-white hover:bg-white/10 cursor-pointer">
                     Sign in
                   </Button>
                 </Link>
                 <Link href="/professionals/register">
-                  <Button size="sm" variant="outline" className="h-9 bg-transparent border-white/30 text-white hover:border-white hover:bg-white hover:text-emerald-700 text-sm font-medium">
+                  <Button size="sm" variant="outline" className="h-9 bg-transparent border-white/30 text-white hover:border-white hover:bg-white hover:text-emerald-700 text-sm font-medium cursor-pointer">
                     Join as a professional
                   </Button>
                 </Link>
@@ -122,13 +123,13 @@ export function Navbar({ user }: NavbarProps) {
             </Link>
             <Link
               href="/auth/login"
-              className="rounded-full border border-gray-200 bg-white px-2.5 py-2 text-center text-xs font-semibold text-gray-700"
+              className="rounded-full border border-gray-200 bg-white px-2.5 py-2 text-center text-xs font-semibold text-gray-700 cursor-pointer"
             >
               Sign in
             </Link>
             <Link
               href="/professionals/register"
-              className="rounded-full bg-emerald-600 px-2.5 py-2 text-center text-xs font-semibold text-white shadow-sm"
+              className="rounded-full bg-emerald-600 px-2.5 py-2 text-center text-xs font-semibold text-white shadow-sm cursor-pointer"
             >
               Join
             </Link>

@@ -49,9 +49,9 @@ export async function signUp(
       displayName: `${firstName} ${lastName}`,
       mosqueId: mosque?.id,
       ageAttestedAt: now,
-      ageAttestationVersion: "1.0",
+      ageAttestationVersion: CURRENT_TOS_VERSION,
       tosAcceptedAt: now,
-      tosVersion: "1.0",
+      tosVersion: CURRENT_TOS_VERSION,
     },
     create: {
       supabaseId: data.user.id,
@@ -63,9 +63,9 @@ export async function signUp(
       role: "MEMBER",
       emailVerified: false,
       ageAttestedAt: now,
-      ageAttestationVersion: "1.0",
+      ageAttestationVersion: CURRENT_TOS_VERSION,
       tosAcceptedAt: now,
-      tosVersion: "1.0",
+      tosVersion: CURRENT_TOS_VERSION,
     },
   });
 
@@ -167,6 +167,7 @@ export async function reAcceptTos(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
+
   const now = new Date();
   await prisma.user.update({
     where: { supabaseId: user.id },
@@ -192,7 +193,6 @@ export async function updateUserProfile(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  // Save to DB
   await prisma.user.update({
     where: { supabaseId: user.id },
     data: {
@@ -205,7 +205,6 @@ export async function updateUserProfile(data: {
     },
   });
 
-  // Keep Supabase metadata in sync
   await supabase.auth.updateUser({
     data: {
       first_name: data.firstName,
