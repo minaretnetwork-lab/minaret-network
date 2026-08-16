@@ -183,21 +183,12 @@ while ($true) {
 
     Stop-MinaretServerIfPresent -PidPath $pidPath -Workspace $workspace -Port $sitePort
 
-    $restartProcess = Start-Process -FilePath "powershell.exe" -ArgumentList @(
-      "-NoProfile",
-      "-NonInteractive",
-      "-WindowStyle",
-      "Hidden",
-      "-ExecutionPolicy",
-      "Bypass",
-      "-File",
-      $startScript,
-      "-Environment",
-      $Environment
-    ) -WorkingDirectory $workspace -WindowStyle Hidden -PassThru -Wait
-
-    if ($restartProcess.ExitCode -ne 0) {
-      throw "The local site launcher exited with code $($restartProcess.ExitCode)."
+    # Invoke the launcher directly so paths containing spaces are preserved.
+    # Start-Process joins ArgumentList into a single string on Windows; without
+    # additional quoting it truncated this repository path at "Minaret Fork".
+    & $startScript -Environment $Environment
+    if ($LASTEXITCODE -ne 0) {
+      throw "The local site launcher exited with code $LASTEXITCODE."
     }
 
     $deadline = (Get-Date).AddSeconds(45)

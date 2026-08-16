@@ -75,6 +75,18 @@ This creates or updates:
   - starts a hidden background site supervisor at logon
   - no repeating visible PowerShell health-check window
 
+Install the complete Windows sign-in startup sequence without starting it immediately:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/install-windows-startup.ps1
+```
+
+This registers `Minaret Network Infrastructure` first (Docker, Supabase, and
+Nominatim), followed by `Minaret Network Local Site` (the site supervisor and
+Cloudflare tunnel). It also disables obsolete Minaret Startup-folder shortcuts
+so the tunnel and site are not launched twice. The tasks take effect at the next
+interactive Windows sign-in.
+
 Start production manually:
 
 ```powershell
