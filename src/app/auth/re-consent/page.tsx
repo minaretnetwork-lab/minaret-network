@@ -1,17 +1,35 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { CURRENT_TOS_VERSION } from "@/lib/constants";
 import { reAcceptTos } from "@/lib/actions/auth";
 import { ReConsentSubmitButton } from "./submit-button";
+import Link from "next/link";
 
-export default function ReConsentPage() {
+export default async function ReConsentPage() {
+  // Auth guard — unauthenticated users should not see this page
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/login");
+
+  // Determine if this is first-time consent or re-consent after a version bump
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: user.id },
+    select: { tosVersion: true },
+  });
+  const isFirstTime = !dbUser?.tosVersion;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
       <div className="w-full max-w-md">
         <form action={reAcceptTos} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Updated Terms &amp; Privacy Policy
+            {isFirstTime ? "Before you continue" : "Updated Terms & Privacy Policy"}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            We&apos;ve updated our Terms of Service and Privacy Policy. Please review and re-accept them to continue using Minaret Network.
+            {isFirstTime
+              ? "Please confirm the following before using Minaret Network."
+              : `We've updated our Terms of Service and Privacy Policy (version ${CURRENT_TOS_VERSION}). Please review and re-accept them to continue.`}
           </p>
 
           <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 mb-6">
@@ -23,7 +41,7 @@ export default function ReConsentPage() {
                 className="mt-0.5 flex-shrink-0 rounded border-gray-300 text-green-600 focus:ring-green-500"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                I confirm I am <strong>18 years of age or older</strong>
+                I confirm I am <strong>18 years of age or older</strong>.
               </span>
             </label>
 
@@ -36,9 +54,13 @@ export default function ReConsentPage() {
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
                 I agree to the{" "}
-                <Link href="/terms" className="text-green-700 hover:underline">Terms of Service</Link>
+                <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-green-700 underline hover:text-green-900">
+                  Terms of Service
+                </Link>
                 {" "}and{" "}
-                <Link href="/privacy" className="text-green-700 hover:underline">Privacy Policy</Link>
+                <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-green-700 underline hover:text-green-900">
+                  Privacy Policy
+                </Link>.
               </span>
             </label>
           </div>

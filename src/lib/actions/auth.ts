@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { CURRENT_TOS_VERSION } from "@/lib/constants";
 
 export async function signIn(email: string, password: string) {
   const supabase = await createClient();
@@ -48,9 +49,9 @@ export async function signUp(
       displayName: `${firstName} ${lastName}`,
       mosqueId: mosque?.id,
       ageAttestedAt: now,
-      ageAttestationVersion: "1.0",
+      ageAttestationVersion: CURRENT_TOS_VERSION,
       tosAcceptedAt: now,
-      tosVersion: "1.0",
+      tosVersion: CURRENT_TOS_VERSION,
     },
     create: {
       supabaseId: data.user.id,
@@ -62,9 +63,9 @@ export async function signUp(
       role: "MEMBER",
       emailVerified: false,
       ageAttestedAt: now,
-      ageAttestationVersion: "1.0",
+      ageAttestationVersion: CURRENT_TOS_VERSION,
       tosAcceptedAt: now,
-      tosVersion: "1.0",
+      tosVersion: CURRENT_TOS_VERSION,
     },
   });
 
@@ -167,7 +168,6 @@ export async function reAcceptTos(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  const { CURRENT_TOS_VERSION } = await import("@/lib/constants");
   const now = new Date();
   await prisma.user.update({
     where: { supabaseId: user.id },
