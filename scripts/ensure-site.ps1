@@ -78,11 +78,18 @@ if ($siteHealthy) {
 }
 
 Write-Host "Site is not responding, but Auth is healthy. Restarting the local site..."
-# Invoke the launcher directly so the repository path remains one argument even
-# when it contains spaces. The launcher detaches Next.js before returning.
-& $startScript -Environment $Environment
-if ($LASTEXITCODE -ne 0) {
-  throw "The local site launcher exited with code $LASTEXITCODE."
+# Quote the script path inside the single argument string expected by
+# Start-Process on Windows, and keep the child console hidden.
+$launcherArguments = "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$startScript`" -Environment $Environment"
+$restartProcess = Start-Process `
+  -FilePath (Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe") `
+  -ArgumentList $launcherArguments `
+  -WorkingDirectory $workspace `
+  -WindowStyle Hidden `
+  -PassThru `
+  -Wait
+if ($restartProcess.ExitCode -ne 0) {
+  throw "The local site launcher exited with code $($restartProcess.ExitCode)."
 }
 
 $deadline = (Get-Date).AddSeconds(45)

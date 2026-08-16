@@ -53,6 +53,27 @@ function Test-HttpReady {
   }
 }
 
+function Test-RequiredEnvironmentValues {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Path,
+    [Parameter(Mandatory = $true)]
+    [string[]]$Keys
+  )
+
+  $values = @{}
+  foreach ($line in [System.IO.File]::ReadAllLines($Path)) {
+    if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$') {
+      $value = $matches[2].Trim().Trim('"').Trim("'")
+      $values[$matches[1]] = $value
+    }
+  }
+
+  return @($Keys | Where-Object {
+    -not $values.ContainsKey($_) -or [string]::IsNullOrWhiteSpace($values[$_])
+  }).Count -eq 0
+}
+
 function Test-CloudflaredProcess {
   $processes = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -eq "cloudflared.exe" -and $_.CommandLine -like '*config.yml*' }
@@ -175,6 +196,18 @@ while ($true) {
       continue
     }
 
+    $environmentReady = Test-RequiredEnvironmentValues -Path $envPath -Keys @(
+      "DATABASE_URL",
+      "SUPABASE_INTERNAL_URL",
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    )
+    if (-not $environmentReady) {
+      Start-Sleep -Seconds $CheckIntervalSeconds
+      continue
+    }
+
     $siteHealthy = Test-HttpReady -Url $siteHealthUrl -TimeoutSeconds $RequestTimeoutSeconds
     if ($siteHealthy) {
       Start-Sleep -Seconds $CheckIntervalSeconds
@@ -183,12 +216,19 @@ while ($true) {
 
     Stop-MinaretServerIfPresent -PidPath $pidPath -Workspace $workspace -Port $sitePort
 
-    # Invoke the launcher directly so paths containing spaces are preserved.
-    # Start-Process joins ArgumentList into a single string on Windows; without
-    # additional quoting it truncated this repository path at "Minaret Fork".
-    & $startScript -Environment $Environment
-    if ($LASTEXITCODE -ne 0) {
-      throw "The local site launcher exited with code $LASTEXITCODE."
+    # Start-Process accepts a single argument string on Windows. Quote the
+    # script path explicitly so this repository's space-containing path is
+    # preserved, while keeping the child console hidden.
+    $launcherArguments = "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$startScript`" -Environment $Environment"
+    $restartProcess = Start-Process `
+      -FilePath (Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe") `
+      -ArgumentList $launcherArguments `
+      -WorkingDirectory $workspace `
+      -WindowStyle Hidden `
+      -PassThru `
+      -Wait
+    if ($restartProcess.ExitCode -ne 0) {
+      throw "The local site launcher exited with code $($restartProcess.ExitCode)."
     }
 
     $deadline = (Get-Date).AddSeconds(45)

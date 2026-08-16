@@ -31,6 +31,7 @@ public static class MinaretInfrastructureConsoleWindow {
 
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $startScript = Join-Path $PSScriptRoot "experiment-start.ps1"
+$commonScript = Join-Path $PSScriptRoot "experiment-common.ps1"
 $logDirectory = Join-Path $workspace "logs"
 $logPath = Join-Path $logDirectory "startup-infrastructure.log"
 
@@ -43,6 +44,30 @@ try {
     -SkipDatabaseSetup `
     -SkipBuild `
     -DockerTimeoutSeconds $DockerTimeoutSeconds *>> $logPath
+
+  # Supabase generates its signing keys when the local stack starts. The
+  # infrastructure helper refreshes .env.local, while the deployed site loads
+  # .env.production.local. Synchronize only the local-stack connection values;
+  # keep the production public origin and OAuth configuration unchanged.
+  . $commonScript
+  $sourceEnvironment = Get-ExperimentDotEnvMap -Path (Join-Path $workspace ".env.local")
+  $productionEnvironmentPath = Join-Path $workspace ".env.production.local"
+  $managedValues = [ordered]@{}
+  foreach ($key in @(
+    "DATABASE_URL",
+    "DIRECT_URL",
+    "SUPABASE_INTERNAL_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY"
+  )) {
+    if (-not $sourceEnvironment.ContainsKey($key) -or [string]::IsNullOrWhiteSpace($sourceEnvironment[$key])) {
+      throw "Infrastructure startup did not produce required setting '$key'."
+    }
+    $managedValues[$key] = $sourceEnvironment[$key]
+  }
+  Set-ExperimentDotEnvValues -Path $productionEnvironmentPath -Values $managedValues
+  Add-Content -LiteralPath $logPath -Value "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Production connection settings synchronized."
+
   Add-Content -LiteralPath $logPath -Value "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Infrastructure startup completed."
 }
 catch {

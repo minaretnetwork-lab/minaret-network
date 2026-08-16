@@ -89,6 +89,24 @@ if (-not (Test-Path -LiteralPath $envPath)) {
   throw "Missing environment file: $envPath. Run scripts/setup-environment.ps1 first."
 }
 
+$environmentValues = @{}
+foreach ($line in [System.IO.File]::ReadAllLines($envPath)) {
+  if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$') {
+    $environmentValues[$matches[1]] = $matches[2].Trim().Trim('"').Trim("'")
+  }
+}
+foreach ($requiredKey in @(
+  "DATABASE_URL",
+  "SUPABASE_INTERNAL_URL",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "SUPABASE_SERVICE_ROLE_KEY"
+)) {
+  if (-not $environmentValues.ContainsKey($requiredKey) -or [string]::IsNullOrWhiteSpace($environmentValues[$requiredKey])) {
+    throw "Environment file is missing required setting '$requiredKey': $envPath"
+  }
+}
+
 Wait-ForHttpReady -Name "Supabase API" -Url "http://127.0.0.1:$supabaseApiPort/auth/v1/settings" -MaxWaitSeconds 180
 
 $env:MINARET_ENVIRONMENT = $Environment
