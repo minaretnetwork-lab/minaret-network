@@ -50,11 +50,11 @@ export function UserDropdown({
   const exploreGroups = getExploreNavigation();
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
+    function handlePointerDown(e: PointerEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
   useEffect(() => {
@@ -101,11 +101,14 @@ export function UserDropdown({
   return (
     <div ref={ref} className="relative">
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
         className={`flex items-center gap-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors ${
           compact ? "h-10 px-2" : "px-3 py-2"
         }`}
         aria-label={compact ? "Open profile menu" : undefined}
+        aria-expanded={open}
+        style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       >
         <div className="relative flex-shrink-0">
           <div className="h-7 w-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold">
@@ -126,7 +129,7 @@ export function UserDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden z-[160]">
           {/* User info */}
           <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
             <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{displayName}</p>
