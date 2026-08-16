@@ -188,6 +188,12 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                 </Button>
               </Link>
             )}
+
+            <p className="mt-4 text-center text-[11px] text-gray-400 dark:text-gray-500">
+              <Link href="/before-you-hire" className="underline underline-offset-2 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                Before You Hire →
+              </Link>
+            </p>
           </div>
 
           {/* Details */}

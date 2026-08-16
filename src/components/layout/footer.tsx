@@ -60,6 +60,7 @@ export function Footer() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Link href="/terms" className="hover:text-emerald-400">Terms</Link>
             <Link href="/privacy" className="hover:text-emerald-400">Privacy</Link>
+            <Link href="/before-you-hire" className="hover:text-emerald-400">Before You Hire</Link>
             <a
               href="https://stripe.com"
               target="_blank"
