@@ -30,21 +30,31 @@ export function MinaretIcon({ className }: { className?: string }) {
 interface MinaretLogoProps {
   /** Show full horizontal lockup with text. False = icon only. */
   withText?: boolean;
+  /** "dark" = white text (for dark/navbar backgrounds). "light" = dark text (for light page backgrounds). */
+  variant?: "dark" | "light";
   className?: string;
 }
 
-export function MinaretLogo({ withText = true, className }: MinaretLogoProps) {
-  if (!withText) return <MinaretIcon className={className} />;
+export function MinaretLogo({ withText = true, variant = "dark", className }: MinaretLogoProps) {
+  const isLight = variant === "light";
+
+  if (!withText) {
+    return (
+      <MinaretIcon
+        className={`${isLight ? "text-emerald-700 dark:text-emerald-500" : "text-white"} ${className ?? ""}`}
+      />
+    );
+  }
 
   return (
     <div className={`flex items-center gap-3 ${className ?? ""}`}>
-      <MinaretIcon className="h-9 w-auto text-white" />
+      <MinaretIcon className={`h-9 w-auto ${isLight ? "text-emerald-700 dark:text-emerald-500" : "text-white"}`} />
       <div>
         <p className="text-[15px] font-bold leading-none" style={{ fontFamily: "var(--font-lora)" }}>
-          <span className="text-white">Minaret </span>
-          <span className="text-white/60">Network</span>
+          <span className={isLight ? "text-gray-900 dark:text-white" : "text-white"}>Minaret </span>
+          <span className={isLight ? "text-gray-500 dark:text-gray-400" : "text-white/60"}>Network</span>
         </p>
-        <p className="text-[9px] text-white/40 leading-none mt-1 tracking-[0.18em] uppercase">
+        <p className={`text-[9px] leading-none mt-1 tracking-[0.18em] uppercase ${isLight ? "text-gray-400 dark:text-gray-500" : "text-white/40"}`}>
           Mosque Professionals
         </p>
       </div>

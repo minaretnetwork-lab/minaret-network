@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { MinaretLogo } from "@/components/ui/minaret-logo";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,9 +48,7 @@ export default function UpdatePasswordPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="mb-6 inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 font-bold text-white">
-              MN
-            </div>
+            <MinaretLogo variant="light" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Choose a new password
