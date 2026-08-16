@@ -122,9 +122,9 @@ export default async function HomePage() {
       {/* ── Browse by Category ────────────────────────────────── */}
       <section className="container mx-auto px-4 lg:px-6 py-14">
         <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession or business</p>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5" style={{ fontFamily: "var(--font-lora)" }}>
-            What do you need help with?
+            Find a professional or local business
           </h2>
           <CategorySearch categories={categories} />
         </div>
@@ -156,6 +156,28 @@ export default async function HomePage() {
             Surah Al-Hujurat &mdash; 49:13
           </p>
         </div>
+      </section>
+
+      {/* ── Mission Statement ────────────────────────────────── */}
+      <section className="container mx-auto px-4 lg:px-6 py-16 max-w-2xl text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">Our mission</p>
+        <h2
+          className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-5 leading-snug"
+          style={{ fontFamily: "var(--font-lora)" }}
+        >
+          Strengthening the GTA Muslim community — from the inside out.
+        </h2>
+        <p className="text-base text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
+          Finding a professional you can trust shouldn&apos;t mean scrolling through anonymous ratings and hoping for the best.
+          In our community, trust has always worked through the mosque, through word of mouth, through knowing someone at Jummah.
+          Minaret Network puts that trust online — so the professionals and community members who&apos;d never otherwise find each other, can.
+        </p>
+        <Link
+          href="/mission"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-400 hover:underline underline-offset-4"
+        >
+          Read our full mission <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </section>
 
       {/* ── How It Works ─────────────────────────────────────── */}
