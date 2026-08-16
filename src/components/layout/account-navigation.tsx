@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BriefcaseBusiness,
+  CalendarDays,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -43,6 +44,7 @@ export function getExploreNavigation(): NavigationGroup[] {
       items: [
         { href: "/professionals", label: "Find Professionals", icon: Search },
         { href: "/categories", label: "Categories", icon: Tags },
+        { href: "/events", label: "Community Events", icon: CalendarDays },
         { href: "/request", label: "Service Request", icon: ClipboardList },
       ],
     },
