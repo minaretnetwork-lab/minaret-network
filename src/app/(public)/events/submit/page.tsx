@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Info } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Info, ImagePlus, X } from "lucide-react";
 import { submitEventListing } from "@/lib/actions/event-listings";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 const PRICE_TABLE = {
@@ -17,6 +19,47 @@ export default function SubmitEventPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    const preview = URL.createObjectURL(file);
+    setImagePreview(preview);
+
+    try {
+      const supabase = createClient();
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `events/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("event-images")
+        .upload(path, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+      setImageUrl(data.publicUrl);
+    } catch (err) {
+      setError("Image upload failed. Please try again or continue without an image.");
+      setImagePreview(null);
+      setImageUrl(null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeImage() {
+    setImagePreview(null);
+    setImageUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   const [form, setForm] = useState({
     organizerName: "",
@@ -56,6 +99,7 @@ export default function SubmitEventPage() {
         isMosqueOrganized: form.isMosqueOrganized,
         mosqueName: form.mosqueName || undefined,
         mosqueAuthorizationConfirmed: form.mosqueAuthorizationConfirmed,
+        imageUrl: imageUrl ?? undefined,
       });
 
       if ("checkoutUrl" in result) {
@@ -182,6 +226,48 @@ export default function SubmitEventPage() {
                 </label>
               </div>
             )}
+          </div>
+
+          {/* Event image */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">Event image <span className="font-normal text-gray-400">(optional)</span></p>
+            <p className="text-xs text-gray-500">Add a banner or poster image — shown on the events page and detail page.</p>
+
+            {imagePreview ? (
+              <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50">
+                <Image src={imagePreview} alt="Preview" fill className="object-cover" />
+                {uploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <span className="text-white text-sm font-medium">Uploading…</span>
+                  </div>
+                )}
+                {!uploading && (
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 rounded-full bg-gray-900/70 p-1 text-white hover:bg-gray-900 transition"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-8 text-sm text-gray-500 hover:border-emerald-400 hover:text-emerald-600 transition cursor-pointer"
+              >
+                <ImagePlus className="h-5 w-5" />
+                Click to upload an image
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
           </div>
 
           {/* Event details */}
