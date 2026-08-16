@@ -95,12 +95,22 @@ export function ProfileForm({ defaultValues }: Props) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="firstName">First Name *</Label>
-              <Input id="firstName" {...register("firstName")} className="mt-1.5" />
+              <Input
+                id="firstName"
+                value={watch("firstName") ?? ""}
+                onChange={(event) => setValue("firstName", event.target.value, { shouldDirty: true })}
+                className="mt-1.5"
+              />
               {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName.message}</p>}
             </div>
             <div>
               <Label htmlFor="lastName">Last Name *</Label>
-              <Input id="lastName" {...register("lastName")} className="mt-1.5" />
+              <Input
+                id="lastName"
+                value={watch("lastName") ?? ""}
+                onChange={(event) => setValue("lastName", event.target.value, { shouldDirty: true })}
+                className="mt-1.5"
+              />
               {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName.message}</p>}
             </div>
           </div>
