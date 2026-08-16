@@ -1,25 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { deleteCurrentUserAccount, updateUserProfile } from "@/lib/actions/auth";
 import { PhoneInput } from "@/components/ui/phone-input";
-
-const schema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phone: z.string().optional(),
-  whatsapp: z.string().optional(),
-  whatsappSameAsPhone: z.boolean(),
-  preferredContact: z.enum(["EMAIL", "PHONE", "WHATSAPP"]).optional(),
-});
-
-type FormData = z.infer<typeof schema>;
 
 interface Props {
   defaultValues: {
@@ -37,42 +23,58 @@ export function ProfileForm({ defaultValues }: Props) {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleteStatus, setDeleteStatus] = useState<"idle" | "error">("idle");
   const [deleteError, setDeleteError] = useState("");
-  const isSame = defaultValues.phone && defaultValues.phone === defaultValues.whatsapp;
-
-  const initialFormValues = {
-    ...defaultValues,
-    whatsappSameAsPhone: !!isSame,
-  };
-
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: initialFormValues,
-  });
+  const [firstName, setFirstName] = useState(defaultValues.firstName);
+  const [lastName, setLastName] = useState(defaultValues.lastName);
+  const [phone, setPhone] = useState(defaultValues.phone);
+  const [whatsapp, setWhatsapp] = useState(defaultValues.whatsapp);
+  const [preferredContact, setPreferredContact] = useState<Props["defaultValues"]["preferredContact"]>(defaultValues.preferredContact);
+  const [whatsappSameAsPhone, setWhatsappSameAsPhone] = useState(
+    !!defaultValues.phone && defaultValues.phone === defaultValues.whatsapp
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ firstName?: string; lastName?: string }>({});
 
   useEffect(() => {
-    reset(initialFormValues);
-  }, [defaultValues, isSame, reset]);
-
-  const whatsappSameAsPhone = watch("whatsappSameAsPhone");
-  const phone = watch("phone");
+    setFirstName(defaultValues.firstName);
+    setLastName(defaultValues.lastName);
+    setPhone(defaultValues.phone);
+    setWhatsapp(defaultValues.whatsapp);
+    setPreferredContact(defaultValues.preferredContact);
+    setWhatsappSameAsPhone(!!defaultValues.phone && defaultValues.phone === defaultValues.whatsapp);
+  }, [defaultValues]);
 
   function handleSameToggle(checked: boolean) {
-    setValue("whatsappSameAsPhone", checked);
-    if (checked) setValue("whatsapp", phone ?? "");
+    setWhatsappSameAsPhone(checked);
+    if (checked) setWhatsapp(phone ?? "");
   }
 
-  async function onSubmit(data: FormData) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const nextErrors: { firstName?: string; lastName?: string } = {};
+
+    if (!trimmedFirstName) nextErrors.firstName = "First name is required";
+    if (!trimmedLastName) nextErrors.lastName = "Last name is required";
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     try {
+      setIsSubmitting(true);
       await updateUserProfile({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        whatsapp: data.whatsappSameAsPhone ? data.phone : data.whatsapp,
-        preferredContact: data.preferredContact,
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        phone,
+        whatsapp: whatsappSameAsPhone ? phone : whatsapp,
+        preferredContact,
       });
       setStatus("success");
+      setErrors({});
     } catch {
       setStatus("error");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -91,27 +93,27 @@ export function ProfileForm({ defaultValues }: Props) {
   return (
     <div className="max-w-xl space-y-6">
       <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={onSubmit} className="space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="firstName">First Name *</Label>
               <Input
                 id="firstName"
-                value={watch("firstName") ?? ""}
-                onChange={(event) => setValue("firstName", event.target.value, { shouldDirty: true })}
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
                 className="mt-1.5"
               />
-              {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName.message}</p>}
+              {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>}
             </div>
             <div>
               <Label htmlFor="lastName">Last Name *</Label>
               <Input
                 id="lastName"
-                value={watch("lastName") ?? ""}
-                onChange={(event) => setValue("lastName", event.target.value, { shouldDirty: true })}
+                value={lastName}
+                onChange={(event) => setLastName(event.target.value)}
                 className="mt-1.5"
               />
-              {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName.message}</p>}
+              {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>}
             </div>
           </div>
 
@@ -132,10 +134,10 @@ export function ProfileForm({ defaultValues }: Props) {
             <div className="mt-1.5">
               <PhoneInput
                 id="phone"
-                value={watch("phone") ?? ""}
+                value={phone}
                 onChange={(val) => {
-                  setValue("phone", val);
-                  if (whatsappSameAsPhone) setValue("whatsapp", val);
+                  setPhone(val);
+                  if (whatsappSameAsPhone) setWhatsapp(val);
                 }}
               />
             </div>
@@ -154,8 +156,8 @@ export function ProfileForm({ defaultValues }: Props) {
             </label>
             {!whatsappSameAsPhone && (
               <PhoneInput
-                value={watch("whatsapp") ?? ""}
-                onChange={(val) => setValue("whatsapp", val)}
+                value={whatsapp}
+                onChange={(val) => setWhatsapp(val)}
               />
             )}
           </div>
@@ -171,9 +173,9 @@ export function ProfileForm({ defaultValues }: Props) {
                 <button
                   key={value}
                   type="button"
-                  onClick={() => setValue("preferredContact", value as "EMAIL" | "PHONE" | "WHATSAPP")}
+                  onClick={() => setPreferredContact(value as "EMAIL" | "PHONE" | "WHATSAPP")}
                   className={`rounded-xl border-2 px-3 py-3 text-sm font-medium transition ${
-                    watch("preferredContact") === value
+                    preferredContact === value
                       ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                       : "border-gray-200 text-gray-600 hover:border-emerald-300 dark:border-gray-700 dark:text-gray-300"
                   }`}
