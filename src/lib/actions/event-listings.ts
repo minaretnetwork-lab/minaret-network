@@ -17,6 +17,7 @@ export interface SubmitEventListingInput {
   isMosqueOrganized: boolean;
   mosqueName?: string;
   mosqueAuthorizationConfirmed?: boolean;
+  imageUrl?: string;
 }
 
 /**
@@ -44,11 +45,8 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
   const priceChargedCents = computeEventListingPriceCents(listingType, input.isMosqueOrganized);
 
   if (input.isMosqueOrganized) {
-    // Mosque-organized: free, straight to active
+    // Mosque-organized: free, but requires admin approval before going live
     const now = new Date();
-    const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const expiresAt = eventDate < thirtyDays ? eventDate : thirtyDays;
-
     await prisma.eventListing.create({
       data: {
         organizerUserId: user?.id ?? null,
@@ -62,13 +60,12 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
         isMosqueOrganized: true,
         mosqueName: input.mosqueName!.trim(),
         mosqueAuthorizationConfirmedAt: now,
-        status: "ACTIVE",
+        status: "PENDING_ADMIN",
         priceChargedCents: 0,
-        expiresAt,
+        imageUrl: input.imageUrl ?? null,
       },
     });
 
-    revalidatePath("/events");
     return { success: true };
   }
 
@@ -86,6 +83,7 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
       isMosqueOrganized: false,
       status: "PENDING_PAYMENT",
       priceChargedCents,
+      imageUrl: input.imageUrl ?? null,
     },
   });
 
@@ -143,6 +141,28 @@ export async function reportEventListing(
 }
 
 // ── Admin actions ────────────────────────────────────────────────────────────
+
+export async function adminApproveEventListing(id: string) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+    throw new Error("Unauthorized");
+  }
+
+  const listing = await prisma.eventListing.findUnique({ where: { id } });
+  if (!listing) throw new Error("Listing not found");
+
+  const now = new Date();
+  const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const expiresAt = listing.eventDate < thirtyDays ? listing.eventDate : thirtyDays;
+
+  await prisma.eventListing.update({
+    where: { id },
+    data: { status: "ACTIVE", approvedAt: now, expiresAt },
+  });
+
+  revalidatePath("/admin/events");
+  revalidatePath("/events");
+}
 
 export async function adminRemoveEventListing(id: string, removalReason: string) {
   const user = await getCurrentUser();

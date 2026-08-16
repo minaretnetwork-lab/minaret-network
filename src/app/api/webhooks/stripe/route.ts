@@ -41,24 +41,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Listing not found" }, { status: 404 });
     }
 
-    // Only activate if still PENDING_PAYMENT — idempotent
+    // Move to PENDING_ADMIN after payment — admin must approve before it goes live
     if (listing.status === "PENDING_PAYMENT") {
-      const now = new Date();
-      const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      const expiresAt = listing.eventDate < thirtyDays ? listing.eventDate : thirtyDays;
-
       await prisma.eventListing.update({
         where: { id: eventListingId },
         data: {
-          status: "ACTIVE",
-          expiresAt,
+          status: "PENDING_ADMIN",
           stripePaymentIntentId: typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id ?? null,
         },
       });
 
-      console.log(`EventListing ${eventListingId} activated via Stripe webhook`);
+      console.log(`EventListing ${eventListingId} paid — awaiting admin approval`);
     }
   }
 

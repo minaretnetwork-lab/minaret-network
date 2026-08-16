@@ -612,11 +612,13 @@ model EventListing {
   removalReason                  String?
   priceChargedCents              Int                @default(0)
   currency                       String             @default("CAD")
+  imageUrl                       String?
   stripeCheckoutSessionId        String?
   stripePaymentIntentId          String?
   createdAt                      DateTime           @default(now())
   expiresAt                      DateTime?
   removedAt                      DateTime?
+  approvedAt                     DateTime?
 
   reports EventListingReport[]
 
@@ -631,6 +633,7 @@ enum EventListingType {
 
 enum EventListingStatus {
   PENDING_PAYMENT
+  PENDING_ADMIN
   ACTIVE
   EXPIRED
   REMOVED
