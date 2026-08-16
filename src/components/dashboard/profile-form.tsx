@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -39,13 +39,19 @@ export function ProfileForm({ defaultValues }: Props) {
   const [deleteError, setDeleteError] = useState("");
   const isSame = defaultValues.phone && defaultValues.phone === defaultValues.whatsapp;
 
-  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const initialFormValues = {
+    ...defaultValues,
+    whatsappSameAsPhone: !!isSame,
+  };
+
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      ...defaultValues,
-      whatsappSameAsPhone: !!isSame,
-    },
+    defaultValues: initialFormValues,
   });
+
+  useEffect(() => {
+    reset(initialFormValues);
+  }, [defaultValues, isSame, reset]);
 
   const whatsappSameAsPhone = watch("whatsappSameAsPhone");
   const phone = watch("phone");
