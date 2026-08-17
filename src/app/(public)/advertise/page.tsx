@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Star } from "lucide-react";
+import { ArrowLeft, Sparkles, Star, Building2, Tag } from "lucide-react";
 
 export const metadata = {
-  title: "Feature Your Business | Minaret Network",
-  description: "Featured and sponsored placements are coming soon.",
+  title: "Advertise | Minaret Network",
+  description: "Featured Business and Sponsored Listings are free until Oct 31, 2026. One spot per business.",
 };
 
 export default function AdvertisePage() {
@@ -18,24 +18,115 @@ export default function AdvertisePage() {
           Back to home
         </Link>
 
-        <section className="rounded-3xl border border-amber-100 bg-amber-50/70 p-8 text-center shadow-sm dark:border-amber-900/40 dark:bg-amber-950/20 sm:p-12">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white text-amber-700 shadow-sm dark:bg-gray-900 dark:text-amber-300">
-            <Star className="h-8 w-8" />
+        {/* Free offer banner */}
+        <div className="mb-8 rounded-2xl bg-emerald-700 px-6 py-5 text-white">
+          <div className="flex items-start gap-3">
+            <Sparkles className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-200" />
+            <div>
+              <p className="font-semibold text-base">Limited-time: free until Oct 31, 2026</p>
+              <p className="text-sm text-emerald-100 mt-0.5">
+                Featured Business and Sponsored Listings are completely free during our launch period.
+                One placement per business — businesses already listed cannot reapply for a second month until the free period ends.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <h1
+          className="text-3xl font-bold text-gray-900 dark:text-white mb-3"
+          style={{ fontFamily: "var(--font-lora)" }}
+        >
+          Grow your visibility in the GTA Muslim community
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mb-10 leading-relaxed">
+          Two ways to get in front of mosque-affiliated professionals and community members actively searching for services like yours.
+        </p>
+
+        <div className="space-y-5">
+          {/* Featured Business */}
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
+                <Star className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Featured Business</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    Free until Oct 31
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+                  Your business card featured prominently on the Minaret Network homepage, seen by every visitor.
+                  Includes your name, category, mosque affiliation, and contact details.
+                </p>
+                <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
+                  {[
+                    "Homepage placement — maximum visibility",
+                    "Your photo, category, and mosque affiliation shown",
+                    "30-day listing, subject to admin approval",
+                    "Normally $99/month — free during launch",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/auth/login?next=/dashboard/featured"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 transition-colors"
+                >
+                  Apply for Featured Business
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700 shadow-sm dark:bg-gray-900 dark:text-amber-300">
-            <Sparkles className="h-3.5 w-3.5" />
-            Coming soon
-          </p>
+          {/* Sponsored Listing */}
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400">
+                <Tag className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sponsored Listing</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    Free until Oct 31
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+                  Pin your listing to the top of a specific category and service area — shown first whenever someone searches for your profession in your area.
+                </p>
+                <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
+                  {[
+                    "Top-of-search placement in your category and area",
+                    "Sponsored badge on your listing card",
+                    "30-day listing, subject to admin approval",
+                    "Normally $49/month — free during launch",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-500 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/auth/login?next=/dashboard/promote"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-800 transition-colors"
+                >
+                  Apply for Sponsored Listing
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair)" }}>
-            Featured and sponsored placements are not open yet
-          </h1>
-
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-            We&apos;re still setting up self-serve featured and sponsored placements. For now, Minaret admins will manage featured businesses and sponsored listings directly.
-          </p>
-        </section>
+        <p className="mt-8 text-xs text-gray-400 dark:text-gray-600 text-center leading-relaxed">
+          All placements are reviewed and approved by Minaret Network admins.
+          One placement per business per month. Misrepresentation may result in removal.
+        </p>
       </div>
     </main>
   );
