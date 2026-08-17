@@ -24,6 +24,7 @@ export function Footer() {
                 { href: "/professionals", label: "All Professionals" },
                 { href: "/categories", label: "Browse Categories" },
                 { href: "/request", label: "Request a Professional" },
+                { href: "/faq", label: "FAQ" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-white/50 hover:text-emerald-400 transition-colors">
