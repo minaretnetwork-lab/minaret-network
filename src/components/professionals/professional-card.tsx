@@ -367,32 +367,26 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
             )
           )}
           {professional.email && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                openExternalContact(`mailto:${professional.email}`);
-              }}
+            <a
+              href={`mailto:${professional.email}`}
+              onClick={(event) => event.stopPropagation()}
               className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
               aria-label={`Email ${name}`}
             >
               <ActionTooltip label="Email" />
               <Mail className="h-3.5 w-3.5" />
-            </button>
+            </a>
           )}
           {professional.phone && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                openExternalContact(`tel:${professional.phone!.replace(/[^\d+]/g, "")}`);
-              }}
+            <a
+              href={`tel:${professional.phone.replace(/[^\d+]/g, "")}`}
+              onClick={(event) => event.stopPropagation()}
               className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
               aria-label={`Call ${name}`}
             >
               <ActionTooltip label="Call" />
               <Phone className="h-3.5 w-3.5" />
-            </button>
+            </a>
           )}
         </div>
       </div>
