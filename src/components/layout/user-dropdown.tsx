@@ -4,7 +4,7 @@ import Link from "next/link";
 import { LogOut, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
-import { getAccountNavigation, getExploreNavigation } from "@/components/layout/account-navigation";
+import { getAccountNavigation } from "@/components/layout/account-navigation";
 
 interface Props {
   displayName: string;
@@ -47,8 +47,6 @@ export function UserDropdown({
   const messageHref = messageNotification.latestConversationId
     ? `/dashboard/messages/${messageNotification.latestConversationId}`
     : "/dashboard/messages";
-  const exploreGroups = getExploreNavigation();
-
   useEffect(() => {
     function handlePointerDown(e: PointerEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -137,7 +135,7 @@ export function UserDropdown({
           </div>
 
           {/* Links */}
-          {[...exploreGroups, ...accountGroups].map((group, index) => (
+          {accountGroups.map((group, index) => (
             <div
               key={group.id}
               className={`${index === 0 ? "py-1" : "border-t border-gray-100 py-1 dark:border-gray-800"}`}
