@@ -7,17 +7,25 @@ import { prisma } from "@/lib/prisma";
 export const metadata = { title: "Browse Categories" };
 
 export default async function CategoriesPage() {
-  const categoryCounts = await prisma.category.findMany({
-    where: { isActive: true },
+  // Count approved professionals per category — including both primary and additional categories,
+  // matching the same OR logic used in search results.
+  const approved = await prisma.professional.findMany({
+    where: { status: "APPROVED" },
     select: {
-      slug: true,
-      _count: { select: { professionals: { where: { status: "APPROVED" } } } },
+      category: { select: { slug: true } },
+      categories: { select: { slug: true } },
     },
   });
 
-  const countBySlug = Object.fromEntries(
-    categoryCounts.map((c) => [c.slug, c._count.professionals])
-  );
+  const countBySlug: Record<string, number> = {};
+  for (const p of approved) {
+    const slugs = new Set<string>();
+    if (p.category?.slug) slugs.add(p.category.slug);
+    for (const c of p.categories) slugs.add(c.slug);
+    for (const slug of slugs) {
+      countBySlug[slug] = (countBySlug[slug] ?? 0) + 1;
+    }
+  }
 
   const categories = [...CATEGORIES]
     .sort((left, right) => left.name.localeCompare(right.name))
