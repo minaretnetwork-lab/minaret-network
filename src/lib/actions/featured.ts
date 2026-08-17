@@ -134,6 +134,19 @@ export async function applyForFeatured(city: string) {
   });
   if (existing) throw new Error("You already have an active or pending application for this city");
 
+  // During the free-offer period (until Oct 31 2026), one approved listing per business total.
+  const FREE_PERIOD_END = new Date("2026-11-01T00:00:00.000Z");
+  if (new Date() < FREE_PERIOD_END) {
+    const previouslyApproved = await prisma.featuredListing.findFirst({
+      where: { professionalId, startDate: { not: null } },
+    });
+    if (previouslyApproved) {
+      throw new Error(
+        "During our free launch offer (until Oct 31, 2026), each business may only use one Featured Business placement. You can reapply starting November 1, 2026."
+      );
+    }
+  }
+
   const { available, priceMonthly, pricingTierId, maxSlots } = await getFeaturedSlotAvailability(city);
 
   if (!available) {

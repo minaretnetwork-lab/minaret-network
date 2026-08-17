@@ -111,6 +111,19 @@ export async function applyForSponsorship(categoryId: string, serviceAreaId: str
   });
   if (existing) throw new Error("You already have an active or pending application for this slot");
 
+  // During the free-offer period (until Oct 31 2026), one approved listing per business total.
+  const FREE_PERIOD_END = new Date("2026-11-01T00:00:00.000Z");
+  if (new Date() < FREE_PERIOD_END) {
+    const previouslyApproved = await prisma.sponsoredListing.findFirst({
+      where: { professionalId, startDate: { not: null } },
+    });
+    if (previouslyApproved) {
+      throw new Error(
+        "During our free launch offer (until Oct 31, 2026), each business may only use one Sponsored Listing placement. You can reapply starting November 1, 2026."
+      );
+    }
+  }
+
   const { available, priceMonthly, pricingTierId, maxSlots } = await getSponsoredSlotAvailability(categoryId, serviceAreaId);
 
   if (!available) {
