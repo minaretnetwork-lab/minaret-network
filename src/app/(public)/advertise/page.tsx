@@ -65,7 +65,7 @@ export default function AdvertisePage() {
                     "Homepage placement — maximum visibility",
                     "Your photo, category, and mosque affiliation shown",
                     "30-day listing, subject to admin approval",
-                    "Normally $99/month — free during launch",
+                    "$29.99/month from Nov 1, 2026 — free during launch",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
@@ -104,7 +104,7 @@ export default function AdvertisePage() {
                     "Top-of-search placement in your category and area",
                     "Sponsored badge on your listing card",
                     "30-day listing, subject to admin approval",
-                    "Normally $49/month — free during launch",
+                    "$19.99/month from Nov 1, 2026 — free during launch",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-500 flex-shrink-0" />

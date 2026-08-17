@@ -58,6 +58,7 @@ export function Footer() {
         <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/30">
           <span>© {new Date().getFullYear()} Minaret Network. All rights reserved.</span>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link href="/faq" className="hover:text-emerald-400">FAQ</Link>
             <Link href="/terms" className="hover:text-emerald-400">Terms</Link>
             <Link href="/privacy" className="hover:text-emerald-400">Privacy</Link>
             <Link href="/before-you-hire" className="hover:text-emerald-400">Before You Hire</Link>

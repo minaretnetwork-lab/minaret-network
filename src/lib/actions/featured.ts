@@ -56,7 +56,7 @@ export async function getActiveFeaturedCities() {
 export async function getFeaturedSlotAvailability(city: string) {
   const tier = await getApplicableFeaturedTier(city);
   const maxSlots = tier?.maxSlots ?? 6;
-  const priceMonthly = Number(tier?.priceMonthly ?? 99);
+  const priceMonthly = Number(tier?.priceMonthly ?? 29.99);
 
   const activeCount = await prisma.featuredListing.count({
     where: { city, status: "ACTIVE" },

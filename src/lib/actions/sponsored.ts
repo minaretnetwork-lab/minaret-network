@@ -27,7 +27,7 @@ async function getApplicablePricingTier(categoryId: string, serviceAreaId: strin
 export async function getSponsoredSlotAvailability(categoryId: string, serviceAreaId: string) {
   const tier = await getApplicablePricingTier(categoryId, serviceAreaId);
   const maxSlots = tier?.maxSlots ?? 2;
-  const priceMonthly = Number(tier?.priceMonthly ?? 49);
+  const priceMonthly = Number(tier?.priceMonthly ?? 19.99);
 
   const activeCount = await prisma.sponsoredListing.count({
     where: { categoryId, serviceAreaId, status: "ACTIVE" },
