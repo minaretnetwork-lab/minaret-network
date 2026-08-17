@@ -3,7 +3,7 @@ import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
-import { MinaretLogo } from "@/components/ui/minaret-logo";
+import { LogoLink } from "./logo-link";
 
 interface NavbarProps {
   user?: {
@@ -31,9 +31,7 @@ export function Navbar({ user }: NavbarProps) {
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-6">
 
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <MinaretLogo />
-          </Link>
+          <LogoLink />
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
