@@ -4,16 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+const FEATURED_MAX_SLOTS = 6; // GTA-wide
+
 // ── Pricing tier resolution ───────────────────────────────────────────────────
 
-async function getApplicableFeaturedTier(city: string) {
-  const cityTier = await prisma.featuredPricingTier.findFirst({
-    where: { city, isActive: true },
-  });
-  if (cityTier) return cityTier;
-
+async function getApplicableFeaturedTier() {
   return prisma.featuredPricingTier.findFirst({
-    where: { city: null, isActive: true },
+    where: { isActive: true },
+    orderBy: { createdAt: "asc" },
   });
 }
 
@@ -53,13 +51,13 @@ export async function getActiveFeaturedCities() {
 
 // ── Slot availability ─────────────────────────────────────────────────────────
 
-export async function getFeaturedSlotAvailability(city: string) {
-  const tier = await getApplicableFeaturedTier(city);
-  const maxSlots = tier?.maxSlots ?? 6;
+export async function getFeaturedSlotAvailability() {
+  const tier = await getApplicableFeaturedTier();
+  const maxSlots = FEATURED_MAX_SLOTS;
   const priceMonthly = Number(tier?.priceMonthly ?? 29.99);
 
   const activeCount = await prisma.featuredListing.count({
-    where: { city, status: "ACTIVE" },
+    where: { status: "ACTIVE" },
   });
 
   return {
@@ -115,7 +113,7 @@ export async function getMyFeaturedListings() {
 
 // ── Business dashboard: apply / cancel ───────────────────────────────────────
 
-export async function applyForFeatured(city: string) {
+export async function applyForFeatured() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
@@ -130,9 +128,9 @@ export async function applyForFeatured(city: string) {
   const professionalId = professional.id;
 
   const existing = await prisma.featuredListing.findFirst({
-    where: { professionalId, city, status: { in: ["ACTIVE", "PENDING"] } },
+    where: { professionalId, status: { in: ["ACTIVE", "PENDING"] } },
   });
-  if (existing) throw new Error("You already have an active or pending application for this city");
+  if (existing) throw new Error("You already have an active or pending Featured Business application");
 
   // During the free-offer period (until Oct 31 2026), one approved listing per business total.
   const FREE_PERIOD_END = new Date("2026-11-01T00:00:00.000Z");
@@ -147,20 +145,20 @@ export async function applyForFeatured(city: string) {
     }
   }
 
-  const { available, priceMonthly, pricingTierId, maxSlots } = await getFeaturedSlotAvailability(city);
+  const { available, priceMonthly, pricingTierId, maxSlots } = await getFeaturedSlotAvailability();
 
   if (!available) {
     await prisma.featuredWaitlist.upsert({
-      where: { professionalId_city: { professionalId, city } },
+      where: { professionalId_city: { professionalId, city: "GTA" } },
       update: {},
-      create: { professionalId, city },
+      create: { professionalId, city: "GTA" },
     });
     revalidatePath("/dashboard/featured");
     return { status: "waitlisted" as const, maxSlots };
   }
 
   await prisma.featuredListing.create({
-    data: { professionalId, city, pricingTierId, priceMonthly, status: "PENDING" },
+    data: { professionalId, city: "GTA", pricingTierId, priceMonthly, status: "PENDING" },
   });
 
   revalidatePath("/dashboard/featured");
@@ -190,7 +188,7 @@ export async function cancelMyFeaturedListing(listingId: string) {
 
   if (listing.status === "ACTIVE") {
     await syncIsFeatured(listing.professionalId);
-    await notifyFeaturedWaitlist(listing.city);
+    await notifyFeaturedWaitlist();
   }
 
   revalidatePath("/dashboard/featured");
@@ -258,13 +256,10 @@ export async function approveFeaturedListing(listingId: string) {
   const listing = await prisma.featuredListing.findUnique({ where: { id: listingId } });
   if (!listing) throw new Error("Listing not found");
 
-  const tier = await getApplicableFeaturedTier(listing.city);
-  const maxSlots = tier?.maxSlots ?? 6;
-
   const activeCount = await prisma.featuredListing.count({
-    where: { city: listing.city, status: "ACTIVE", id: { not: listingId } },
+    where: { status: "ACTIVE", id: { not: listingId } },
   });
-  if (activeCount >= maxSlots) throw new Error(`Slots full for ${listing.city} — max ${maxSlots}`);
+  if (activeCount >= FEATURED_MAX_SLOTS) throw new Error(`GTA slots full — max ${FEATURED_MAX_SLOTS} Featured Business listings at a time`);
 
   const nextDisplayOrder = await getNextFeaturedDisplayOrder();
   await prisma.featuredListing.update({
@@ -301,7 +296,7 @@ export async function cancelFeaturedListingAdmin(listingId: string, note?: strin
 
   if (listing.status === "ACTIVE") {
     await syncIsFeatured(listing.professionalId);
-    await notifyFeaturedWaitlist(listing.city);
+    await notifyFeaturedWaitlist();
   }
 
   revalidatePath("/admin/featured");
@@ -373,9 +368,9 @@ async function syncIsFeatured(professionalId: string) {
   });
 }
 
-async function notifyFeaturedWaitlist(city: string) {
+async function notifyFeaturedWaitlist() {
   const first = await prisma.featuredWaitlist.findFirst({
-    where: { city, notifiedAt: null },
+    where: { notifiedAt: null },
     orderBy: { createdAt: "asc" },
   });
   if (first) {

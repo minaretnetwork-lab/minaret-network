@@ -5,8 +5,9 @@ import { Sparkles, CheckCircle, Clock, XCircle, Info, ArrowRight } from "lucide-
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { Button } from "@/components/ui/button";
 import { applyForSponsorship, cancelMySponsorship, removeFromWaitlist } from "@/lib/actions/sponsored";
+import { REGION_MAP } from "@/lib/constants";
 
-type ServiceArea = { id: string; name: string };
+type ServiceArea = { id: string; name: string; slug: string };
 type Category = { id: string; name: string; slug: string; icon: string | null };
 
 type Listing = {
@@ -16,6 +17,7 @@ type Listing = {
   startDate: Date | null;
   createdAt: Date;
   adminNote: string | null;
+  region: string | null;
   category: Category;
   serviceArea: ServiceArea;
 };
@@ -64,6 +66,12 @@ const STATUS_UI: Record<string, { label: string; color: string; icon: React.Reac
 };
 
 export function PromoteBusiness({ listings, waitlist, professional }: Props) {
+  const availableRegions = [...new Set(
+    professional.serviceAreas
+      .map((a) => REGION_MAP[a.slug] ?? null)
+      .filter((r): r is string => r !== null)
+  )];
+
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -71,6 +79,10 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
 
   const isApproved = professional.status === "APPROVED";
   const categoryId = professional.category.id;
+
+  // Derive region for selected area
+  const selectedAreaObj = professional.serviceAreas.find((a) => a.id === selectedArea);
+  const selectedRegion = selectedAreaObj ? (REGION_MAP[selectedAreaObj.slug] ?? "Beyond GTA") : "";
 
   async function handleApply() {
     if (!selectedArea) return;
@@ -80,9 +92,9 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
     try {
       const result = await applyForSponsorship(categoryId, selectedArea);
       if (result.status === "waitlisted") {
-        setSuccess(`Slots are full — you've been added to the waitlist. We'll notify you when a slot opens.`);
+        setSuccess(`Slots are full in ${result.region} — you've been added to the waitlist. We'll notify you when a slot opens.`);
       } else {
-        setSuccess("Application submitted! An admin will review it shortly.");
+        setSuccess(`Application submitted for ${result.region}! An admin will review it shortly.`);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -126,7 +138,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
           <div>
             <h3 className="font-semibold text-violet-900 dark:text-violet-200">Sponsored Listings</h3>
             <p className="text-sm text-violet-800/80 dark:text-violet-300/80 mt-1 leading-relaxed">
-              Sponsored businesses appear at the top of search results for your category and service area, clearly labelled as &ldquo;Sponsored.&rdquo; Only 2 businesses can be sponsored per category + service area at a time.
+              Sponsored businesses appear at the top of search results for your category across your entire GTA region, clearly labelled as &ldquo;Sponsored.&rdquo; Only 3 businesses can be sponsored per category per region at a time.
             </p>
             <div className="flex flex-wrap gap-4 mt-3 text-sm font-medium text-violet-900 dark:text-violet-200">
               <span className="flex items-center gap-1.5">
@@ -157,7 +169,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
 
           {professional.serviceAreas.length > 0 ? (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-400 block">Service area to sponsor</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-400 block">Select a service area (determines your region)</label>
               <select
                 value={selectedArea}
                 onChange={(e) => setSelectedArea(e.target.value)}
@@ -167,6 +179,11 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
                   <option key={a.id} value={a.id}>{a.name}</option>
                 ))}
               </select>
+              {selectedRegion && (
+                <p className="text-xs text-violet-700 dark:text-violet-400 mt-1">
+                  This will sponsor you in the <strong>{selectedRegion}</strong> region — your listing will appear at the top for all searches in that region.
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
@@ -176,7 +193,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
 
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Info className="h-4 w-4 flex-shrink-0" />
-            <span>Starting at <span className="font-semibold text-gray-900 dark:text-white">$49 CAD/month</span> · Exact pricing will be confirmed by an admin</span>
+            <span><span className="font-semibold text-emerald-700 dark:text-emerald-400">Free until Oct 31, 2026</span> · $19.99 CAD/month from Nov 1, 2026</span>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -188,11 +205,11 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
             className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5"
           >
             <Sparkles className="h-4 w-4" />
-            {hasActiveOrPending ? "You already have a pending or active slot" : `Apply — ${professional.category.name} in ${selectedAreaName}`}
+            {hasActiveOrPending ? "You already have a pending or active slot" : `Apply — ${professional.category.name} · ${selectedRegion || selectedAreaName} region`}
             {!hasActiveOrPending && <ArrowRight className="h-4 w-4" />}
           </Button>
           {hasActiveOrPending && (
-            <p className="text-xs text-gray-400">Cancel your current sponsored listing to apply for a different slot.</p>
+            <p className="text-xs text-gray-400">Cancel your current sponsored listing to apply for a different region or category.</p>
           )}
         </div>
       )}
@@ -219,7 +236,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
                       </span>
                     </div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white mt-1.5">
-                      <CategoryIcon slug={l.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{l.category.name} · {l.serviceArea.name}
+                      <CategoryIcon slug={l.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{l.category.name} · {l.region ?? l.serviceArea.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       ${Number(l.priceMonthly).toFixed(0)} CAD/month

@@ -99,10 +99,10 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
         a: (
           <ul className="space-y-2">
             <li>
-              <strong>Sponsored Listing ($19.99/month after Oct 31, 2026):</strong> Your profile is pinned to the top of search results in your specific category and service area — shown first whenever someone searches for your profession nearby.
+              <strong>Sponsored Listing ($19.99/month after Oct 31, 2026):</strong> Your profile is pinned to the top of search results for your category across your entire GTA region — shown first whenever someone in that region searches for your profession.
             </li>
             <li>
-              <strong>Featured Business ($29.99/month after Oct 31, 2026):</strong> Your business card is displayed prominently on the Minaret Network homepage, visible to every visitor.
+              <strong>Featured Business ($29.99/month after Oct 31, 2026):</strong> Your business card is displayed prominently on the Minaret Network homepage, visible to every visitor across the GTA.
             </li>
             <li>
               <strong>Free until Oct 31, 2026:</strong> Both placements are completely free during our launch period — one placement per business for the duration of the offer.
@@ -111,12 +111,37 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
         ),
       },
       {
+        q: "How do Featured Business slots work? How many are there?",
+        a: "Featured Business is GTA-wide. There are 6 slots in total, shared across all businesses regardless of city. Every visitor to the Minaret Network homepage sees all active Featured Business cards — there is no city or region filter. If all 6 slots are taken, you can join the waitlist and will be notified when a slot becomes available.",
+      },
+      {
+        q: "How do Sponsored Listing slots work? What are the regions?",
+        a: (
+          <>
+            <p className="mb-2">Sponsored Listings are capped at <strong>3 businesses per category per region</strong>. The GTA is divided into 6 regions:</p>
+            <ul className="space-y-1 list-disc list-inside mb-2">
+              <li><strong>York North</strong> — Newmarket, Aurora, Bradford, King City, Georgina, East Gwillimbury</li>
+              <li><strong>York South</strong> — Richmond Hill, Vaughan, Markham, Stouffville</li>
+              <li><strong>Toronto</strong> — Downtown, North York, Scarborough, Etobicoke, East York</li>
+              <li><strong>Peel</strong> — Mississauga, Brampton, Caledon</li>
+              <li><strong>Durham</strong> — Pickering, Ajax, Whitby, Oshawa, Uxbridge</li>
+              <li><strong>Halton</strong> — Oakville, Burlington, Milton</li>
+            </ul>
+            <p>When you apply, your region is determined by the service area you select. Your sponsored listing then appears at the top of all searches in that category across your entire region — not just one city.</p>
+          </>
+        ),
+      },
+      {
         q: "How does the free launch offer work exactly?",
         a: "During the free period (until October 31, 2026), each business may claim one Featured Business placement and one Sponsored Listing at no charge. Once your listing has been approved and activated, you cannot reapply for a second placement of the same type until November 1, 2026 — even if your first listing expires before then.",
       },
       {
         q: "How long does a Sponsored Listing or Featured Business placement last?",
-        a: "Each placement runs for 30 days from the date it is approved by our admin team. After 30 days it expires and you may reapply (subject to the free-period rules above).",
+        a: "Each placement runs for 30 days from the date it is approved by our admin team (rolling period, not calendar month). After 30 days it expires and you may reapply (subject to the free-period rules above).",
+      },
+      {
+        q: "What happens if a slot is full? Can I join a waitlist?",
+        a: "Yes. If all slots are taken — 6 GTA-wide for Featured Business, or 3 per category per region for Sponsored Listings — you will be automatically added to the waitlist when you apply. We will notify you as soon as a slot opens up. Your position in the queue is first-come, first-served.",
       },
     ],
   },

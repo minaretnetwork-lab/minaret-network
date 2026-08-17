@@ -3,6 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { REGION_MAP } from "@/lib/constants";
+
+const SPONSORED_MAX_SLOTS = 3; // per category per region
 
 // ── Pricing tier resolution ───────────────────────────────────────────────────
 
@@ -24,13 +27,13 @@ async function getApplicablePricingTier(categoryId: string, serviceAreaId: strin
 
 // ── Public: slot availability ─────────────────────────────────────────────────
 
-export async function getSponsoredSlotAvailability(categoryId: string, serviceAreaId: string) {
-  const tier = await getApplicablePricingTier(categoryId, serviceAreaId);
-  const maxSlots = tier?.maxSlots ?? 2;
+export async function getSponsoredSlotAvailability(categoryId: string, region: string) {
+  const tier = await getApplicablePricingTier(categoryId, null);
+  const maxSlots = SPONSORED_MAX_SLOTS;
   const priceMonthly = Number(tier?.priceMonthly ?? 19.99);
 
   const activeCount = await prisma.sponsoredListing.count({
-    where: { categoryId, serviceAreaId, status: "ACTIVE" },
+    where: { categoryId, region, status: "ACTIVE" },
   });
 
   return {
@@ -55,7 +58,7 @@ export async function getMySponsorship() {
       professionals: {
         include: {
           category: { select: { id: true, name: true, slug: true, icon: true } },
-          serviceAreas: { select: { id: true, name: true } },
+          serviceAreas: { select: { id: true, name: true, slug: true } },
         },
         where: { status: "APPROVED" },
         orderBy: { createdAt: "desc" },
@@ -106,10 +109,15 @@ export async function applyForSponsorship(categoryId: string, serviceAreaId: str
 
   const professionalId = professional.id;
 
+  // Derive region from service area slug
+  const serviceArea = await prisma.serviceArea.findUnique({ where: { id: serviceAreaId }, select: { slug: true, name: true } });
+  if (!serviceArea) throw new Error("Service area not found");
+  const region = REGION_MAP[serviceArea.slug] ?? "Beyond GTA";
+
   const existing = await prisma.sponsoredListing.findFirst({
-    where: { professionalId, categoryId, serviceAreaId, status: { in: ["ACTIVE", "PENDING"] } },
+    where: { professionalId, categoryId, region, status: { in: ["ACTIVE", "PENDING"] } },
   });
-  if (existing) throw new Error("You already have an active or pending application for this slot");
+  if (existing) throw new Error(`You already have an active or pending sponsored listing in the ${region} region for this category`);
 
   // During the free-offer period (until Oct 31 2026), one approved listing per business total.
   const FREE_PERIOD_END = new Date("2026-11-01T00:00:00.000Z");
@@ -124,7 +132,7 @@ export async function applyForSponsorship(categoryId: string, serviceAreaId: str
     }
   }
 
-  const { available, priceMonthly, pricingTierId, maxSlots } = await getSponsoredSlotAvailability(categoryId, serviceAreaId);
+  const { available, priceMonthly, pricingTierId, maxSlots } = await getSponsoredSlotAvailability(categoryId, region);
 
   if (!available) {
     await prisma.sponsoredWaitlist.upsert({
@@ -133,15 +141,15 @@ export async function applyForSponsorship(categoryId: string, serviceAreaId: str
       create: { professionalId, categoryId, serviceAreaId },
     });
     revalidatePath("/dashboard/promote");
-    return { status: "waitlisted" as const, maxSlots };
+    return { status: "waitlisted" as const, maxSlots, region };
   }
 
   await prisma.sponsoredListing.create({
-    data: { professionalId, categoryId, serviceAreaId, pricingTierId, priceMonthly, status: "PENDING" },
+    data: { professionalId, categoryId, serviceAreaId, region, pricingTierId, priceMonthly, status: "PENDING" },
   });
 
   revalidatePath("/dashboard/promote");
-  return { status: "applied" as const };
+  return { status: "applied" as const, region };
 }
 
 export async function cancelMySponsorship(listingId: string) {
@@ -167,7 +175,7 @@ export async function cancelMySponsorship(listingId: string) {
 
   if (listing.status === "ACTIVE") {
     await syncIsSponsored(listing.professionalId);
-    await notifyWaitlist(listing.categoryId, listing.serviceAreaId);
+    await notifyWaitlist(listing.categoryId, listing.serviceAreaId, listing.region ?? undefined);
   }
 
   revalidatePath("/dashboard/promote");
@@ -242,13 +250,18 @@ export async function approveSponsoredListing(listingId: string) {
   const listing = await prisma.sponsoredListing.findUnique({ where: { id: listingId } });
   if (!listing) throw new Error("Listing not found");
 
-  const tier = await getApplicablePricingTier(listing.categoryId, listing.serviceAreaId);
-  const maxSlots = tier?.maxSlots ?? 2;
+  // Ensure region is set (backfill for listings created before region was added)
+  if (!listing.region) {
+    const serviceArea = await prisma.serviceArea.findUnique({ where: { id: listing.serviceAreaId }, select: { slug: true } });
+    const region = serviceArea ? (REGION_MAP[serviceArea.slug] ?? "Beyond GTA") : "Beyond GTA";
+    await prisma.sponsoredListing.update({ where: { id: listingId }, data: { region } });
+    listing.region = region;
+  }
 
   const activeCount = await prisma.sponsoredListing.count({
-    where: { categoryId: listing.categoryId, serviceAreaId: listing.serviceAreaId, status: "ACTIVE", id: { not: listingId } },
+    where: { categoryId: listing.categoryId, region: listing.region, status: "ACTIVE", id: { not: listingId } },
   });
-  if (activeCount >= maxSlots) throw new Error(`Slot full — max ${maxSlots} active sponsored listings for this combination`);
+  if (activeCount >= SPONSORED_MAX_SLOTS) throw new Error(`Slot full — max ${SPONSORED_MAX_SLOTS} active sponsored listings in the ${listing.region} region for this category`);
 
   await prisma.sponsoredListing.update({
     where: { id: listingId },
@@ -279,7 +292,7 @@ export async function cancelSponsoredListingAdmin(listingId: string, note?: stri
 
   if (listing.status === "ACTIVE") {
     await syncIsSponsored(listing.professionalId);
-    await notifyWaitlist(listing.categoryId, listing.serviceAreaId);
+    await notifyWaitlist(listing.categoryId, listing.serviceAreaId, listing.region ?? undefined);
   }
 
   revalidatePath("/admin/sponsored");
@@ -338,9 +351,13 @@ async function syncIsSponsored(professionalId: string) {
   });
 }
 
-async function notifyWaitlist(categoryId: string, serviceAreaId: string) {
+async function notifyWaitlist(categoryId: string, serviceAreaId: string, region?: string) {
+  // Notify by region if available, otherwise fall back to service area
+  const where = region
+    ? { categoryId, notifiedAt: null, serviceArea: { slug: { in: Object.entries(REGION_MAP).filter(([, r]) => r === region).map(([s]) => s) } } }
+    : { categoryId, serviceAreaId, notifiedAt: null };
   const first = await prisma.sponsoredWaitlist.findFirst({
-    where: { categoryId, serviceAreaId, notifiedAt: null },
+    where,
     orderBy: { createdAt: "asc" },
   });
   if (first) {

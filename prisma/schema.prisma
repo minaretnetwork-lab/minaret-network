@@ -352,6 +352,7 @@ model SponsoredListing {
   category       Category         @relation(fields: [categoryId], references: [id])
   serviceAreaId  String
   serviceArea    ServiceArea      @relation(fields: [serviceAreaId], references: [id])
+  region         String?          // GTA region for slot-cap grouping (e.g. "York North", "Peel")
   pricingTierId  String?
   pricingTier    SponsoredPricingTier? @relation(fields: [pricingTierId], references: [id])
   priceMonthly   Decimal          @db.Decimal(10, 2)

@@ -140,6 +140,53 @@ export const SERVICE_AREAS = [
   { name: "Barrie", slug: "barrie" },
 ];
 
+// Maps each service area slug to the region used for sponsored listing slot caps.
+export const REGION_MAP: Record<string, string> = {
+  "keswick":           "York North",
+  "sutton":            "York North",
+  "jacksons-point":    "York North",
+  "georgina":          "York North",
+  "newmarket":         "York North",
+  "aurora":            "York North",
+  "east-gwillimbury":  "York North",
+  "bradford":          "York North",
+  "king-city":         "York North",
+  "richmond-hill":     "York South",
+  "vaughan":           "York South",
+  "markham":           "York South",
+  "stouffville":       "York South",
+  "downtown-toronto":  "Toronto",
+  "north-york":        "Toronto",
+  "scarborough":       "Toronto",
+  "etobicoke":         "Toronto",
+  "east-york":         "Toronto",
+  "mississauga":       "Peel",
+  "brampton":          "Peel",
+  "caledon":           "Peel",
+  "pickering":         "Durham",
+  "ajax":              "Durham",
+  "whitby":            "Durham",
+  "oshawa":            "Durham",
+  "uxbridge":          "Durham",
+  "oakville":          "Halton",
+  "burlington":        "Halton",
+  "milton":            "Halton",
+  "hamilton":          "Beyond GTA",
+  "barrie":            "Beyond GTA",
+};
+
+export const REGIONS = [
+  "York North",
+  "York South",
+  "Toronto",
+  "Peel",
+  "Durham",
+  "Halton",
+  "Beyond GTA",
+] as const;
+
+export type Region = (typeof REGIONS)[number];
+
 export const BADGE_LABELS: Record<string, string> = {
   MOSQUE_AFFILIATED: "Mosque Affiliated",
   HIGHLY_RECOMMENDED: "Highly Recommended",
