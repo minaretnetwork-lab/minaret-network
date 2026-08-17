@@ -10,8 +10,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 const PRICE_TABLE = {
-  STANDARD: 25,
-  FEATURED: 49,
+  STANDARD: 24.99,
+  FEATURED: 49.99,
   MOSQUE: 0,
 } as const;
 
@@ -163,7 +163,7 @@ export default function SubmitEventPage() {
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
                       {type === "STANDARD" ? "Standard" : "Featured"}{" "}
                       <span className="font-normal text-gray-500">
-                        — ${type === "STANDARD" ? 25 : 49} CAD
+                        — ${type === "STANDARD" ? "24.99" : "49.99"} CAD
                       </span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -354,7 +354,7 @@ export default function SubmitEventPage() {
             <span className="text-gray-600 dark:text-gray-400">
               {effectivePrice === 0
                 ? "Mosque-organized listings are free. No payment step."
-                : <>Total: <strong className="text-gray-900 dark:text-white">${effectivePrice}.00 CAD</strong> — you&apos;ll complete payment via Stripe on the next screen.</>}
+                : <>Total: <strong className="text-gray-900 dark:text-white">${effectivePrice.toFixed(2)} CAD</strong> — you&apos;ll complete payment via Stripe on the next screen.</>}
             </span>
           </div>
 
@@ -373,7 +373,7 @@ export default function SubmitEventPage() {
               ? "Please wait…"
               : effectivePrice === 0
               ? "Submit listing"
-              : `Continue to payment — $${effectivePrice}.00 CAD`}
+              : `Continue to payment — $${effectivePrice.toFixed(2)} CAD`}
           </Button>
 
           <p className="text-center text-xs text-gray-400">

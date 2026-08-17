@@ -26,6 +26,6 @@ export function computeEventListingPriceCents(
   isMosqueOrganized: boolean
 ): number {
   if (isMosqueOrganized) return 0;
-  if (listingType === "FEATURED") return 4900; // $49.00 CAD
-  return 2500; // $25.00 CAD
+  if (listingType === "FEATURED") return 4999; // $49.99 CAD
+  return 2499; // $24.99 CAD
 }
