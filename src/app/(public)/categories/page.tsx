@@ -3,24 +3,20 @@ export const dynamic = "force-dynamic";
 import { CategoriesBrowser } from "@/components/categories/categories-browser";
 import { CATEGORIES } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
 export const metadata = { title: "Browse Categories" };
 
 export default async function CategoriesPage() {
-  const mosque = await prisma.mosque.findUnique({
-    where: { slug: DEFAULT_MOSQUE_SLUG },
-    include: {
-      categories: {
-        where: { isActive: true },
-        include: { _count: { select: { professionals: { where: { status: "APPROVED" } } } } },
-        orderBy: { name: "asc" },
-      },
+  const categoryCounts = await prisma.category.findMany({
+    where: { isActive: true },
+    select: {
+      slug: true,
+      _count: { select: { professionals: { where: { status: "APPROVED" } } } },
     },
   });
 
   const countBySlug = Object.fromEntries(
-    (mosque?.categories ?? []).map((c) => [c.slug, c._count.professionals])
+    categoryCounts.map((c) => [c.slug, c._count.professionals])
   );
 
   const categories = [...CATEGORIES]
