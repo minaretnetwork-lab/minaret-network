@@ -9,7 +9,7 @@ const SPONSORED_MAX_SLOTS = 3; // per category per region
 
 // ── Pricing tier resolution ───────────────────────────────────────────────────
 
-async function getApplicablePricingTier(categoryId: string, serviceAreaId: string) {
+async function getApplicablePricingTier(categoryId: string, serviceAreaId: string | null) {
   const exact = await prisma.sponsoredPricingTier.findFirst({
     where: { categoryId, serviceAreaId, isActive: true },
   });
