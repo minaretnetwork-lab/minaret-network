@@ -11,6 +11,7 @@ import { HeroSearch } from "@/components/home/hero-search";
 import { CategorySearch } from "@/components/home/category-search";
 import { CommunityCycle } from "@/components/home/community-cycle";
 import { FeaturedSection } from "@/components/featured/featured-section";
+import { MinaretLogo } from "@/components/ui/minaret-logo";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
@@ -64,8 +65,8 @@ export default async function HomePage() {
           {/* Main content — centered */}
           <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
 
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-5 py-2 text-base text-white/90 font-medium mb-8 backdrop-blur-sm">
-              GTA Masjid Professional Directory
+            <div className="mb-8">
+              <MinaretLogo variant="dark" />
             </div>
 
             <h1
