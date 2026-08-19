@@ -52,6 +52,7 @@ export function OffersDashboard({ offers, professional }: Props) {
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [tier, setTier] = useState<OfferTierKey>("STANDARD");
+  const [complianceAcknowledged, setComplianceAcknowledged] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -67,7 +68,7 @@ export function OffersDashboard({ offers, professional }: Props) {
       await submitOffer({ title, description, imageUrl: imageUrl || undefined, tier });
       setSuccess(true);
       setShowForm(false);
-      setTitle(""); setDescription(""); setImageUrl(""); setTier("STANDARD");
+      setTitle(""); setDescription(""); setImageUrl(""); setTier("STANDARD"); setComplianceAcknowledged(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -219,6 +220,20 @@ export function OffersDashboard({ offers, professional }: Props) {
             />
           </div>
 
+          {/* Compliance acknowledgment */}
+          <label className="flex gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              required
+              checked={complianceAcknowledged}
+              onChange={(e) => setComplianceAcknowledged(e.target.checked)}
+              className="mt-0.5 h-4 w-4 flex-shrink-0 accent-emerald-600"
+            />
+            <span className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+              I confirm that I hold all required licenses, permits, and certifications to offer these products or services in Ontario — including any applicable food handling or food premises permits. I understand that Minaret Network does not verify this and that I am solely responsible for compliance with applicable laws.
+            </span>
+          </label>
+
           {error && (
             <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-3">
               <XCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -229,8 +244,8 @@ export function OffersDashboard({ offers, professional }: Props) {
           <div className="flex gap-3 pt-1">
             <Button
               type="submit"
-              disabled={submitting}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white"
+              disabled={submitting || !complianceAcknowledged}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white disabled:opacity-50"
             >
               {submitting ? "Submitting…" : "Submit for review"}
             </Button>

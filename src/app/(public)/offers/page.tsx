@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Image from "next/image";
-import { Megaphone, MessageCircle, Phone } from "lucide-react";
+import { Megaphone, MessageCircle, Phone, Info } from "lucide-react";
 import { getActiveOffers } from "@/lib/actions/offers";
 
 export const metadata = {
@@ -26,6 +26,14 @@ export default async function OffersPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="container mx-auto px-4 lg:px-6 py-12">
+
+        {/* Disclaimer banner */}
+        <div className="mb-8 flex gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-4">
+          <Info className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+            <strong className="font-semibold text-gray-700 dark:text-gray-300">Community notice:</strong> Offers on this page are posted by community members. Minaret Network does not verify business registration, food-handling licenses, food premises permits, or any other regulatory compliance. Home-based food vendors may not hold a commercial food premises license under Ontario&apos;s Food Premises Regulation (O. Reg. 493/17). You are encouraged to confirm licensing and food safety compliance before purchasing. Minaret Network is not a party to any transaction and assumes no liability for products, services, or any harm arising from them.
+          </p>
+        </div>
 
         {/* Header */}
         <div className="flex items-end justify-between mb-8">
