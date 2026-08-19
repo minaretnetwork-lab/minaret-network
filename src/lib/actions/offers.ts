@@ -2,9 +2,38 @@
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { REGION_MAP } from "@/lib/constants";
 import { getPriceForDays, getTierFromDays } from "@/lib/offers/pricing";
+
+export async function uploadOfferImage(formData: FormData): Promise<string> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const file = formData.get("file") as File;
+  if (!file || !file.size) throw new Error("No file provided");
+  if (file.size > 5 * 1024 * 1024) throw new Error("Image must be under 5MB");
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Only JPEG, PNG, or WebP images are allowed");
+
+  const ext = file.type.split("/")[1];
+  const path = `${user.id}/${Date.now()}.${ext}`;
+
+  const admin = createAdminClient();
+  const { error: bucketErr } = await admin.storage.createBucket("offer-images", {
+    public: true,
+    fileSizeLimit: 5242880,
+    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+  });
+  if (bucketErr && !bucketErr.message.includes("already exists")) throw bucketErr;
+
+  const { error: uploadErr } = await admin.storage.from("offer-images").upload(path, file, { upsert: true, contentType: file.type });
+  if (uploadErr) throw uploadErr;
+
+  const { data } = admin.storage.from("offer-images").getPublicUrl(path);
+  return `${data.publicUrl}?t=${Date.now()}`;
+}
 
 // ── Public: homepage & browse ─────────────────────────────────────────────────
 

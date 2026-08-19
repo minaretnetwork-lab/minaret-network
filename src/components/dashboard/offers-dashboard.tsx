@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { CheckCircle, Clock, XCircle, Megaphone, Plus, X, AlertCircle, CalendarDays, Star } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Megaphone, Plus, X, AlertCircle, CalendarDays, Star, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { submitOffer, cancelMyOffer } from "@/lib/actions/offers";
+import { submitOffer, cancelMyOffer, uploadOfferImage } from "@/lib/actions/offers";
 import { TIER_PRICING, getTierFromDays, getPriceForDays } from "@/lib/offers/pricing";
 
 type Offer = {
@@ -70,6 +70,8 @@ export function OffersDashboard({ offers, professional }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [startDate, setStartDate] = useState(todayStr());
   const [endDate, setEndDate] = useState("");
   const [complianceAcknowledged, setComplianceAcknowledged] = useState(false);
@@ -84,9 +86,27 @@ export function OffersDashboard({ offers, professional }: Props) {
   const tierInfo = tier ? TIER_PRICING[tier] : null;
 
   function resetForm() {
-    setTitle(""); setDescription(""); setImageUrl("");
+    setTitle(""); setDescription(""); setImageUrl(""); setImagePreview(null);
     setStartDate(todayStr()); setEndDate("");
     setComplianceAcknowledged(false); setError(null);
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImagePreview(URL.createObjectURL(file));
+    setImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const url = await uploadOfferImage(fd);
+      setImageUrl(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Image upload failed");
+      setImagePreview(null);
+    } finally {
+      setImageUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -274,19 +294,41 @@ export function OffersDashboard({ offers, professional }: Props) {
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image upload */}
           <div>
-            <label htmlFor="offer-image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Image URL <span className="text-xs text-gray-400">(optional)</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Offer image <span className="text-xs text-gray-400">(optional)</span>
             </label>
-            <input
-              id="offer-image"
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://... (paste a link to your offer image)"
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+            {imagePreview ? (
+              <div className="relative w-full h-44 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Image src={imagePreview} alt="Preview" fill className="object-cover" />
+                <button
+                  type="button"
+                  onClick={() => { setImagePreview(null); setImageUrl(""); }}
+                  className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                {imageUploading && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <p className="text-white text-sm font-medium">Uploading…</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <label htmlFor="offer-image" className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors bg-gray-50 dark:bg-gray-800/50">
+                <ImagePlus className="h-7 w-7 text-gray-400 mb-2" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">Click to upload an image</p>
+                <p className="text-xs text-gray-400 mt-0.5">JPEG, PNG or WebP · max 5MB</p>
+                <input
+                  id="offer-image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
 
           {/* Compliance acknowledgment */}
@@ -313,10 +355,10 @@ export function OffersDashboard({ offers, professional }: Props) {
           <div className="flex gap-3 pt-1">
             <Button
               type="submit"
-              disabled={submitting || !complianceAcknowledged || days < 1}
+              disabled={submitting || imageUploading || !complianceAcknowledged || days < 1}
               className="bg-emerald-700 hover:bg-emerald-800 text-white disabled:opacity-50"
             >
-              {submitting ? "Submitting…" : "Submit for review"}
+              {imageUploading ? "Uploading image…" : submitting ? "Submitting…" : "Submit for review"}
             </Button>
             <Button type="button" variant="outline" onClick={() => { setShowForm(false); resetForm(); }}>
               Cancel
