@@ -48,7 +48,7 @@ export default function TermsPage() {
 
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-500">Legal</p>
         <h1 className="mt-3 font-serif text-4xl font-semibold text-slate-950 dark:text-white">Terms of Service</h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Last updated: August 18, 2026 · Version 1.0</p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Last updated: August 19, 2026 · Version 1.1</p>
 
         <div className="mt-10 space-y-10">
 
@@ -66,7 +66,7 @@ export default function TermsPage() {
               Minaret Network is a directory and lead-connection platform. We are <strong>not</strong>: a professional licensing or regulatory body; a party to any contract, agreement, or transaction between a member and a professional; a guarantor of any professional&rsquo;s licensing, insurance, quality, pricing, or outcomes. We do not verify professional credentials, licences, or qualifications, and we do not verify mosque affiliation.
             </p>
             <p>
-              A Featured placement, Sponsored placement, badge (including &ldquo;Highly Recommended&rdquo; — see Section 5), or Recommendation is <strong>not</strong> an endorsement by Minaret Network or by any mosque.
+              A Featured placement, Sponsored placement, Community Offer, badge (including &ldquo;Highly Recommended&rdquo; — see Section 5), or Recommendation is <strong>not</strong> an endorsement by Minaret Network or by any mosque.
             </p>
           </Section>
 
@@ -135,6 +135,7 @@ export default function TermsPage() {
               <li>harass, threaten, or defame another user</li>
               <li>post hate speech or discriminatory content</li>
               <li>misuse the messaging system for spam or unrelated solicitation</li>
+              <li>advertise food, health, or safety-related products or services through Community Offers without the licences Ontario law requires for them</li>
               <li>scrape or systematically extract Platform data</li>
               <li>attempt to circumvent security or moderation systems</li>
               <li>upload malware or harmful files</li>
@@ -243,9 +244,77 @@ export default function TermsPage() {
             </p>
           </Section>
 
+          <Section id="s13a" number="13A" title="Community Offers">
+            <p>
+              Approved professionals may post time-limited promotional offers (deals, discounts, home-based food, services, and similar) displayed on the Minaret Network homepage and the <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">/offers</code> page. Only professionals with <strong>APPROVED</strong> listing status may post; unregistered users and unapproved professionals cannot.
+            </p>
+
+            <p><strong>Pricing</strong> (free during launch until October 31, 2026; effective November 1, 2026):</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="text-left py-2 pr-6 font-semibold text-slate-900 dark:text-white">Duration</th>
+                    <th className="text-left py-2 pr-6 font-semibold text-slate-900 dark:text-white">Tier</th>
+                    <th className="text-left py-2 font-semibold text-slate-900 dark:text-white">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-slate-100 dark:border-slate-800">
+                    <td className="py-2 pr-6 text-slate-700 dark:text-slate-300">1–3 days</td>
+                    <td className="py-2 pr-6 font-medium text-slate-900 dark:text-slate-200">Weekend</td>
+                    <td className="py-2 text-slate-700 dark:text-slate-300">CAD $4.99 (one-time)</td>
+                  </tr>
+                  <tr className="border-b border-slate-100 dark:border-slate-800">
+                    <td className="py-2 pr-6 text-slate-700 dark:text-slate-300">4–7 days</td>
+                    <td className="py-2 pr-6 font-medium text-slate-900 dark:text-slate-200">Standard</td>
+                    <td className="py-2 text-slate-700 dark:text-slate-300">CAD $9.99 (one-time)</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 pr-6 text-slate-700 dark:text-slate-300">8–30 days</td>
+                    <td className="py-2 pr-6 font-medium text-slate-900 dark:text-slate-200">Featured</td>
+                    <td className="py-2 text-slate-700 dark:text-slate-300">CAD $19.99 (one-time) — displayed first in the offers grid</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>
+              You choose your own start date and end date (minimum 1 day, maximum 30 days); the tier and price are determined automatically from the duration you choose.
+            </p>
+
+            <p>
+              <strong>Approval and payment.</strong> All offers are submitted as pending and require admin approval before going live. From November 1, 2026, payment is processed at submission before that approval decision. If your offer is rejected by admin review, you will receive a full refund — you should not pay for an offer that never goes live. Once an offer is approved and live, there is no refund for any remaining or unused portion of the period.
+            </p>
+
+            <p>
+              <strong>Display.</strong> An offer is shown only between its chosen start and end dates (inclusive) and stops displaying automatically at the end of the end date. Offers are region-filtered: visible to members in the same GTA region as the professional&rsquo;s registered service area.
+            </p>
+
+            <p>
+              <strong>Compliance is the poster&rsquo;s responsibility.</strong> The following notice appears on the offers page and carries the same contractual weight as this section:
+            </p>
+            <blockquote className="border-l-4 border-slate-300 dark:border-slate-600 pl-4 italic text-slate-600 dark:text-slate-400 text-sm">
+              &ldquo;Community Offers are posted by community members. Minaret Network does not verify business registration, food-handling licenses, food premises permits, or any other regulatory compliance. Home-based food vendors may not hold a commercial food premises license under Ontario&rsquo;s Food Premises Regulation (O.&nbsp;Reg.&nbsp;493/17). Minaret Network is not a party to any transaction and assumes no liability for products, services, or any harm arising from them.&rdquo;
+            </blockquote>
+            <p>
+              Before submitting an offer, the professional must check a mandatory acknowledgment, logged at the time of submission:
+            </p>
+            <blockquote className="border-l-4 border-slate-300 dark:border-slate-600 pl-4 italic text-slate-600 dark:text-slate-400 text-sm">
+              &ldquo;I confirm that I hold all required licenses, permits, and certifications to offer these products or services in Ontario — including any applicable food handling or food premises permits. I understand that Minaret Network does not verify this and that I am solely responsible for compliance with applicable laws.&rdquo;
+            </blockquote>
+
+            <p>
+              <strong>Prohibited content.</strong> Offers must not: advertise unlicensed financial, medical, or legal services; advertise food, health, or safety-related products or services without the licences Ontario law requires for them; make misleading claims; or otherwise violate these Terms.
+            </p>
+            <p>
+              <strong>Cancellation.</strong> Professionals may cancel a pending or active offer at any time from their dashboard. No refund for any unused portion of a live offer period (post-November 1, 2026).
+            </p>
+          </Section>
+
           <Section id="s14" number="14" title="Contact Information on Listings">
             <p>
-              Professionals control what contact information is shown on their listing (phone, email, website, WhatsApp). Where a WhatsApp number is displayed, clicking it opens a direct conversation between you and the professional through WhatsApp — Minaret Network is not a party to that conversation and does not process its content. This is distinct from the in-Platform Service Request leads dashboard described in Section 7.
+              Professionals control what contact information is shown on their listing and Community Offers (phone, email, website, WhatsApp). Where a WhatsApp number is displayed — on a listing or on a Community Offer card — clicking it opens a direct conversation through WhatsApp. Minaret Network is not a party to that conversation and does not process its content. This is distinct from the in-Platform Service Request leads dashboard described in Section 7, which is an on-platform feature.
             </p>
           </Section>
 
