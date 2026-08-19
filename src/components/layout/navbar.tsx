@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
 import { LogoLink } from "./logo-link";
+import { AdvertiseDropdown } from "./advertise-dropdown";
 
 interface NavbarProps {
   user?: {
@@ -41,7 +42,6 @@ export function Navbar({ user }: NavbarProps) {
               { href: "/events", label: "Events" },
               { href: "/offers", label: "Community Offers" },
               { href: "/request", label: "Service Request" },
-              { href: "/advertise", label: "Advertise with us" },
             ].map((link) => (
               <Link
                 key={link.href}
@@ -51,6 +51,7 @@ export function Navbar({ user }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
+            <AdvertiseDropdown />
             {isAdmin && (
               <Link
                 href="/admin"
