@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
+import { cookies } from "next/headers";
 import { getFeaturedBusinessesForHomepage } from "@/lib/actions/featured";
 import { FeaturedBusinessCard } from "./featured-business-card";
 import { FeaturedImpressionTracker } from "./featured-impression-tracker";
 
 export async function FeaturedSection() {
+  const cookieStore = await cookies();
+  const region = cookieStore.get("mn_region")?.value;
+
   let rawListings: Awaited<ReturnType<typeof getFeaturedBusinessesForHomepage>>;
 
   try {
-    rawListings = await getFeaturedBusinessesForHomepage();
+    rawListings = await getFeaturedBusinessesForHomepage(region);
   } catch {
     // Keep the public homepage available when the database is temporarily
     // unreachable; database-backed sections will return once it reconnects.

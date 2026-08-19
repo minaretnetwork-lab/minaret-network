@@ -25,7 +25,7 @@ export async function getFeaturedBusinessesForHomepage(region?: string) {
       professional: { status: "APPROVED" },
       ...(region ? { region } : {}),
     },
-    take: 12,
+    take: 6,
     orderBy: [{ displayOrder: "asc" }, { startDate: "asc" }, { createdAt: "asc" }],
     include: {
       professional: {
