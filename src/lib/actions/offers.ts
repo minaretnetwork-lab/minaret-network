@@ -50,7 +50,7 @@ export async function getActiveOffersForHomepage(region?: string) {
       { tier: "desc" },  // FEATURED > STANDARD > WEEKEND alphabetically desc
       { expiresAt: "asc" },
     ],
-    take: 9,
+    take: 3,
     include: {
       professional: {
         include: {
