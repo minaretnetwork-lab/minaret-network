@@ -181,6 +181,7 @@ model Professional {
   waitlistEntries   SponsoredWaitlist[]
   featuredListings  FeaturedListing[]
   featuredWaitlist  FeaturedWaitlist[]
+  communityOffers   CommunityOffer[]
   conversations     Conversation[]
   editDrafts        ProfessionalEditDraft[]
   broadcastLogs     BroadcastLog[]
@@ -686,4 +687,43 @@ model AnalyticsEvent {
 enum AnalyticsEventType {
   PAGE_VIEW
   HOME_SEARCH
+}
+
+// ── Community Offers ──────────────────────────────────────────────────────────
+
+model CommunityOffer {
+  id             String               @id @default(cuid())
+  professionalId String
+  professional   Professional         @relation(fields: [professionalId], references: [id])
+  title          String
+  description    String
+  imageUrl       String?
+  tier           CommunityOfferTier   @default(STANDARD)
+  price          Decimal              @db.Decimal(10, 2)
+  status         CommunityOfferStatus @default(PENDING)
+  startDate      DateTime?
+  expiresAt      DateTime?
+  adminNote      String?
+  stripeCheckoutSessionId String?
+  stripePaymentIntentId   String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([status, expiresAt])
+  @@index([professionalId, createdAt])
+  @@map("community_offers")
+}
+
+enum CommunityOfferTier {
+  WEEKEND   // 3 days
+  STANDARD  // 1 week
+  FEATURED  // 1 month, always shown first
+}
+
+enum CommunityOfferStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  EXPIRED
+  CANCELLED
 }

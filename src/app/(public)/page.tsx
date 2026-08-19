@@ -11,6 +11,7 @@ import { HeroSearch } from "@/components/home/hero-search";
 import { CategorySearch } from "@/components/home/category-search";
 import { CommunityCycle } from "@/components/home/community-cycle";
 import { FeaturedSection } from "@/components/featured/featured-section";
+import { CommunityOffersSection } from "@/components/offers/community-offers-section";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
@@ -119,18 +120,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Browse by Category ────────────────────────────────── */}
-      <section className="container mx-auto px-4 lg:px-6 py-14">
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession or business</p>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5" style={{ fontFamily: "var(--font-lora)" }}>
-            Find a professional or local business
-          </h2>
-          <CategorySearch categories={categories} />
-        </div>
-      </section>
+      {/* ── Community Offers ─────────────────────────────────── */}
+      <CommunityOffersSection />
 
-      {/* ── Sponsor Logo Carousel ───────────────────────────── */}
       {/* ── Featured Businesses ──────────────────────────────── */}
       <FeaturedSection />
 
@@ -213,6 +205,17 @@ export default async function HomePage() {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Browse by Category ────────────────────────────────── */}
+      <section className="container mx-auto px-4 lg:px-6 py-14">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession or business</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5" style={{ fontFamily: "var(--font-lora)" }}>
+            Find a professional or local business
+          </h2>
+          <CategorySearch categories={categories} />
         </div>
       </section>
 

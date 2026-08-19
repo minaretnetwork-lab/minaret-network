@@ -5,7 +5,7 @@ import { getAdminStats } from "@/lib/actions/admin";
 import { DEFAULT_MOSQUE_SLUG, CURRENT_TOS_VERSION } from "@/lib/constants";
 import {
   LayoutDashboard, Users, MessageSquare,
-  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound, Flag, CalendarDays
+  FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound, Flag, CalendarDays, Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +17,7 @@ const navLinks = [
   { href: "/admin/sponsored", label: "Sponsored", icon: <Sparkles className="h-4 w-4" /> },
   { href: "/admin/featured", label: "Featured Biz", icon: <Star className="h-4 w-4" /> },
   { href: "/admin/events", label: "Events", icon: <CalendarDays className="h-4 w-4" /> },
+  { href: "/admin/offers", label: "Comm. Offers", icon: <Megaphone className="h-4 w-4" /> },
   { href: "/admin/recommendations", label: "Recommendations", icon: <MessageSquare className="h-4 w-4" /> },
   { href: "/admin/reports", label: "Review Reports", icon: <Flag className="h-4 w-4" /> },
   { href: "/admin/requests", label: "Service Requests", icon: <FileText className="h-4 w-4" /> },
