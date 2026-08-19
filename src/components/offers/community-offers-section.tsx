@@ -154,15 +154,17 @@ export async function CommunityOffersSection() {
         </p>
       )}
 
-      <div className="mt-6 flex items-center justify-center gap-4 sm:hidden">
-        <Link href="/offers" className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
-          Browse all offers →
-        </Link>
-        <span className="text-gray-300">·</span>
-        <Link href="/dashboard/offers" className="text-sm text-gray-500 hover:underline">
-          Post an offer
-        </Link>
-      </div>
+      {offers.length > 0 && (
+        <div className="mt-6 flex items-center justify-center gap-4 sm:hidden">
+          <Link href="/offers" className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
+            Browse all offers →
+          </Link>
+          <span className="text-gray-300">·</span>
+          <Link href="/dashboard/offers" className="text-sm text-gray-500 hover:underline">
+            Post an offer
+          </Link>
+        </div>
+      )}
     </section>
   );
 }
