@@ -150,7 +150,7 @@ export function FeaturedBusinessDashboard({ listings, waitlist, professional }: 
                     </div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">GTA-wide Featured</p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {price === 0 ? "Free (launch offer)" : `$${price.toFixed(0)} CAD/month`}
+                      {new Date() < new Date("2026-11-01T00:00:00.000Z") ? "Free (launch offer)" : `$${price.toFixed(2)} CAD/month`}
                       {l.startDate && ` · Active since ${new Date(l.startDate).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" })}`}
                     </p>
                     {l.adminNote && l.status === "REJECTED" && (
