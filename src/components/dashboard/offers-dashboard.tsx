@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { CheckCircle, Clock, XCircle, Megaphone, Plus, X, AlertCircle, CalendarDays, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { submitOffer, cancelMyOffer, TIER_PRICING, getTierFromDays, getPriceForDays } from "@/lib/actions/offers";
+import { submitOffer, cancelMyOffer } from "@/lib/actions/offers";
+import { TIER_PRICING, getTierFromDays, getPriceForDays } from "@/lib/offers/pricing";
 
 type Offer = {
   id: string;
