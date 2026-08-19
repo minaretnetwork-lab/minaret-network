@@ -184,9 +184,9 @@ export default function TermsPage() {
             <p>
               <strong>Cancellation:</strong> Cancel any time from your dashboard. Cancellation takes effect and no further charges apply after your current 30-day term.
             </p>
-            <Warning>
-              The mechanics of the free-to-paid transition on November 1, 2026 — whether professionals must affirmatively re-confirm with a payment method or whether an existing payment method is charged automatically — have not yet been finalized. We recommend requiring explicit re-confirmation with at least 14 days&rsquo; advance notice before any charge. This section will be updated before October 31, 2026.
-            </Warning>
+            <p>
+              <strong>Free-to-paid transition:</strong> Free placements expire on October 31, 2026 and are not automatically converted to paid subscriptions. To continue appearing as a Featured Business from November 1, 2026 onward, professionals must reapply through their dashboard and provide a payment method at that time. There is no automatic charge at the end of the free period.
+            </p>
           </Section>
 
           <Section id="s12" number="12" title="Sponsored Listing Placement">
@@ -197,7 +197,7 @@ export default function TermsPage() {
               <strong>Pricing:</strong> Free until October 31, 2026. From November 1, 2026: CAD $19.99/month baseline, billed as a 30-day rolling term from admin approval. Pricing may vary by category and service area at our discretion; the current price for a given category/region is shown at the time of application. One Sponsored placement per business during the free period.
             </p>
             <p>
-              The same waitlist mechanics, cancellation terms, and free-to-paid transition considerations described in Section 11 apply here.
+              The same waitlist mechanics, cancellation terms, and free-to-paid transition policy described in Section 11 apply here — free placements expire October 31, 2026 and professionals must reapply with a payment method to continue from November 1, 2026. No automatic charges.
             </p>
           </Section>
 
