@@ -93,6 +93,7 @@ const RETENTION = [
   { category: "Consent audit trail (including IP)", approach: "Recommended: life of the account plus a defined window afterward, as evidentiary record of consent. Period to be confirmed." },
   { category: "Analytics data", approach: "Per Google Analytics / Contentsquare's own retention settings — confirm with vendors." },
   { category: "Payment records (Stripe)", approach: "As required by Canadian tax law — generally at least 6 years." },
+  { category: "Community Offer content (title, description, image, dates)", approach: "2 years after the offer expires or is cancelled, for audit and dispute-resolution purposes, then deleted." },
 ];
 
 export default function PrivacyPage() {
@@ -102,7 +103,7 @@ export default function PrivacyPage() {
 
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-500">Legal</p>
         <h1 className="mt-3 font-serif text-4xl font-semibold text-slate-950 dark:text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Last updated: August 18, 2026</p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Last updated: August 19, 2026</p>
 
         <div className="mt-10 space-y-10">
 
@@ -147,6 +148,15 @@ export default function PrivacyPage() {
               </p>
             </SubSection>
 
+            <SubSection number="2.5A" title="Community Offers">
+              <p>
+                When an approved professional posts a Community Offer, we collect the offer title, description, optional image, start date, and end date. The professional&rsquo;s phone number and/or WhatsApp number — already on file from their professional profile — are displayed on the offer card so members can contact them directly. No separate contact information is collected for Community Offers.
+              </p>
+              <p>
+                We also derive and store the offer&rsquo;s GTA region from the professional&rsquo;s service areas, so offers are shown only to members whose selected region matches. A compliance-acknowledgment timestamp and version is logged at the time of submission, confirming the professional accepted the Community Offers terms.
+              </p>
+            </SubSection>
+
             <SubSection number="2.6" title="Recommendations and reports">
               <p>
                 Recommendation content, moderation status and history, reports submitted about a listing or recommendation, and related admin notes.
@@ -184,6 +194,7 @@ export default function PrivacyPage() {
               <li>To display Recommendations and badges submitted or awarded through the Platform, subject to moderation.</li>
               <li>To assist category-matching for service requests using AI — see Section 6.</li>
               <li>To show relevant Featured Businesses by region, using the mn_region cookie.</li>
+              <li>To operate Community Offers — display admin-approved promotional offers to members in the professional&rsquo;s region, using the professional&rsquo;s contact details already on file.</li>
               <li>To operate paid placements (Featured Business, Sponsored Listing, Event Listings) and process the associated payments through Stripe.</li>
               <li>To maintain Platform security and integrity — detect fraud, impersonation, abuse of messaging, and violations of our Terms of Service.</li>
               <li>To communicate with you about your account, service requests, messages, and Platform updates. We do not currently send direct marketing communications.</li>
@@ -282,6 +293,15 @@ export default function PrivacyPage() {
             </p>
             <p>
               Regulated professions (doctors, dentists, lawyers, and similar categories) are excluded from this feature — service requests cannot be submitted for these categories and members must contact these professionals directly through their listing. No third-party messaging platform (e.g., WhatsApp) is involved in distributing service requests; this is a fully in-Platform feature.
+            </p>
+          </Section>
+
+          <Section id="s9b" number="9B" title="Contact Information on Community Offers">
+            <p>
+              When a Community Offer is active, the professional&rsquo;s phone number and WhatsApp number — as stored in their professional profile — are displayed on the offer card and on the public Community Offers page. This lets members contact the business directly about the offer. No email address is displayed.
+            </p>
+            <p>
+              We do not broadcast this contact information through any third-party platform. The professional controls their phone and WhatsApp numbers through their profile settings; updating or removing those numbers from the profile removes them from any active offer card as well.
             </p>
           </Section>
 
