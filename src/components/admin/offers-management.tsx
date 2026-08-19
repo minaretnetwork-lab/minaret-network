@@ -15,6 +15,7 @@ type AdminOffer = {
   status: string;
   adminNote: string | null;
   createdAt: string;
+  startDate: string | null;
   expiresAt: string | null;
   professional: {
     phone: string | null;
@@ -51,7 +52,10 @@ function OfferRow({ offer, showActions }: { offer: AdminOffer; showActions: bool
   const proName = offer.professional.user.displayName ?? (fullName || offer.professional.user.email);
 
   const tierUi = TIER_LABELS[offer.tier] ?? { label: offer.tier, color: "bg-gray-100 text-gray-700" };
+  const startAt = offer.startDate ? new Date(offer.startDate) : null;
   const expiresAt = offer.expiresAt ? new Date(offer.expiresAt) : null;
+  const fmt = (d: Date) => d.toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" });
+  const isExpiredWindow = expiresAt && expiresAt < new Date();
 
   if (done) return null;
 
@@ -74,7 +78,12 @@ function OfferRow({ offer, showActions }: { offer: AdminOffer; showActions: bool
           <span>{offer.professional.category?.icon} {offer.professional.category?.name}</span>
           <span>by {proName}</span>
           {offer.professional.phone && <span>📞 {offer.professional.phone}</span>}
-          {expiresAt && <span>Expires {expiresAt.toLocaleDateString()}</span>}
+          {startAt && expiresAt && (
+            <span className={isExpiredWindow ? "text-red-400 line-through" : ""}>
+              {fmt(startAt)} → {fmt(expiresAt)}
+            </span>
+          )}
+          {isExpiredWindow && <span className="text-red-400 font-medium">Window expired — ask for resubmission</span>}
           {offer.adminNote && offer.status !== "PENDING" && (
             <span className="text-red-400 italic">{offer.adminNote}</span>
           )}
