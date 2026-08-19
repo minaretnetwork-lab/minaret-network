@@ -13,10 +13,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  if (normalizedHost && apexHosts.has(normalizedHost) && request.nextUrl.pathname !== "/upgrades-in-progress") {
-    const url = new URL("http://127.0.0.1:3220/upgrades-in-progress");
-    return NextResponse.rewrite(url);
-  }
 
   return await updateSession(request);
 }
