@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Star, Building2, Tag } from "lucide-react";
+import { ArrowLeft, Sparkles, Star, Building2, Tag, Megaphone } from "lucide-react";
 
 export const metadata = {
   title: "Advertise | Minaret Network",
@@ -117,6 +117,46 @@ export default function AdvertisePage() {
                   className="inline-flex items-center gap-1.5 rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-800 transition-colors"
                 >
                   Apply for Sponsored Listing
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+          {/* Community Offers */}
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+                <Megaphone className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Community Offer</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    Free until Oct 31
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+                  Post a time-limited promotion — a deal, discount, or special offer — visible to community members in your region. Great for food, services, and one-time promotions.
+                </p>
+                <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
+                  {[
+                    "Weekend (up to 3 days) — $4.99, free until Oct 31",
+                    "Standard (4–7 days) — $9.99, free until Oct 31",
+                    "Featured (8–30 days) — $19.99, shown first, free until Oct 31",
+                    "Approved professionals only — admin reviewed",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/auth/login?next=/dashboard/offers"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 transition-colors"
+                >
+                  Post a Community Offer
                 </Link>
               </div>
             </div>

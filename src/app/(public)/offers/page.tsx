@@ -94,7 +94,7 @@ export default async function OffersPage({
             )}
           </div>
           <Link
-            href="/advertise"
+            href="/dashboard/offers"
             className="hidden sm:inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
           >
             Post an offer
@@ -123,7 +123,7 @@ export default async function OffersPage({
                 </Link>
               )}
               <Link
-                href="/advertise"
+                href="/dashboard/offers"
                 className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
               >
                 Post a Community Offer
@@ -209,7 +209,7 @@ export default async function OffersPage({
 
         <div className="mt-8 text-center sm:hidden">
           <Link
-            href="/advertise"
+            href="/dashboard/offers"
             className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
           >
             Post a Community Offer

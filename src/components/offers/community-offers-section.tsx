@@ -119,7 +119,7 @@ export async function CommunityOffersSection() {
             Browse all <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            href="/advertise"
+            href="/dashboard/offers"
             className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400"
           >
             Post an offer
@@ -133,7 +133,7 @@ export async function CommunityOffersSection() {
           <p className="text-gray-500 dark:text-gray-400 font-medium mb-2">No active offers yet</p>
           <p className="text-sm text-gray-400 mb-5">Be the first to reach the community.</p>
           <Link
-            href="/advertise"
+            href="/dashboard/offers"
             className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
           >
             Post a Community Offer
@@ -159,7 +159,7 @@ export async function CommunityOffersSection() {
           Browse all offers →
         </Link>
         <span className="text-gray-300">·</span>
-        <Link href="/advertise" className="text-sm text-gray-500 hover:underline">
+        <Link href="/dashboard/offers" className="text-sm text-gray-500 hover:underline">
           Post an offer
         </Link>
       </div>
