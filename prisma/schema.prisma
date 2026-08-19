@@ -699,6 +699,7 @@ model CommunityOffer {
   description    String
   imageUrl       String?
   tier           CommunityOfferTier   @default(STANDARD)
+  region         String?
   price          Decimal              @db.Decimal(10, 2)
   status         CommunityOfferStatus @default(PENDING)
   startDate      DateTime?

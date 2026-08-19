@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { Megaphone, MessageCircle, Phone, Info } from "lucide-react";
+import { cookies } from "next/headers";
 import { getActiveOffers } from "@/lib/actions/offers";
 
 export const metadata = {
@@ -10,10 +11,20 @@ export const metadata = {
   description: "Browse time-limited deals and promotions posted by GTA mosque community businesses.",
 };
 
-export default async function OffersPage() {
+export default async function OffersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ all?: string }>;
+}) {
+  const { all } = await searchParams;
+  const showAll = all === "1";
+
+  const cookieStore = await cookies();
+  const region = showAll ? undefined : cookieStore.get("mn_region")?.value;
+
   let offers: Awaited<ReturnType<typeof getActiveOffers>> = [];
   try {
-    offers = await getActiveOffers({ limit: 48 });
+    offers = await getActiveOffers({ limit: 48, region });
     offers = [...offers].sort((a, b) => {
       if (a.tier === "FEATURED" && b.tier !== "FEATURED") return -1;
       if (a.tier !== "FEATURED" && b.tier === "FEATURED") return 1;
@@ -53,6 +64,34 @@ export default async function OffersPage() {
             <p className="text-gray-500 dark:text-gray-400 mt-2">
               Time-limited promotions posted by GTA mosque community businesses.
             </p>
+            {region && !showAll && (
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full">
+                  {region}
+                </span>
+                <Link
+                  href="/offers?all=1"
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2"
+                >
+                  View all regions
+                </Link>
+              </div>
+            )}
+            {showAll && (
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-semibold px-3 py-1 rounded-full">
+                  All regions
+                </span>
+                {region && (
+                  <Link
+                    href="/offers"
+                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2"
+                  >
+                    Show my region only
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
           <Link
             href="/advertise"
@@ -66,14 +105,30 @@ export default async function OffersPage() {
         {offers.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 py-24 text-center">
             <Megaphone className="h-12 w-12 text-gray-300 mx-auto mb-5" />
-            <p className="text-gray-500 dark:text-gray-400 font-medium mb-2 text-lg">No active offers right now</p>
-            <p className="text-sm text-gray-400 mb-6">Check back soon — community businesses post offers regularly.</p>
-            <Link
-              href="/advertise"
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
-            >
-              Post a Community Offer
-            </Link>
+            <p className="text-gray-500 dark:text-gray-400 font-medium mb-2 text-lg">
+              No active offers {region && !showAll ? `in ${region}` : "right now"}
+            </p>
+            <p className="text-sm text-gray-400 mb-6">
+              {region && !showAll
+                ? "No businesses have posted offers in your area yet."
+                : "Check back soon — community businesses post offers regularly."}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {region && !showAll && (
+                <Link
+                  href="/offers?all=1"
+                  className="inline-flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  View offers from all regions
+                </Link>
+              )}
+              <Link
+                href="/advertise"
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
+              >
+                Post a Community Offer
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

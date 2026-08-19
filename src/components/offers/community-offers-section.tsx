@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Megaphone, MessageCircle, Phone } from "lucide-react";
+import { cookies } from "next/headers";
 import { getActiveOffersForHomepage } from "@/lib/actions/offers";
 
 type Offer = Awaited<ReturnType<typeof getActiveOffersForHomepage>>[number];
@@ -77,9 +78,12 @@ function OfferCard({ offer }: { offer: Offer }) {
 }
 
 export async function CommunityOffersSection() {
+  const cookieStore = await cookies();
+  const region = cookieStore.get("mn_region")?.value;
+
   let offers: Offer[] = [];
   try {
-    const raw = await getActiveOffersForHomepage();
+    const raw = await getActiveOffersForHomepage(region);
     // Featured first, then by start date
     offers = [...raw].sort((a, b) => {
       if (a.tier === "FEATURED" && b.tier !== "FEATURED") return -1;

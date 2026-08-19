@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { REGION_MAP } from "@/lib/constants";
 
 // ── Pricing ───────────────────────────────────────────────────────────────────
 
@@ -16,10 +17,14 @@ export type OfferTierKey = keyof typeof OFFER_TIERS;
 
 // ── Public: homepage & browse ─────────────────────────────────────────────────
 
-export async function getActiveOffersForHomepage() {
+export async function getActiveOffersForHomepage(region?: string) {
   const now = new Date();
   return prisma.communityOffer.findMany({
-    where: { status: "ACTIVE", expiresAt: { gt: now } },
+    where: {
+      status: "ACTIVE",
+      expiresAt: { gt: now },
+      ...(region ? { region } : {}),
+    },
     orderBy: [
       { tier: "desc" },    // FEATURED sorts last alphabetically → use custom sort client-side
       { startDate: "asc" },
@@ -36,10 +41,10 @@ export async function getActiveOffersForHomepage() {
   });
 }
 
-export async function getActiveOffers({ limit = 24, cursor }: { limit?: number; cursor?: string } = {}) {
+export async function getActiveOffers({ limit = 24, cursor, region }: { limit?: number; cursor?: string; region?: string } = {}) {
   const now = new Date();
   return prisma.communityOffer.findMany({
-    where: { status: "ACTIVE", expiresAt: { gt: now } },
+    where: { status: "ACTIVE", expiresAt: { gt: now }, ...(region ? { region } : {}) },
     orderBy: [{ tier: "desc" }, { startDate: "asc" }],
     take: limit,
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
@@ -99,10 +104,22 @@ export async function submitOffer(data: {
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
-    include: { professionals: { where: { status: "APPROVED" }, orderBy: { createdAt: "desc" }, take: 1 } },
+    include: {
+      professionals: {
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        include: { serviceAreas: { select: { slug: true }, take: 5 } },
+      },
+    },
   });
   const professional = dbUser?.professionals[0];
   if (!professional) throw new Error("Only approved professionals can post Community Offers");
+
+  // Derive region from service areas — use the first area that maps to a known region
+  const region = professional.serviceAreas
+    .map((a) => REGION_MAP[a.slug])
+    .find(Boolean) ?? "Beyond GTA";
 
   const { days, price } = OFFER_TIERS[data.tier];
 
@@ -113,12 +130,11 @@ export async function submitOffer(data: {
       description: data.description,
       imageUrl: data.imageUrl ?? null,
       tier: data.tier,
+      region,
       price,
       status: "PENDING",
-      // expiresAt set when admin approves (or auto-approve post Nov 1 2026)
       expiresAt: null,
       startDate: null,
-      // store days as a hint for admin
       adminNote: `${days}-day ${data.tier} offer submitted`,
     },
   });
