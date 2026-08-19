@@ -410,6 +410,7 @@ model FeaturedListing {
   professionalId String
   professional   Professional    @relation(fields: [professionalId], references: [id], onDelete: Cascade)
   city           String
+  region         String?
   pricingTierId  String?
   pricingTier    FeaturedPricingTier? @relation(fields: [pricingTierId], references: [id])
   priceMonthly   Decimal         @db.Decimal(10, 2)

@@ -3,8 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { REGION_MAP } from "@/lib/constants";
 
-const FEATURED_MAX_SLOTS = 6; // GTA-wide
+const FEATURED_MAX_SLOTS = 6; // per region
 
 // ── Pricing tier resolution ───────────────────────────────────────────────────
 
@@ -17,12 +18,12 @@ async function getApplicableFeaturedTier() {
 
 // ── Public: homepage ──────────────────────────────────────────────────────────
 
-export async function getFeaturedBusinessesForHomepage(city?: string) {
+export async function getFeaturedBusinessesForHomepage(region?: string) {
   return prisma.featuredListing.findMany({
     where: {
       status: "ACTIVE",
       professional: { status: "APPROVED" },
-      ...(city ? { city } : {}),
+      ...(region ? { region } : {}),
     },
     take: 12,
     orderBy: [{ displayOrder: "asc" }, { startDate: "asc" }, { createdAt: "asc" }],
@@ -39,25 +40,15 @@ export async function getFeaturedBusinessesForHomepage(city?: string) {
   });
 }
 
-export async function getActiveFeaturedCities() {
-  const listings = await prisma.featuredListing.findMany({
-    where: { status: "ACTIVE" },
-    select: { city: true },
-    distinct: ["city"],
-    orderBy: { city: "asc" },
-  });
-  return listings.map((l) => l.city);
-}
-
 // ── Slot availability ─────────────────────────────────────────────────────────
 
-export async function getFeaturedSlotAvailability() {
+export async function getFeaturedSlotAvailability(region: string) {
   const tier = await getApplicableFeaturedTier();
   const maxSlots = FEATURED_MAX_SLOTS;
   const priceMonthly = Number(tier?.priceMonthly ?? 29.99);
 
   const activeCount = await prisma.featuredListing.count({
-    where: { status: "ACTIVE" },
+    where: { status: "ACTIVE", region },
   });
 
   return {
@@ -82,7 +73,7 @@ export async function getMyFeaturedListings() {
       professionals: {
         include: {
           category: { select: { id: true, name: true, slug: true, icon: true } },
-          serviceAreas: { select: { id: true, name: true } },
+          serviceAreas: { select: { id: true, name: true, slug: true } },
           mosque: { select: { city: true } },
         },
         where: { status: "APPROVED" },
@@ -113,7 +104,7 @@ export async function getMyFeaturedListings() {
 
 // ── Business dashboard: apply / cancel ───────────────────────────────────────
 
-export async function applyForFeatured() {
+export async function applyForFeatured(serviceAreaId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
@@ -127,10 +118,15 @@ export async function applyForFeatured() {
 
   const professionalId = professional.id;
 
+  // Derive region from service area slug
+  const serviceArea = await prisma.serviceArea.findUnique({ where: { id: serviceAreaId }, select: { slug: true, name: true } });
+  if (!serviceArea) throw new Error("Service area not found");
+  const region = REGION_MAP[serviceArea.slug] ?? "Beyond GTA";
+
   const existing = await prisma.featuredListing.findFirst({
-    where: { professionalId, status: { in: ["ACTIVE", "PENDING"] } },
+    where: { professionalId, region, status: { in: ["ACTIVE", "PENDING"] } },
   });
-  if (existing) throw new Error("You already have an active or pending Featured Business application");
+  if (existing) throw new Error(`You already have an active or pending Featured Business application in the ${region} region`);
 
   // During the free-offer period (until Oct 31 2026), one approved listing per business total.
   const FREE_PERIOD_END = new Date("2026-11-01T00:00:00.000Z");
@@ -145,24 +141,25 @@ export async function applyForFeatured() {
     }
   }
 
-  const { available, priceMonthly, pricingTierId, maxSlots } = await getFeaturedSlotAvailability();
+  const { available, priceMonthly, pricingTierId, maxSlots } = await getFeaturedSlotAvailability(region);
 
   if (!available) {
+    // Reuse the city column to store the region name (unique key: [professionalId, city])
     await prisma.featuredWaitlist.upsert({
-      where: { professionalId_city: { professionalId, city: "GTA" } },
+      where: { professionalId_city: { professionalId, city: region } },
       update: {},
-      create: { professionalId, city: "GTA" },
+      create: { professionalId, city: region },
     });
     revalidatePath("/dashboard/featured");
-    return { status: "waitlisted" as const, maxSlots };
+    return { status: "waitlisted" as const, maxSlots, region };
   }
 
   await prisma.featuredListing.create({
-    data: { professionalId, city: "GTA", pricingTierId, priceMonthly, status: "PENDING" },
+    data: { professionalId, city: region, region, pricingTierId, priceMonthly, status: "PENDING" },
   });
 
   revalidatePath("/dashboard/featured");
-  return { status: "applied" as const };
+  return { status: "applied" as const, region };
 }
 
 export async function cancelMyFeaturedListing(listingId: string) {
@@ -188,14 +185,14 @@ export async function cancelMyFeaturedListing(listingId: string) {
 
   if (listing.status === "ACTIVE") {
     await syncIsFeatured(listing.professionalId);
-    await notifyFeaturedWaitlist();
+    await notifyFeaturedWaitlist(listing.region ?? listing.city);
   }
 
   revalidatePath("/dashboard/featured");
   revalidatePath("/");
 }
 
-export async function leaveFeaturedWaitlist(city: string) {
+export async function leaveFeaturedWaitlist(region: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
@@ -208,7 +205,7 @@ export async function leaveFeaturedWaitlist(city: string) {
   if (!professional) throw new Error("No professional profile found");
 
   await prisma.featuredWaitlist.deleteMany({
-    where: { professionalId: professional.id, city },
+    where: { professionalId: professional.id, city: region },
   });
   revalidatePath("/dashboard/featured");
 }
@@ -256,10 +253,18 @@ export async function approveFeaturedListing(listingId: string) {
   const listing = await prisma.featuredListing.findUnique({ where: { id: listingId } });
   if (!listing) throw new Error("Listing not found");
 
+  // Backfill region for listings created before per-region model (city was "GTA")
+  if (!listing.region) {
+    await prisma.featuredListing.update({ where: { id: listingId }, data: { region: listing.city } });
+    listing.region = listing.city;
+  }
+
   const activeCount = await prisma.featuredListing.count({
-    where: { status: "ACTIVE", id: { not: listingId } },
+    where: { status: "ACTIVE", region: listing.region, id: { not: listingId } },
   });
-  if (activeCount >= FEATURED_MAX_SLOTS) throw new Error(`GTA slots full — max ${FEATURED_MAX_SLOTS} Featured Business listings at a time`);
+  if (activeCount >= FEATURED_MAX_SLOTS) {
+    throw new Error(`Region full — max ${FEATURED_MAX_SLOTS} Featured Business listings in ${listing.region} at a time`);
+  }
 
   const nextDisplayOrder = await getNextFeaturedDisplayOrder();
   await prisma.featuredListing.update({
@@ -296,7 +301,7 @@ export async function cancelFeaturedListingAdmin(listingId: string, note?: strin
 
   if (listing.status === "ACTIVE") {
     await syncIsFeatured(listing.professionalId);
-    await notifyFeaturedWaitlist();
+    await notifyFeaturedWaitlist(listing.region ?? listing.city);
   }
 
   revalidatePath("/admin/featured");
@@ -368,9 +373,9 @@ async function syncIsFeatured(professionalId: string) {
   });
 }
 
-async function notifyFeaturedWaitlist() {
+async function notifyFeaturedWaitlist(region: string) {
   const first = await prisma.featuredWaitlist.findFirst({
-    where: { notifiedAt: null },
+    where: { city: region, notifiedAt: null },
     orderBy: { createdAt: "asc" },
   });
   if (first) {

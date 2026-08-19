@@ -102,7 +102,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
               <strong>Sponsored Listing ($19.99/month after Oct 31, 2026):</strong> Your profile is pinned to the top of search results for your category across your entire GTA region — shown first whenever someone in that region searches for your profession.
             </li>
             <li>
-              <strong>Featured Business ($29.99/month after Oct 31, 2026):</strong> Your business card is displayed prominently on the Minaret Network homepage, visible to every visitor across the GTA.
+              <strong>Featured Business ($29.99/month after Oct 31, 2026):</strong> Your business card is displayed prominently on the Minaret Network homepage. Each GTA region has 6 Featured Business slots — only businesses in your region compete for them.
             </li>
             <li>
               <strong>Free until Oct 31, 2026:</strong> Both placements are completely free during our launch period — one placement per business for the duration of the offer.
@@ -112,7 +112,12 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "How do Featured Business slots work? How many are there?",
-        a: "Featured Business is GTA-wide. There are 6 slots in total, shared across all businesses regardless of city. Every visitor to the Minaret Network homepage sees all active Featured Business cards — there is no city or region filter. If all 6 slots are taken, you can join the waitlist and will be notified when a slot becomes available.",
+        a: (
+          <>
+            <p className="mb-2">Featured Business placements are <strong>per GTA region</strong> — each of the 6 GTA regions has its own 6 slots, so businesses only compete with others serving the same region. When you apply, the region is determined by the service area you select.</p>
+            <p>Active Featured Business cards are displayed on the Minaret Network homepage. If all 6 slots in your region are taken, you can join the waitlist and will be notified when one opens up.</p>
+          </>
+        ),
       },
       {
         q: "How do Sponsored Listing slots work? What are the regions?",
@@ -141,7 +146,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "What happens if a slot is full? Can I join a waitlist?",
-        a: "Yes. If all slots are taken — 6 GTA-wide for Featured Business, or 3 per category per region for Sponsored Listings — you will be automatically added to the waitlist when you apply. We will notify you as soon as a slot opens up. Your position in the queue is first-come, first-served.",
+        a: "Yes. If all slots are taken — 6 per region for Featured Business, or 3 per category per region for Sponsored Listings — you will be automatically added to the waitlist when you apply. We will notify you as soon as a slot opens up. Your position in the queue is first-come, first-served.",
       },
     ],
   },
