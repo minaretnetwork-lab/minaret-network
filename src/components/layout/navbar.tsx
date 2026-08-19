@@ -39,6 +39,7 @@ export function Navbar({ user }: NavbarProps) {
               { href: "/professionals", label: "Find Professionals" },
               { href: "/categories", label: "Categories" },
               { href: "/events", label: "Events" },
+              { href: "/offers", label: "Community Offers" },
               { href: "/request", label: "Service Request" },
               { href: "/advertise", label: "Advertise with us" },
             ].map((link) => (
