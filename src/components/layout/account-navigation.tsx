@@ -46,6 +46,7 @@ export function getExploreNavigation(): NavigationGroup[] {
         { href: "/categories", label: "Categories", icon: Tags },
         { href: "/events", label: "Community Events", icon: CalendarDays },
         { href: "/request", label: "Service Request", icon: ClipboardList },
+        { href: "/advertise", label: "Advertise with us", icon: Sparkles },
       ],
     },
   ];
@@ -80,6 +81,7 @@ export function getAccountNavigation({
         { href: "/dashboard/leads", label: "Incoming Requests", icon: Send },
         { href: "/dashboard/promote", label: "Sponsored Listing", icon: Sparkles },
         { href: "/dashboard/featured", label: "Featured Business", icon: Star },
+        { href: "/dashboard/offers", label: "Community Offers", icon: Tags },
       ],
     });
   }

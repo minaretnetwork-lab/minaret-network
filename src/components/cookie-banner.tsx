@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useState, useEffect } from "react";
 import Link from "next/link";
 import { Cookie } from "lucide-react";
 
@@ -35,14 +35,17 @@ export function useCookieConsent() {
 
 export function CookieBanner({ onConsent }: { onConsent?: (consent: CookieConsent) => void }) {
   const consent = useCookieConsent();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  function accept(consent: "all" | "essential") {
-    try { window.localStorage.setItem(CONSENT_KEY, consent); } catch {}
+  function accept(choice: "all" | "essential") {
+    try { window.localStorage.setItem(CONSENT_KEY, choice); } catch {}
     window.dispatchEvent(new Event(CONSENT_EVENT));
-    onConsent?.(consent);
+    onConsent?.(choice);
   }
 
-  if (consent !== null) return null;
+  // Don't render until after hydration — prevents flash when consent is already stored
+  if (!mounted || consent !== null) return null;
 
   return (
     <div

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter, ChevronDown } from "lucide-react";
-import { LANGUAGES } from "@/lib/constants";
+import { LANGUAGES, REGION_MAP } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 interface Category { slug: string; name: string; icon?: string | null }
@@ -20,6 +20,12 @@ export function SearchFilters({ categories, serviceAreas }: SearchFiltersProps) 
   const [mobileOpen, setMobileOpen] = useState(false);
 
   function updateFilter(key: string, value: string) {
+    if (key === "area" && value) {
+      const region = REGION_MAP[value];
+      if (region) {
+        document.cookie = `mn_region=${encodeURIComponent(region)};path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
+      }
+    }
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
       params.set(key, value);

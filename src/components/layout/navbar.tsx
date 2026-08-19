@@ -40,6 +40,7 @@ export function Navbar({ user }: NavbarProps) {
               { href: "/categories", label: "Categories" },
               { href: "/events", label: "Events" },
               { href: "/request", label: "Service Request" },
+              { href: "/advertise", label: "Advertise with us" },
             ].map((link) => (
               <Link
                 key={link.href}
