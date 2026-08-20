@@ -8,18 +8,17 @@ import { getCurrentUser } from "@/lib/actions/auth";
 export const metadata = { title: "Service Request | Minaret Network" };
 
 export default async function RequestPage() {
-  const [user, mosque, approvedProfessionals] = await Promise.all([
+  const [user, mosque, allCategories, approvedProfessionals] = await Promise.all([
     getCurrentUser().catch(() => null),
     prisma.mosque.findUnique({
       where: { slug: DEFAULT_MOSQUE_SLUG },
-      include: {
-        categories: {
-          where: { isActive: true },
-          orderBy: { name: "asc" },
-          select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true },
-        },
-        serviceAreas: { orderBy: { name: "asc" } },
-      },
+      select: { serviceAreas: { orderBy: { name: "asc" } } },
+    }),
+    // Fetch all active categories — not mosque-scoped, so professionals in any category appear
+    prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true },
     }),
     prisma.professional.findMany({
       where: { status: "APPROVED" },
@@ -52,7 +51,7 @@ export default async function RequestPage() {
         </div>
 
         <ServiceRequestForm
-          categories={(mosque?.categories ?? []).map((category) => ({
+          categories={allCategories.map((category) => ({
             ...category,
             professionalCount: countBySlug[category.slug] ?? 0,
           }))}
