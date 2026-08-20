@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/actions/auth";
 export const metadata = { title: "Service Request | Minaret Network" };
 
 export default async function RequestPage() {
-  const [user, mosque] = await Promise.all([
+  const [user, mosque, approvedProfessionals] = await Promise.all([
     getCurrentUser().catch(() => null),
     prisma.mosque.findUnique({
       where: { slug: DEFAULT_MOSQUE_SLUG },
@@ -16,19 +16,28 @@ export default async function RequestPage() {
         categories: {
           where: { isActive: true },
           orderBy: { name: "asc" },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            icon: true,
-            isRegulatedProfession: true,
-            _count: { select: { professionals: { where: { status: "APPROVED" } } } },
-          },
+          select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true },
         },
         serviceAreas: { orderBy: { name: "asc" } },
       },
     }),
+    prisma.professional.findMany({
+      where: { status: "APPROVED" },
+      select: {
+        category: { select: { slug: true } },
+        categories: { select: { slug: true } },
+      },
+    }),
   ]);
+
+  // Count approved professionals per category slug (primary + additional, deduplicated per professional)
+  const countBySlug: Record<string, number> = {};
+  for (const p of approvedProfessionals) {
+    const slugs = new Set<string>();
+    if (p.category?.slug) slugs.add(p.category.slug);
+    for (const c of p.categories) slugs.add(c.slug);
+    for (const slug of slugs) countBySlug[slug] = (countBySlug[slug] ?? 0) + 1;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-start py-12 px-4">
@@ -43,9 +52,9 @@ export default async function RequestPage() {
         </div>
 
         <ServiceRequestForm
-          categories={(mosque?.categories ?? []).map(({ _count, ...category }) => ({
+          categories={(mosque?.categories ?? []).map((category) => ({
             ...category,
-            professionalCount: _count.professionals,
+            professionalCount: countBySlug[category.slug] ?? 0,
           }))}
           serviceAreas={mosque?.serviceAreas ?? []}
           isAuthenticated={!!user}

@@ -8,6 +8,7 @@ import {
   FileText, Tag, LogOut, Building2, Sparkles, Star, TrendingUp, ShieldCheck, UserRound, Flag, CalendarDays, Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MinaretLogo } from "@/components/ui/minaret-logo";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -52,8 +53,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="bg-green-800 text-white sticky top-0 z-40">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white font-bold text-xs">MN</div>
+            <Link href="/">
+              <MinaretLogo withText={false} className="h-7 w-auto" />
             </Link>
             <span className="text-sm font-semibold">Admin Panel</span>
             <span className="text-white/30 text-xs">|</span>

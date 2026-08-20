@@ -2,6 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 
+// Featured/sponsored listings are free until Nov 1 2026.
+// A listing started before this date contributes $0 to MRR.
+const PROMO_END = new Date("2026-11-01T00:00:00.000Z");
+function effectivePrice(priceMonthly: unknown, startDate: Date | null): number {
+  if (!startDate || startDate < PROMO_END) return 0;
+  return Number(priceMonthly);
+}
+
 export async function getMosqueRevenue(mosqueId: string) {
   const [mosque, sponsored, featured] = await Promise.all([
     prisma.mosque.findUnique({
@@ -53,8 +61,8 @@ export async function getMosqueRevenue(mosqueId: string) {
     }),
   ]);
 
-  const sponsoredMRR = sponsored.reduce((sum, l) => sum + Number(l.priceMonthly), 0);
-  const featuredMRR = featured.reduce((sum, l) => sum + Number(l.priceMonthly), 0);
+  const sponsoredMRR = sponsored.reduce((sum, l) => sum + effectivePrice(l.priceMonthly, l.startDate), 0);
+  const featuredMRR = featured.reduce((sum, l) => sum + effectivePrice(l.priceMonthly, l.startDate), 0);
 
   return {
     mosque,
@@ -77,11 +85,11 @@ export async function getAllMosquesWithRevenueSummary() {
         select: {
           sponsoredListings: {
             where: { status: "ACTIVE" },
-            select: { priceMonthly: true },
+            select: { priceMonthly: true, startDate: true },
           },
           featuredListings: {
             where: { status: "ACTIVE" },
-            select: { priceMonthly: true },
+            select: { priceMonthly: true, startDate: true },
           },
         },
       },
@@ -90,8 +98,8 @@ export async function getAllMosquesWithRevenueSummary() {
   });
 
   return mosques.map((m) => {
-    const sponsoredMRR = m.professionals.flatMap((p) => p.sponsoredListings).reduce((sum, l) => sum + Number(l.priceMonthly), 0);
-    const featuredMRR = m.professionals.flatMap((p) => p.featuredListings).reduce((sum, l) => sum + Number(l.priceMonthly), 0);
+    const sponsoredMRR = m.professionals.flatMap((p) => p.sponsoredListings).reduce((sum, l) => sum + effectivePrice(l.priceMonthly, l.startDate), 0);
+    const featuredMRR = m.professionals.flatMap((p) => p.featuredListings).reduce((sum, l) => sum + effectivePrice(l.priceMonthly, l.startDate), 0);
     return {
       id: m.id,
       name: m.name,
