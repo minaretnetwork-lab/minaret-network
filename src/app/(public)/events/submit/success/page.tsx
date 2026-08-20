@@ -1,7 +1,7 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
-export const metadata = { title: "Listing Submitted | Minaret Network" };
+export const metadata = { title: "Listing Submitted" };
 
 export default function EventSubmitSuccessPage() {
   return (

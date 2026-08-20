@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { MinaretLogo } from "@/components/ui/minaret-logo";
 import { useSearchParams } from "next/navigation";
@@ -187,6 +187,7 @@ function SignUpForm() {
 }
 
 export default function SignUpPage() {
+  useEffect(() => { document.title = "Create Account | Minaret Network"; }, []);
   return (
     <Suspense fallback={null}>
       <SignUpForm />

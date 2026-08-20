@@ -26,6 +26,15 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({ params }: Props) {
+  const { id } = await params;
+  const professional = await getProfessionalById(id);
+  if (!professional) return { title: "Professional Not Found" };
+  const name = [professional.firstName, professional.lastName].filter(Boolean).join(" ");
+  const display = professional.businessName ? `${name} — ${professional.businessName}` : name;
+  return { title: display };
+}
+
 function getWebsiteLabel(website: string) {
   try {
     const url = new URL(website);

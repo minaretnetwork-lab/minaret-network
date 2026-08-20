@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,6 +19,7 @@ const PRICE_TABLE = {
 } as const;
 
 export default function SubmitEventPage() {
+  useEffect(() => { document.title = "Post an Event | Minaret Network"; }, []);
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

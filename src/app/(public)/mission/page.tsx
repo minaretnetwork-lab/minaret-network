@@ -1,9 +1,9 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { MinaretIcon } from "@/components/ui/minaret-logo";
 
 export const metadata = {
-  title: "Our Mission | Minaret Network",
+  title: "Our Mission",
   description:
     "Minaret Network exists to strengthen the Muslim community of the Greater Toronto Area from the inside out.",
 };
@@ -12,7 +12,7 @@ export default function MissionPage() {
   return (
     <main className="bg-white dark:bg-gray-950">
 
-      {/* ── Header ─────────────────────────────────────── */}
+      {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="bg-[#0a2e1a]">
         <div className="container mx-auto max-w-3xl px-6 py-16 sm:py-20">
           <Link
@@ -36,14 +36,14 @@ export default function MissionPage() {
                 Our Mission
               </h1>
               <p className="mt-4 text-lg text-white/60 leading-relaxed max-w-xl">
-                Strengthening the Muslim community of the Greater Toronto Area — from the inside out.
+                Strengthening the Muslim community of the Greater Toronto Area â€” from the inside out.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Body ───────────────────────────────────────── */}
+      {/* â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="container mx-auto max-w-2xl px-6 py-16 sm:py-20 space-y-16">
 
         <Section
@@ -52,7 +52,7 @@ export default function MissionPage() {
         >
           <p>
             Finding a professional you can trust shouldn&apos;t mean scrolling through anonymous star
-            ratings and hoping for the best. In our community, trust has always worked differently —
+            ratings and hoping for the best. In our community, trust has always worked differently â€”
             through the mosque, through word of mouth, through knowing someone&apos;s brother or seeing
             them at Jummah.
           </p>
@@ -67,14 +67,14 @@ export default function MissionPage() {
           <p>
             Minaret Network is a directory built for that gap: a way for community members to find
             skilled professionals and tradespeople who share this community, and a way for those
-            professionals — from lawyers to plumbers to tutors — to find real work within it. Every
+            professionals â€” from lawyers to plumbers to tutors â€” to find real work within it. Every
             listing here is someone whose reputation is tied to the same community you&apos;re part of,
             not a stranger from an algorithm.
           </p>
           <p>
-            We&apos;re not a verification service and we don&apos;t pretend to be — professionals tell us who
+            We&apos;re not a verification service and we don&apos;t pretend to be â€” professionals tell us who
             they are and where they&apos;re affiliated, and we ask our community to do what communities
-            have always done: check, ask around, and use their judgment. What we add is reach —
+            have always done: check, ask around, and use their judgment. What we add is reach â€”
             connecting people who&apos;d never otherwise have found each other.
           </p>
         </Section>
@@ -91,13 +91,13 @@ export default function MissionPage() {
         <Section heading="Where we&apos;re headed" accent="emerald">
           <p>
             We&apos;re early. We&apos;re building this one relationship at a time, starting with the
-            professionals and community members already doing good work across the GTA — and we
+            professionals and community members already doing good work across the GTA â€” and we
             intend to keep building it the same way: deliberately, and grounded in what this
             community actually needs.
           </p>
         </Section>
 
-        {/* ── CTA ── */}
+        {/* â”€â”€ CTA â”€â”€ */}
         <div className="border-t border-gray-100 dark:border-gray-800 pt-12 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <Link
             href="/professionals"

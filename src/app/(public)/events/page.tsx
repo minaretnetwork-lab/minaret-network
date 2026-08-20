@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -7,7 +7,7 @@ import { getPublicEventListings } from "@/lib/actions/event-listings";
 import { EventDisclaimer } from "@/components/events/event-disclaimer";
 
 export const metadata = {
-  title: "Community Events | Minaret Network",
+  title: "Community Events",
   description: "Local events posted by mosque communities and community organizers across the GTA.",
 };
 
@@ -138,7 +138,7 @@ function EventCard({
           )}
           {event.isMosqueOrganized && event.mosqueName && (
             <span className="inline-flex items-center gap-1 rounded-full bg-white/90 dark:bg-gray-900/90 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 shadow">
-              🕌 {event.mosqueName}
+              ðŸ•Œ {event.mosqueName}
             </span>
           )}
         </div>

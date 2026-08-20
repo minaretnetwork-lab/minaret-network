@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Before You Hire | Minaret Network",
+  title: "Before You Hire",
   description:
     "What you should know about how Minaret Network works before reaching out to a professional.",
 };
@@ -22,9 +22,9 @@ export default function BeforeYouHirePage() {
 
           <p>
             <strong className="font-semibold text-slate-900">We don&apos;t verify what professionals tell us.</strong>{" "}
-            Credentials, licences, years of experience, business details — all of it is provided by the
-            professional, and we don&apos;t independently check it. If it matters to you — and for anything
-            requiring a licence, it should — verify it yourself before hiring someone.
+            Credentials, licences, years of experience, business details â€” all of it is provided by the
+            professional, and we don&apos;t independently check it. If it matters to you â€” and for anything
+            requiring a licence, it should â€” verify it yourself before hiring someone.
           </p>
 
           <p>
@@ -37,7 +37,7 @@ export default function BeforeYouHirePage() {
           <p>
             <strong className="font-semibold text-slate-900">Being listed isn&apos;t an endorsement from us, either.</strong>{" "}
             We&apos;re a platform, not a review committee. We don&apos;t vet professionals for quality, and
-            appearing here — paid placement or not — isn&apos;t Minaret Network telling you someone is good
+            appearing here â€” paid placement or not â€” isn&apos;t Minaret Network telling you someone is good
             at their job.
           </p>
 
@@ -48,7 +48,7 @@ export default function BeforeYouHirePage() {
 
           <p>
             <strong className="font-semibold text-slate-900">Our AI assistant helps you find relevant listings faster</strong>{" "}
-            — treat its suggestions as a starting point, not a recommendation. It can be incomplete or get
+            â€” treat its suggestions as a starting point, not a recommendation. It can be incomplete or get
             things wrong, the same as any search tool.
           </p>
 
@@ -59,7 +59,7 @@ export default function BeforeYouHirePage() {
           </p>
 
           <p>
-            If something on the platform seems false, misleading, or wrong, tell us — see our{" "}
+            If something on the platform seems false, misleading, or wrong, tell us â€” see our{" "}
             <Link href="/terms" className="text-emerald-700 underline underline-offset-2 hover:text-emerald-900">
               Terms of Service
             </Link>{" "}

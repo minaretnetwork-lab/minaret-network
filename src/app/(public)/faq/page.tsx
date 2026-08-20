@@ -1,9 +1,9 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "FAQ | Minaret Network",
-  description: "Answers to the most common questions about Minaret Network — finding professionals, listing your business, community events, and more.",
+  title: "FAQ",
+  description: "Answers to the most common questions about Minaret Network â€” finding professionals, listing your business, community events, and more.",
 };
 
 const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = [
@@ -14,7 +14,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
         q: 'What does "mosque-affiliated" mean? Are these professionals verified?',
         a: (
           <>
-            Mosque-affiliated means each professional is a confirmed member of a participating mosque congregation — they attend that masjid and are known to that community. It does <strong>not</strong> mean their professional credentials, licences, or qualifications have been independently verified by Minaret Network. We strongly recommend reading our{" "}
+            Mosque-affiliated means each professional is a confirmed member of a participating mosque congregation â€” they attend that masjid and are known to that community. It does <strong>not</strong> mean their professional credentials, licences, or qualifications have been independently verified by Minaret Network. We strongly recommend reading our{" "}
             <Link href="/before-you-hire" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:no-underline">
               Before You Hire
             </Link>{" "}
@@ -43,7 +43,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "Is it free to search and contact professionals?",
-        a: "Yes — searching the directory and contacting professionals is completely free for community members. There is no subscription or fee to use Minaret Network as a person looking for help.",
+        a: "Yes â€” searching the directory and contacting professionals is completely free for community members. There is no subscription or fee to use Minaret Network as a person looking for help.",
       },
       {
         q: "What if I have a bad experience with a professional?",
@@ -52,7 +52,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
             You can report a listing directly from the professional's profile page using the Report button. Our admin team reviews all reports. For urgent concerns, email us at{" "}
             <a href="mailto:salam@minaretnetwork.ca" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:no-underline">
               salam@minaretnetwork.ca
-            </a>. Note that Minaret Network is a directory — we facilitate connections but are not party to any agreement between you and a professional.
+            </a>. Note that Minaret Network is a directory â€” we facilitate connections but are not party to any agreement between you and a professional.
           </>
         ),
       },
@@ -84,11 +84,11 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "What does it cost to be listed?",
-        a: "Creating a basic professional listing is free. There is no monthly fee to appear in the directory. Optional Sponsored Listings and Featured Business placements are available for additional visibility — see below.",
+        a: "Creating a basic professional listing is free. There is no monthly fee to appear in the directory. Optional Sponsored Listings and Featured Business placements are available for additional visibility â€” see below.",
       },
       {
         q: "How long does approval take?",
-        a: "Most applications are reviewed within 1–3 business days. You will receive an email notification when your listing is approved or if we need more information.",
+        a: "Most applications are reviewed within 1â€“3 business days. You will receive an email notification when your listing is approved or if we need more information.",
       },
       {
         q: "Can I be listed in multiple categories or service areas?",
@@ -99,13 +99,13 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
         a: (
           <ul className="space-y-2">
             <li>
-              <strong>Sponsored Listing ($19.99/month after Oct 31, 2026):</strong> Your profile is pinned to the top of search results for your category across your entire GTA region — shown first whenever someone in that region searches for your profession.
+              <strong>Sponsored Listing ($19.99/month after Oct 31, 2026):</strong> Your profile is pinned to the top of search results for your category across your entire GTA region â€” shown first whenever someone in that region searches for your profession.
             </li>
             <li>
-              <strong>Featured Business ($29.99/month after Oct 31, 2026):</strong> Your business card is displayed prominently on the Minaret Network homepage. Each GTA region has 6 Featured Business slots — only businesses in your region compete for them.
+              <strong>Featured Business ($29.99/month after Oct 31, 2026):</strong> Your business card is displayed prominently on the Minaret Network homepage. Each GTA region has 6 Featured Business slots â€” only businesses in your region compete for them.
             </li>
             <li>
-              <strong>Free until Oct 31, 2026:</strong> Both placements are completely free during our launch period — one placement per business for the duration of the offer.
+              <strong>Free until Oct 31, 2026:</strong> Both placements are completely free during our launch period â€” one placement per business for the duration of the offer.
             </li>
           </ul>
         ),
@@ -114,7 +114,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
         q: "How do Featured Business slots work? How many are there?",
         a: (
           <>
-            <p className="mb-2">Featured Business placements are <strong>per GTA region</strong> — each of the 6 GTA regions has its own 6 slots, so businesses only compete with others serving the same region. When you apply, the region is determined by the service area you select.</p>
+            <p className="mb-2">Featured Business placements are <strong>per GTA region</strong> â€” each of the 6 GTA regions has its own 6 slots, so businesses only compete with others serving the same region. When you apply, the region is determined by the service area you select.</p>
             <p>Active Featured Business cards are displayed on the Minaret Network homepage. If all 6 slots in your region are taken, you can join the waitlist and will be notified when one opens up.</p>
           </>
         ),
@@ -125,20 +125,20 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
           <>
             <p className="mb-2">Sponsored Listings are capped at <strong>3 businesses per category per region</strong>. The GTA is divided into 6 regions:</p>
             <ul className="space-y-1 list-disc list-inside mb-2">
-              <li><strong>York North</strong> — Newmarket, Aurora, Bradford, King City, Georgina, East Gwillimbury</li>
-              <li><strong>York South</strong> — Richmond Hill, Vaughan, Markham, Stouffville</li>
-              <li><strong>Toronto</strong> — Downtown, North York, Scarborough, Etobicoke, East York</li>
-              <li><strong>Peel</strong> — Mississauga, Brampton, Caledon</li>
-              <li><strong>Durham</strong> — Pickering, Ajax, Whitby, Oshawa, Uxbridge</li>
-              <li><strong>Halton</strong> — Oakville, Burlington, Milton</li>
+              <li><strong>York North</strong> â€” Newmarket, Aurora, Bradford, King City, Georgina, East Gwillimbury</li>
+              <li><strong>York South</strong> â€” Richmond Hill, Vaughan, Markham, Stouffville</li>
+              <li><strong>Toronto</strong> â€” Downtown, North York, Scarborough, Etobicoke, East York</li>
+              <li><strong>Peel</strong> â€” Mississauga, Brampton, Caledon</li>
+              <li><strong>Durham</strong> â€” Pickering, Ajax, Whitby, Oshawa, Uxbridge</li>
+              <li><strong>Halton</strong> â€” Oakville, Burlington, Milton</li>
             </ul>
-            <p>When you apply, your region is determined by the service area you select. Your sponsored listing then appears at the top of all searches in that category across your entire region — not just one city.</p>
+            <p>When you apply, your region is determined by the service area you select. Your sponsored listing then appears at the top of all searches in that category across your entire region â€” not just one city.</p>
           </>
         ),
       },
       {
         q: "How does the free launch offer work exactly?",
-        a: "During the free period (until October 31, 2026), each business may claim one Featured Business placement and one Sponsored Listing at no charge. Once your listing has been approved and activated, you cannot reapply for a second placement of the same type until November 1, 2026 — even if your first listing expires before then.",
+        a: "During the free period (until October 31, 2026), each business may claim one Featured Business placement and one Sponsored Listing at no charge. Once your listing has been approved and activated, you cannot reapply for a second placement of the same type until November 1, 2026 â€” even if your first listing expires before then.",
       },
       {
         q: "How long does a Sponsored Listing or Featured Business placement last?",
@@ -146,7 +146,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "What happens if a slot is full? Can I join a waitlist?",
-        a: "Yes. If all slots are taken — 6 per region for Featured Business, or 3 per category per region for Sponsored Listings — you will be automatically added to the waitlist when you apply. We will notify you as soon as a slot opens up. Your position in the queue is first-come, first-served.",
+        a: "Yes. If all slots are taken â€” 6 per region for Featured Business, or 3 per category per region for Sponsored Listings â€” you will be automatically added to the waitlist when you apply. We will notify you as soon as a slot opens up. Your position in the queue is first-come, first-served.",
       },
     ],
   },
@@ -166,18 +166,18 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "How long does my event listing stay up?",
-        a: "Event listings run for 30 days from the date they are approved, or until the event date — whichever comes first. This means if your event is 10 days away when approved, the listing will be removed on the event date.",
+        a: "Event listings run for 30 days from the date they are approved, or until the event date â€” whichever comes first. This means if your event is 10 days away when approved, the listing will be removed on the event date.",
       },
       {
-        q: "My event is mosque-organized — is it really free?",
-        a: 'Yes. Events organized by a mosque are listed at no charge. When submitting, check "This event is organized by a mosque", enter the mosque name, and confirm you are authorized to post on their behalf. This is self-reported — misrepresentation may result in removal.',
+        q: "My event is mosque-organized â€” is it really free?",
+        a: 'Yes. Events organized by a mosque are listed at no charge. When submitting, check "This event is organized by a mosque", enter the mosque name, and confirm you are authorized to post on their behalf. This is self-reported â€” misrepresentation may result in removal.',
       },
       {
         q: "What is the difference between a Standard and a Featured event listing?",
         a: (
           <ul className="space-y-2">
             <li><strong>Standard ($24.99 CAD):</strong> Your event appears in the community events grid alongside all other active events.</li>
-            <li><strong>Featured ($49.99 CAD):</strong> Your event is highlighted at the top of the events page with a Featured badge — maximum visibility for high-attendance events like fundraisers, bazaars, and large community dinners.</li>
+            <li><strong>Featured ($49.99 CAD):</strong> Your event is highlighted at the top of the events page with a Featured badge â€” maximum visibility for high-attendance events like fundraisers, bazaars, and large community dinners.</li>
           </ul>
         ),
       },
@@ -188,7 +188,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
     items: [
       {
         q: "Is my personal information safe?",
-        a: "Yes. We use Supabase (built on AWS) for secure authentication and data storage, and Stripe for all payment processing — Minaret Network never stores your card details. We do not sell or share your personal information with third parties. See our full Privacy Policy for details.",
+        a: "Yes. We use Supabase (built on AWS) for secure authentication and data storage, and Stripe for all payment processing â€” Minaret Network never stores your card details. We do not sell or share your personal information with third parties. See our full Privacy Policy for details.",
       },
       {
         q: "How do I report a problem with a listing?",
@@ -201,7 +201,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
             Email us at{" "}
             <a href="mailto:salam@minaretnetwork.ca" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:no-underline">
               salam@minaretnetwork.ca
-            </a>. We aim to respond within 1–2 business days.
+            </a>. We aim to respond within 1â€“2 business days.
           </>
         ),
       },
@@ -269,7 +269,7 @@ export default function FAQPage() {
 
         <div className="mt-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 px-6 py-8 text-center">
           <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Still have a question?</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Our team usually responds within 1–2 business days.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Our team usually responds within 1â€“2 business days.</p>
           <a
             href="mailto:salam@minaretnetwork.ca"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 transition-colors"

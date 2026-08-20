@@ -1,11 +1,11 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 
 import { ServiceRequestForm } from "@/components/service-request-form";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/actions/auth";
 
-export const metadata = { title: "Service Request | Minaret Network" };
+export const metadata = { title: "Service Request" };
 
 export default async function RequestPage() {
   const [user, mosque, allCategories, approvedProfessionals] = await Promise.all([
@@ -14,7 +14,7 @@ export default async function RequestPage() {
       where: { slug: DEFAULT_MOSQUE_SLUG },
       select: { serviceAreas: { orderBy: { name: "asc" } } },
     }),
-    // Fetch all active categories — not mosque-scoped, so professionals in any category appear
+    // Fetch all active categories â€” not mosque-scoped, so professionals in any category appear
     prisma.category.findMany({
       where: { isActive: true },
       orderBy: { name: "asc" },

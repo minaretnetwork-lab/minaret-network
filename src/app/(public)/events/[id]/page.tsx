@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const event = await getPublicEventListing(id);
   if (!event) return { title: "Event Not Found" };
   return {
-    title: `${event.title} | Minaret Network Events`,
+    title: event.title,
     description: event.description.slice(0, 160),
   };
 }

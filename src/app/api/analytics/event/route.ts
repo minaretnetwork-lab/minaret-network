@@ -19,15 +19,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false }, { status: 400 });
     }
 
-    await prisma.analyticsEvent.create({
-      data: {
-        eventType: eventType as "PAGE_VIEW" | "HOME_SEARCH",
-        visitorId,
-        path: cleanText(body.path, 250),
-        searchTerm: cleanText(body.searchTerm, 120),
-        region: cleanText(body.region, 120),
-      },
-    });
+    try {
+      await prisma.analyticsEvent.create({
+        data: {
+          eventType: eventType as "PAGE_VIEW" | "HOME_SEARCH",
+          visitorId,
+          path: cleanText(body.path, 250),
+          searchTerm: cleanText(body.searchTerm, 120),
+          region: cleanText(body.region, 120),
+        },
+      });
+    } catch {
+      // DB write failed (e.g. table not yet migrated) — don't surface as client error
+      return NextResponse.json({ ok: false }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true });
   } catch {

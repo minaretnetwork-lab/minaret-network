@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { MinaretLogo } from "@/components/ui/minaret-logo";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -191,6 +191,7 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
+  useEffect(() => { document.title = "Sign In | Minaret Network"; }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
       <div className="w-full max-w-md">

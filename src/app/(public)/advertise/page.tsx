@@ -1,8 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ArrowLeft, Sparkles, Star, Tag, Megaphone } from "lucide-react";
 
 export const metadata = {
-  title: "Advertise | Minaret Network",
+  title: "Advertise",
   description: "Featured Business and Sponsored Listings are free until Oct 31, 2026. One spot per business.",
 };
 
@@ -26,7 +26,7 @@ export default function AdvertisePage() {
               <p className="font-semibold text-base">Limited-time: free until Oct 31, 2026</p>
               <p className="text-sm text-emerald-100 mt-0.5">
                 Featured Business and Sponsored Listings are completely free during our launch period.
-                One placement per business — businesses already listed cannot reapply for a second month until the free period ends.
+                One placement per business â€” businesses already listed cannot reapply for a second month until the free period ends.
               </p>
             </div>
           </div>
@@ -62,10 +62,10 @@ export default function AdvertisePage() {
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
-                    "Homepage placement — maximum visibility",
+                    "Homepage placement â€” maximum visibility",
                     "Your photo, category, and mosque affiliation shown",
                     "30-day listing, subject to admin approval",
-                    "$29.99/month from Nov 1, 2026 — free during launch",
+                    "$29.99/month from Nov 1, 2026 â€” free during launch",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
@@ -97,14 +97,14 @@ export default function AdvertisePage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-                  Pin your listing to the top of a specific category and service area — shown first whenever someone searches for your profession in your area.
+                  Pin your listing to the top of a specific category and service area â€” shown first whenever someone searches for your profession in your area.
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
                     "Top-of-search placement in your category and area",
                     "Sponsored badge on your listing card",
                     "30-day listing, subject to admin approval",
-                    "$19.99/month from Nov 1, 2026 — free during launch",
+                    "$19.99/month from Nov 1, 2026 â€” free during launch",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-500 flex-shrink-0" />
@@ -136,14 +136,14 @@ export default function AdvertisePage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-                  Post a time-limited promotion — a deal, discount, or special offer — visible to community members in your region. Great for food, services, and one-time promotions.
+                  Post a time-limited promotion â€” a deal, discount, or special offer â€” visible to community members in your region. Great for food, services, and one-time promotions.
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
-                    "Weekend (up to 3 days) — $4.99, free until Oct 31",
-                    "Standard (4–7 days) — $9.99, free until Oct 31",
-                    "Featured (8–30 days) — $19.99, shown first, free until Oct 31",
-                    "Approved professionals only — admin reviewed",
+                    "Weekend (up to 3 days) â€” $4.99, free until Oct 31",
+                    "Standard (4â€“7 days) â€” $9.99, free until Oct 31",
+                    "Featured (8â€“30 days) â€” $19.99, shown first, free until Oct 31",
+                    "Approved professionals only â€” admin reviewed",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />

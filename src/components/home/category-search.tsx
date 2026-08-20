@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, X, ArrowRight } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -14,9 +14,11 @@ interface Category {
 
 export function CategorySearch({ categories }: { categories: Category[] }) {
   const [query, setQuery] = useState("");
-  const sampledCategories = useMemo(() => {
+  // Start with the first 4 (stable, matches SSR) then shuffle client-side after hydration
+  const [sampledCategories, setSampledCategories] = useState(() => categories.slice(0, 4));
+  useEffect(() => {
     const shuffled = [...categories].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 4);
+    setSampledCategories(shuffled.slice(0, 4));
   }, [categories]);
 
   const filtered = query.trim()

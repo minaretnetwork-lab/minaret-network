@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { getActiveOffers } from "@/lib/actions/offers";
 
 export const metadata = {
-  title: "Community Offers | Minaret Network",
+  title: "Community Offers",
   description: "Browse time-limited deals and promotions posted by GTA mosque community businesses.",
 };
 
@@ -111,7 +111,7 @@ export default async function OffersPage({
             <p className="text-sm text-gray-400 mb-6">
               {region && !showAll
                 ? "No businesses have posted offers in your area yet."
-                : "Check back soon — community businesses post offers regularly."}
+                : "Check back soon â€” community businesses post offers regularly."}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {region && !showAll && (
