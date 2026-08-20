@@ -85,13 +85,23 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
 export default async function ProfessionalsPage({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  const mosque = await prisma.mosque.findUnique({
-    where: { slug: DEFAULT_MOSQUE_SLUG },
-    include: {
-      categories: { where: { isActive: true }, orderBy: { name: "asc" } },
-      serviceAreas: { orderBy: { name: "asc" } },
-    },
-  });
+  let mosque = null;
+  let dbError: string | null = null;
+  try {
+    mosque = await prisma.mosque.findUnique({
+      where: { slug: DEFAULT_MOSQUE_SLUG },
+      include: {
+        categories: { where: { isActive: true }, orderBy: { name: "asc" } },
+        serviceAreas: { orderBy: { name: "asc" } },
+      },
+    });
+  } catch (e) {
+    dbError = String(e);
+  }
+
+  if (dbError) {
+    return <pre style={{ padding: 24, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{dbError}</pre>;
+  }
 
   const filters: SearchFiltersType = {
     query: params.q,
