@@ -85,7 +85,8 @@ async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {
 export default async function ProfessionalsPage({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  let mosque = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mosque: any = null;
   let dbError: string | null = null;
   try {
     mosque = await prisma.mosque.findUnique({
