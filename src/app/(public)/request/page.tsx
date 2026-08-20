@@ -2,32 +2,42 @@
 
 import { ServiceRequestForm } from "@/components/service-request-form";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
+import { CATEGORIES, DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/actions/auth";
 
 export const metadata = { title: "Service Request" };
 
 export default async function RequestPage() {
-  const [user, mosque, allCategories, approvedProfessionals] = await Promise.all([
+  const [user, mosque, dbCategories, approvedProfessionals] = await Promise.all([
     getCurrentUser().catch(() => null),
     prisma.mosque.findUnique({
       where: { slug: DEFAULT_MOSQUE_SLUG },
-      select: { serviceAreas: { orderBy: { name: "asc" } } },
+      select: { serviceAreas: { orderBy: { name: “asc” } } },
     }),
-    // Fetch all active categories â€” not mosque-scoped, so professionals in any category appear
+    // Fetch DB categories only for IDs and regulated-profession flag — list order comes from static CATEGORIES
     prisma.category.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true },
+      select: { id: true, slug: true, isRegulatedProfession: true },
     }),
     prisma.professional.findMany({
-      where: { status: "APPROVED" },
+      where: { status: “APPROVED” },
       select: {
         category: { select: { slug: true } },
         categories: { select: { slug: true } },
       },
     }),
   ]);
+
+  // Use static CATEGORIES as the source of truth (matches categories page)
+  const dbBySlug = Object.fromEntries(dbCategories.map((c) => [c.slug, c]));
+  const allCategories = CATEGORIES
+    .filter((c) => dbBySlug[c.slug])
+    .map((c) => ({
+      id: dbBySlug[c.slug].id,
+      name: c.name,
+      slug: c.slug,
+      icon: c.icon,
+      isRegulatedProfession: dbBySlug[c.slug].isRegulatedProfession,
+    }));
 
   // Count approved professionals per category slug (primary + additional, deduplicated per professional)
   const countBySlug: Record<string, number> = {};

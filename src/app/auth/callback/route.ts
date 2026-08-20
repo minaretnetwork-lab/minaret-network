@@ -123,6 +123,14 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      // Remember last-used Google email so the login page can show "Continue as" shortcut
+      redirectResponse.cookies.set("mn_last_google_email", data.user.email, {
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+        path: "/",
+        httpOnly: false,
+      });
+
       log("redirecting after OAuth", { redirectTo: redirectUrl.toString() });
       log("OAuth cookies attached to redirect", { cookiesSet });
       return redirectResponse;
