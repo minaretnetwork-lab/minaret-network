@@ -162,9 +162,9 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
 
       {/* Header */}
       <div className="flex items-start gap-3.5">
-        <Avatar className="h-20 w-20 flex-shrink-0 rounded-xl ring-2 ring-offset-2 ring-emerald-100 dark:ring-emerald-900/40">
+        <Avatar className="size-24 flex-shrink-0 rounded-xl ring-2 ring-offset-2 ring-emerald-100 dark:ring-emerald-900/40">
           <AvatarImage src={photoUrl ?? undefined} alt={name} className="rounded-xl object-cover" />
-          <AvatarFallback className="rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white font-bold text-2xl">
+          <AvatarFallback className="rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white font-bold text-3xl">
             {getInitials(name)}
           </AvatarFallback>
         </Avatar>
