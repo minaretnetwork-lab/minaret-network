@@ -9,6 +9,9 @@ import { submitEventListing } from "@/lib/actions/event-listings";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
+const FREE_UNTIL = new Date("2026-11-01T00:00:00.000Z");
+const isFreePromo = new Date() < FREE_UNTIL;
+
 const PRICE_TABLE = {
   STANDARD: 24.99,
   FEATURED: 49.99,
@@ -78,8 +81,8 @@ export default function SubmitEventPage() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
-  const effectivePrice = form.isMosqueOrganized
-    ? PRICE_TABLE.MOSQUE
+  const effectivePrice = form.isMosqueOrganized || isFreePromo
+    ? 0
     : PRICE_TABLE[form.listingType];
 
   async function handleSubmit(e: React.FormEvent) {
@@ -132,9 +135,15 @@ export default function SubmitEventPage() {
         >
           Post a Community Event
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
           Reach GTA mosque communities. Listings run for 30 days or until the event date, whichever comes first.
         </p>
+        {isFreePromo && (
+          <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-full px-4 py-1.5 mb-8">
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">🎉 Limited-time offer</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">Posting is FREE until Oct 31, 2026</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
 
@@ -162,9 +171,13 @@ export default function SubmitEventPage() {
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
                       {type === "STANDARD" ? "Standard" : "Featured"}{" "}
-                      <span className="font-normal text-gray-500">
-                        — ${type === "STANDARD" ? "24.99" : "49.99"} CAD
-                      </span>
+                      {isFreePromo ? (
+                        <span className="font-bold text-emerald-600">— FREE</span>
+                      ) : (
+                        <span className="font-normal text-gray-500">
+                          — ${type === "STANDARD" ? "24.99" : "49.99"} CAD
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {type === "STANDARD"
@@ -353,7 +366,9 @@ export default function SubmitEventPage() {
             <Info className="h-4 w-4 text-gray-400 flex-shrink-0" />
             <span className="text-gray-600 dark:text-gray-400">
               {effectivePrice === 0
-                ? "Mosque-organized listings are free. No payment step."
+                ? isFreePromo && !form.isMosqueOrganized
+                  ? <><strong className="text-emerald-700 dark:text-emerald-400">Free until Oct 31, 2026</strong> — no payment required. Regular pricing resumes Nov 1.</>
+                  : "Mosque-organized listings are free. No payment step."
                 : <>Total: <strong className="text-gray-900 dark:text-white">${effectivePrice.toFixed(2)} CAD</strong> — you&apos;ll complete payment via Stripe on the next screen.</>}
             </span>
           </div>
