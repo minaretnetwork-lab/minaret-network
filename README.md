@@ -10,8 +10,8 @@ Minaret Network is a mosque-community professional directory and service marketp
 |---|---|
 | Source branch | `master` |
 | Hosting | Vercel (cloud) |
-| Live URL | `https://minaret-network-cyan.vercel.app` |
-| Custom domain | `minaretnetwork.ca` — not yet connected to Vercel |
+| Live URL | `https://minaretnetwork.ca` |
+| Custom domain | `minaretnetwork.ca` — connected (Cloudflare DNS → Vercel) |
 | Database / Auth / Storage | Cloud Supabase (`osmlhdskgvigfprzpnrn.supabase.co`) |
 | Geocoding | Nominatim API + bundled GTA/Ontario coordinate fallback |
 | Deployment | Push to `master` on `mn` remote → Vercel auto-deploys |
@@ -141,7 +141,7 @@ Browser
   |
   | HTTPS
   v
-Vercel (minaret-network-cyan.vercel.app)
+Vercel (minaretnetwork.ca / minaret-network-cyan.vercel.app)
   |-- Next.js App Router (serverless functions)
   |-- Vercel Cron → /api/cron/expire (hourly)
   |
@@ -247,8 +247,8 @@ npm run build
 4. **Stripe is optional** — missing Stripe keys must not crash unrelated pages; paid events require webhook endpoint configuration in the Stripe dashboard pointing to the Vercel deployment URL.
 5. **No outbound WhatsApp broadcast** — matching professionals see requests inside the platform only.
 6. **Email delivery requires SMTP** — do not promise password reset/verification until a transactional email provider is configured in Supabase Auth.
-7. **Professional photos from staging** — three professionals have `photoUrl`/`logoUrl` pointing to the retired `staging.minaretnetwork.ca` host. They should re-upload via the dashboard to store images in production Supabase Storage.
-8. **Custom domain pending** — `minaretnetwork.ca` is not yet connected to Vercel. Connect via Vercel project → Domains → Add.
+7. **Professional photos** — all professional photos and logos are now stored in cloud Supabase Storage. The retired `staging.minaretnetwork.ca` URLs have been replaced.
+8. **Custom domain live** — `minaretnetwork.ca` is connected to Vercel. Cloudflare DNS uses CNAME with "DNS only" (no orange proxy).
 9. **Free promo expires Oct 31, 2026** — event listings and featured/sponsored listings are free until then; pricing resumes automatically on Nov 1.
 
 ## Repository map
