@@ -1,10 +1,9 @@
-const PUBLIC_SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-function publicOrigin() {
-  if (!PUBLIC_SITE_URL) return null;
+function supabaseOrigin() {
+  if (!SUPABASE_URL) return null;
   try {
-    return new URL(PUBLIC_SITE_URL).origin;
+    return new URL(SUPABASE_URL).origin;
   } catch {
     return null;
   }
@@ -13,7 +12,7 @@ function publicOrigin() {
 export function normalizePublicAssetUrl(url: string | null | undefined) {
   if (!url) return url ?? null;
 
-  const origin = publicOrigin();
+  const origin = supabaseOrigin();
   if (!origin) return url;
 
   try {
