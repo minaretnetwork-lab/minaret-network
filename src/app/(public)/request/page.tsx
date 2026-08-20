@@ -1,4 +1,4 @@
-﻿export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 
 import { ServiceRequestForm } from "@/components/service-request-form";
 import { prisma } from "@/lib/prisma";
@@ -12,14 +12,14 @@ export default async function RequestPage() {
     getCurrentUser().catch(() => null),
     prisma.mosque.findUnique({
       where: { slug: DEFAULT_MOSQUE_SLUG },
-      select: { serviceAreas: { orderBy: { name: “asc” } } },
+      select: { serviceAreas: { orderBy: { name: "asc" } } },
     }),
-    // Fetch DB categories only for IDs and regulated-profession flag — list order comes from static CATEGORIES
+    // Fetch DB categories only for IDs and regulated-profession flag; list order comes from static CATEGORIES
     prisma.category.findMany({
       select: { id: true, slug: true, isRegulatedProfession: true },
     }),
     prisma.professional.findMany({
-      where: { status: “APPROVED” },
+      where: { status: "APPROVED" },
       select: {
         category: { select: { slug: true } },
         categories: { select: { slug: true } },
