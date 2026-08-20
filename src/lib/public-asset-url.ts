@@ -23,8 +23,7 @@ export function normalizePublicAssetUrl(url: string | null | undefined) {
       (parsed.hostname === "127.0.0.1" ||
         parsed.hostname === "localhost" ||
         parsed.hostname === "minaretnetwork.ca" ||
-        parsed.hostname === "www.minaretnetwork.ca" ||
-        parsed.hostname === "staging.minaretnetwork.ca");
+        parsed.hostname === "www.minaretnetwork.ca");
 
     if (!isMinaretStorage) return url;
 
