@@ -43,7 +43,7 @@ export function AdvertiseDropdown() {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1 whitespace-nowrap px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-all"
       >
-        Advertise
+        Advertise with Us
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
