@@ -44,24 +44,30 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
 
+      {/* ── Promo banner ─────────────────────────────────────── */}
+      <div className="bg-[#CE1126] py-2 px-4 text-center text-sm font-medium text-white">
+        🇵🇸 Standing in solidarity with the people of Palestine
+      </div>
+
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="overflow-hidden">
         <div className="relative flex flex-col bg-[#071a0e] min-h-[580px] lg:min-h-[640px]">
 
           {/* Background image */}
           <Image
-            src="/mosque8.jpg"
+            src="/hero-team.jpg"
             alt=""
             fill
             preload
             fetchPriority="high"
-            quality={78}
+            quality={80}
             sizes="100vw"
             className="absolute inset-0 w-full h-full object-cover object-center"
             aria-hidden="true"
           />
-          {/* Dark gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/80 pointer-events-none" />
+          {/* Green tint overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(7,26,14,0.52)" }} />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/30 via-transparent to-black/40" />
 
           {/* Main content — centered */}
           <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
@@ -105,15 +111,15 @@ export default async function HomePage() {
         </div>
 
         {/* Trust bar */}
-        <div className="bg-[#14532d] py-4">
+        <div className="bg-white border-b border-emerald-100 py-4">
           <div className="container mx-auto px-4 lg:px-6 flex flex-wrap justify-center gap-6 sm:gap-12">
             {[
               { icon: Building2,   label: "Mosque affiliated" },
               { icon: Star,        label: "Community recommended" },
               { icon: ShieldCheck, label: "Admin approved" },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-sm text-white/90">
-                <Icon className="h-4 w-4 text-white flex-shrink-0" />
+              <div key={label} className="flex items-center gap-2 text-sm text-emerald-800 font-medium">
+                <Icon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
                 {label}
               </div>
             ))}
