@@ -106,15 +106,15 @@ export default async function HomePage() {
         </div>
 
         {/* Trust bar */}
-        <div className="bg-white border-b border-emerald-100 py-4">
+        <div className="bg-black py-4">
           <div className="container mx-auto px-4 lg:px-6 flex flex-wrap justify-center gap-6 sm:gap-12">
             {[
               { icon: Building2,   label: "Mosque affiliated" },
               { icon: Star,        label: "Community recommended" },
               { icon: ShieldCheck, label: "Admin approved" },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-sm text-emerald-800 font-medium">
-                <Icon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+              <div key={label} className="flex items-center gap-2 text-sm text-white font-medium">
+                <Icon className="h-4 w-4 text-white/70 flex-shrink-0" />
                 {label}
               </div>
             ))}
