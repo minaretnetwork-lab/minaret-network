@@ -269,17 +269,23 @@ export default async function HomePage() {
               <CalendarDays className="h-12 w-12 text-white" />
             </div>
             <div className="flex-1 text-center md:text-left">
-              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-2">Community events</p>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Community events</p>
+                <span className="inline-flex items-center bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full">
+                  Free until Oct 31
+                </span>
+              </div>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-snug" style={{ fontFamily: "var(--font-lora)" }}>
                 Reach GTA mosque communities with your event.
               </h2>
               <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6 max-w-lg">
-                Whether it&apos;s a fundraiser, bazaar, lecture, or community dinner — post it here and get it in front of thousands of GTA Muslims who are actively looking for events like yours.
+                Whether it&apos;s a fundraiser, bazaar, lecture, or community dinner — post it here and get it in front of thousands of GTA Muslims who are actively looking for events like yours.{" "}
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Posting is free until Oct 31, 2026.</span>
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                 <Link href="/events/submit">
                   <Button size="lg" className="bg-emerald-700 hover:bg-emerald-800 text-white h-12 px-8 shadow-sm font-semibold">
-                    Post an Event
+                    Post an Event — It&apos;s Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
