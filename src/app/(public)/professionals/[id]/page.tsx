@@ -94,12 +94,13 @@ export default async function ProfessionalProfilePage({ params }: Props) {
         {/* Sidebar */}
         <aside className="lg:col-span-1 space-y-5">
           {/* Profile card */}
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 text-center shadow-sm">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
             <ProfilePhotoLightbox
               photoUrl={photoUrl}
               name={name}
               initials={getInitials(name)}
             />
+            <div className="p-6 text-center">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{name}</h1>
             {professional.businessName && (
               <p className="text-sm text-gray-500 dark:text-gray-400">{professional.businessName}</p>
@@ -203,6 +204,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                 Before You Hire →
               </Link>
             </p>
+            </div>{/* end p-6 */}
           </div>
 
           {/* Details */}

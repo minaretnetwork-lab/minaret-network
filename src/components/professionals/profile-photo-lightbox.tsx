@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ProfilePhotoLightboxProps {
   photoUrl: string | null;
@@ -19,11 +18,9 @@ export function ProfilePhotoLightbox({
 
   if (!photoUrl) {
     return (
-      <Avatar className="h-24 w-24 mx-auto mb-4 border-4 border-green-100">
-        <AvatarFallback className="bg-green-100 text-green-700 font-bold text-2xl">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
+      <div className="w-full h-52 rounded-t-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+        <span className="text-white font-bold text-5xl select-none">{initials}</span>
+      </div>
     );
   }
 
@@ -32,15 +29,14 @@ export function ProfilePhotoLightbox({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mx-auto mb-4 block rounded-full transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+        className="w-full h-52 block overflow-hidden rounded-t-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-inset group"
         aria-label={`Open full size profile photo for ${name}`}
       >
-        <Avatar className="h-24 w-24 border-4 border-green-100 shadow-sm">
-          <AvatarImage src={photoUrl} alt={name} className="object-cover" />
-          <AvatarFallback className="bg-green-100 text-green-700 font-bold text-2xl">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <img
+          src={photoUrl}
+          alt={name}
+          className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
+        />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
