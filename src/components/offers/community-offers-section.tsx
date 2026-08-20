@@ -1,81 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, Megaphone, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, Megaphone } from "lucide-react";
 import { cookies } from "next/headers";
 import { getActiveOffersForHomepage } from "@/lib/actions/offers";
+import { OfferCard } from "@/components/offers/offer-card";
 
 type Offer = Awaited<ReturnType<typeof getActiveOffersForHomepage>>[number];
-
-function OfferCard({ offer }: { offer: Offer }) {
-  const pro = offer.professional;
-  const displayName = pro.user.displayName ?? pro.user.firstName ?? "Professional";
-  const phone = pro.phone ?? null;
-  const whatsapp = pro.whatsapp ?? pro.phone ?? null;
-
-  return (
-    <div className="relative flex flex-col bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      {offer.tier === "FEATURED" && (
-        <div className="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
-          Featured
-        </div>
-      )}
-
-      {offer.imageUrl ? (
-        <div className="relative w-full h-44 flex-shrink-0">
-          <Image
-            src={offer.imageUrl}
-            alt={offer.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        </div>
-      ) : (
-        <div className="w-full h-24 flex-shrink-0 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/20 flex items-center justify-center">
-          <Megaphone className="h-8 w-8 text-emerald-400" />
-        </div>
-      )}
-
-      <div className="flex flex-col flex-1 p-4">
-        <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider mb-1">
-          {pro.category?.icon} {pro.category?.name ?? "Business"}
-        </p>
-        <h3 className="font-bold text-gray-900 dark:text-white text-base leading-snug mb-1.5">
-          {offer.title}
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3 mb-3 flex-1">
-          {offer.description}
-        </p>
-
-        <p className="text-xs text-gray-400 mb-3">by {displayName}</p>
-
-        {/* Contact actions */}
-        <div className="flex gap-2">
-          {whatsapp && (
-            <a
-              href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              WhatsApp
-            </a>
-          )}
-          {phone && (
-            <a
-              href={`tel:${phone.replace(/\D/g, "")}`}
-              className="flex-1 flex items-center justify-center gap-1.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <Phone className="h-3.5 w-3.5" />
-              Call
-            </a>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export async function CommunityOffersSection() {
   const cookieStore = await cookies();
