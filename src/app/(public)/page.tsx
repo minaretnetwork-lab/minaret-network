@@ -57,7 +57,7 @@ export default async function HomePage() {
             fetchPriority="high"
             quality={80}
             sizes="100vw"
-            className="absolute inset-0 w-full h-full object-cover object-[30%_50%] sm:object-center"
+            className="absolute inset-0 w-full h-full object-cover object-[25%_15%] sm:object-center"
             aria-hidden="true"
           />
           {/* Green tint overlay */}
