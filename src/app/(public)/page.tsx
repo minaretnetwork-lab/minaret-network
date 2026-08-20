@@ -44,14 +44,6 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
 
-      {/* ── Promo banner ─────────────────────────────────────── */}
-      <div className="bg-[#CE1126] py-2 px-4 text-center text-sm font-medium text-white">
-        Limited-time offer: Featured Business &amp; Sponsored Listings are free until Oct 31, 2026 — one spot per business.{" "}
-        <Link href="/advertise" className="underline underline-offset-2 font-semibold hover:text-white/80 transition-colors">
-          Apply now →
-        </Link>
-      </div>
-
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="overflow-hidden">
         <div className="relative flex flex-col bg-[#071a0e] min-h-[580px] lg:min-h-[640px]">

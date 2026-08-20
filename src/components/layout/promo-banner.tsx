@@ -24,7 +24,7 @@ export function PromoBanner() {
   }
 
   return (
-    <div className="relative z-50 bg-emerald-700 text-white text-sm">
+    <div className="relative z-50 bg-[#CE1126] text-white text-sm">
       <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center pr-10">
         <Sparkles className="h-3.5 w-3.5 flex-shrink-0 text-emerald-200" aria-hidden="true" />
         <p className="leading-snug">
@@ -42,7 +42,7 @@ export function PromoBanner() {
       <button
         onClick={dismiss}
         aria-label="Dismiss offer banner"
-        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 hover:bg-emerald-600 transition-colors"
+        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 hover:bg-[#a50e1e] transition-colors"
       >
         <X className="h-4 w-4" />
       </button>
