@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Star, Building2, Tag, Megaphone } from "lucide-react";
+import { ArrowLeft, Sparkles, Star, Tag, Megaphone } from "lucide-react";
 
 export const metadata = {
   title: "Advertise | Minaret Network",
@@ -121,7 +121,6 @@ export default function AdvertisePage() {
               </div>
             </div>
           </div>
-        </div>
 
           {/* Community Offers */}
           <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm">
