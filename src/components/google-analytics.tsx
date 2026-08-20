@@ -11,8 +11,9 @@ const subscribeToHostname = () => () => {};
 function isAnalyticsHost() {
   const hostname = window.location.hostname.toLowerCase();
   return (
-    hostname === "staging.minaretnetwork.ca" ||
-    hostname === "www.staging.minaretnetwork.ca" ||
+    hostname === "minaretnetwork.ca" ||
+    hostname === "www.minaretnetwork.ca" ||
+    hostname === "minaret-network-cyan.vercel.app" ||
     hostname === "localhost" ||
     hostname === "127.0.0.1"
   );
