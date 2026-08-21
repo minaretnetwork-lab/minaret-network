@@ -16,7 +16,7 @@ export function FlashToast() {
   useEffect(() => {
     for (const [key, { message, type }] of Object.entries(MESSAGES)) {
       if (searchParams.get(key) !== null) {
-        toast[type](message, { position: "bottom-right", duration: 4000 });
+        toast[type](message, { position: "bottom-right", duration: 4000, dismissible: true });
         // Clean the param from the URL without a page reload
         const params = new URLSearchParams(searchParams.toString());
         params.delete(key);
