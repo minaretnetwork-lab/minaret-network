@@ -40,34 +40,41 @@ export async function signUp(
   const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
   const now = new Date();
 
-  await prisma.user.upsert({
-    where: { supabaseId: data.user.id },
-    update: {
-      email,
-      firstName,
-      lastName,
-      displayName: `${firstName} ${lastName}`,
-      mosqueId: mosque?.id,
-      ageAttestedAt: now,
-      ageAttestationVersion: CURRENT_TOS_VERSION,
-      tosAcceptedAt: now,
-      tosVersion: CURRENT_TOS_VERSION,
-    },
-    create: {
-      supabaseId: data.user.id,
-      email,
-      firstName,
-      lastName,
-      displayName: `${firstName} ${lastName}`,
-      mosqueId: mosque?.id,
-      role: "MEMBER",
-      emailVerified: false,
-      ageAttestedAt: now,
-      ageAttestationVersion: CURRENT_TOS_VERSION,
-      tosAcceptedAt: now,
-      tosVersion: CURRENT_TOS_VERSION,
-    },
-  });
+  const existing = await prisma.user.findFirst({ where: { email }, select: { id: true, supabaseId: true } });
+
+  if (existing) {
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        supabaseId: data.user.id,
+        firstName,
+        lastName,
+        displayName: `${firstName} ${lastName}`,
+        mosqueId: mosque?.id,
+        ageAttestedAt: now,
+        ageAttestationVersion: CURRENT_TOS_VERSION,
+        tosAcceptedAt: now,
+        tosVersion: CURRENT_TOS_VERSION,
+      },
+    });
+  } else {
+    await prisma.user.create({
+      data: {
+        supabaseId: data.user.id,
+        email,
+        firstName,
+        lastName,
+        displayName: `${firstName} ${lastName}`,
+        mosqueId: mosque?.id,
+        role: "MEMBER",
+        emailVerified: false,
+        ageAttestedAt: now,
+        ageAttestationVersion: CURRENT_TOS_VERSION,
+        tosAcceptedAt: now,
+        tosVersion: CURRENT_TOS_VERSION,
+      },
+    });
+  }
 
   redirect("/auth/verify-email");
 }
