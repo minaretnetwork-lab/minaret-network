@@ -348,12 +348,74 @@ export async function getCategoriesForAdmin() {
   });
 }
 
+const EMOJI_KEYWORDS: [string[], string][] = [
+  [["quran", "islamic", "islam", "mosque", "masjid", "prayer", "deen"], "🕌"],
+  [["tutor", "teach", "lesson", "coach", "instructor", "education", "school", "learn"], "📚"],
+  [["doctor", "physician", "medical", "clinic", "health"], "🩺"],
+  [["dentist", "dental", "teeth", "tooth"], "🦷"],
+  [["pharma", "drug", "medicine", "prescription"], "💊"],
+  [["physio", "rehab", "therapy", "therapist"], "🏥"],
+  [["chiro", "spine", "back"], "🦴"],
+  [["optom", "eye", "vision", "glasses"], "👁️"],
+  [["counsel", "mental", "psychology", "psycho", "wellbeing"], "🧠"],
+  [["lawyer", "legal", "law", "attorney", "solicitor"], "⚖️"],
+  [["immigr", "visa", "citizenship", "passport"], "🌍"],
+  [["notary", "document", "cert"], "📜"],
+  [["account", "tax", "bookkeep", "cpa", "audit"], "📊"],
+  [["financ", "invest", "wealth", "portfolio"], "💼"],
+  [["insur"], "🛡️"],
+  [["mortgage", "loan", "lending"], "🏦"],
+  [["realtor", "real estate", "realty", "property", "land"], "🏠"],
+  [["contract", "construct", "build", "renovation"], "🏗️"],
+  [["handyman", "repair", "fix", "maintenance"], "🔨"],
+  [["electric", "wiring", "panel"], "⚡"],
+  [["plumb", "pipe", "drain", "water"], "🔧"],
+  [["hvac", "heat", "cool", "furnace", "air condition"], "❄️"],
+  [["roof"], "🏚️"],
+  [["paint"], "🖌️"],
+  [["floor", "tile", "hardwood", "carpet"], "🪵"],
+  [["landscap", "garden", "lawn", "yard"], "🌿"],
+  [["snow", "ice"], "❄️"],
+  [["inspect"], "🔍"],
+  [["mov", "transport", "delivery", "truck"], "🚛"],
+  [["pest", "exterminator", "bug", "rodent"], "🐛"],
+  [["appli", "washer", "dryer", "fridge", "dishwash"], "🔌"],
+  [["clean", "maid", "janitor", "housekeep"], "🧹"],
+  [["mechanic", "auto repair", "tire", "oil"], "🔩"],
+  [["dealership", "car dealer", "vehicle"], "🚘"],
+  [["car rental", "auto rental"], "🔑"],
+  [["body shop", "collision", "dent", "auto body"], "🛠️"],
+  [["driv", "dmz", "g2", "g test"], "🚗"],
+  [["personal train", "gym", "fitness", "workout"], "💪"],
+  [["it ", "tech support", "computer", "network", "cyber"], "💻"],
+  [["web dev", "software", "app dev", "developer"], "🌐"],
+  [["graphic", "design", "logo", "brand", "illustrat"], "🎨"],
+  [["photo"], "📷"],
+  [["video", "film", "cinemat"], "🎬"],
+  [["tailor", "alter", "sew", "stitch"], "🧵"],
+  [["barber", "hair", "salon", "stylist", "grooming"], "✂️"],
+  [["event", "wedding", "plan", "cater"], "💍"],
+  [["restaurant", "food", "halal food", "grocery", "catering"], "🍽️"],
+  [["pet", "dog", "cat", "animal"], "🐾"],
+  [["business consult", "strateg", "management consult"], "📈"],
+  [["travel", "tour", "umrah", "hajj", "holiday"], "✈️"],
+  [["childcare", "daycare", "babysit", "nanny", "nursery"], "👶"],
+];
+
+function guessEmoji(name: string): string {
+  const lower = name.toLowerCase();
+  for (const [keywords, emoji] of EMOJI_KEYWORDS) {
+    if (keywords.some((kw) => lower.includes(kw))) return emoji;
+  }
+  return "🏷️";
+}
+
 export async function createCategory(formData: FormData) {
   const user = await getCurrentUser();
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
 
   const name = String(formData.get("name") ?? "").trim();
-  const icon = String(formData.get("icon") ?? "").trim() || null;
+  const icon = String(formData.get("icon") ?? "").trim() || guessEmoji(name);
   if (!name) throw new Error("Name is required.");
 
   const slug = name

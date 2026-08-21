@@ -39,11 +39,11 @@ export default async function AdminCategoriesPage() {
             className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
-        <div className="w-28">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Icon (emoji)</label>
+        <div className="w-36">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Icon (emoji) <span className="text-gray-400 font-normal">— auto if blank</span></label>
           <input
             name="icon"
-            placeholder="🛒"
+            placeholder="auto"
             className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
