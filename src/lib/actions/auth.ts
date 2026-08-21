@@ -69,8 +69,6 @@ export async function signUp(
     },
   });
 
-  const safeRedirectTo = redirectTo.startsWith("/") ? redirectTo : "/dashboard";
-  redirect(safeRedirectTo);
 }
 
 export async function signOut() {
