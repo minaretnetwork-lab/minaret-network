@@ -108,8 +108,6 @@ export function AssistantBubble() {
 
   const canMatch = issue.trim().length >= 8 && location.trim().length >= 2;
   const isHoldingPage = pathname === "/upgrades-in-progress";
-  const browserHost = window.location.hostname.toLowerCase();
-  const isHoldingHost = browserHost === "minaretnetwork.ca" || browserHost === "www.minaretnetwork.ca";
 
   useEffect(() => {
     transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight });
@@ -377,7 +375,7 @@ export function AssistantBubble() {
     );
   }
 
-  if (isHoldingPage || isHoldingHost) return null;
+  if (isHoldingPage) return null;
 
   return (
     <>
