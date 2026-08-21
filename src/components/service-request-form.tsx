@@ -626,6 +626,7 @@ export function ServiceRequestForm({
                 onChange={(e) => set("contactName", e.target.value)}
                 placeholder="Full name"
                 className="text-base"
+                autoComplete="name"
               />
             </div>
             <div>
@@ -638,6 +639,7 @@ export function ServiceRequestForm({
                 onChange={(e) => set("contactEmail", e.target.value)}
                 placeholder="your@email.com"
                 className="text-base"
+                autoComplete="email"
               />
             </div>
             <div>
