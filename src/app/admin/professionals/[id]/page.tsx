@@ -14,13 +14,15 @@ import {
   MapPin,
   Phone,
   Star,
+  Tag,
   User,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { approveProfessional, getProfessionalForAdmin, rejectProfessional, setListingTier, suspendProfessional } from "@/lib/actions/admin";
+import { approveProfessional, getCategoriesForAdmin, getProfessionalForAdmin, rejectProfessional, setListingTier, suspendProfessional } from "@/lib/actions/admin";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
+import { ProfessionalCategories } from "@/components/admin/professional-categories";
 
 const STATUS_UI: Record<string, { label: string; classes: string }> = {
   PENDING: { label: "Pending Review", classes: "bg-amber-100 text-amber-700 border-amber-200" },
@@ -38,7 +40,10 @@ export default async function AdminProfessionalDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const professional = await getProfessionalForAdmin(id);
+  const [professional, allCategories] = await Promise.all([
+    getProfessionalForAdmin(id),
+    getCategoriesForAdmin(),
+  ]);
   if (!professional) notFound();
 
   const applicantName =
@@ -228,6 +233,17 @@ export default async function AdminProfessionalDetailPage({
             <ImagePreview label="Business logo" src={professional.logoUrl} />
             <Info label="Gallery photos" value={String(professional.galleryImages.length)} />
           </Card>
+
+          {professional.status === "APPROVED" && (
+            <Card title="Categories" icon={<Tag className="h-4 w-4" />}>
+              <ProfessionalCategories
+                professionalId={professional.id}
+                primaryCategory={professional.category}
+                secondaryCategories={professional.categories}
+                allCategories={allCategories}
+              />
+            </Card>
+          )}
 
           <Card title="Listing tier" icon={<Layers className="h-4 w-4" />}>
             <Info label="Current tier" value={professional.tier} />

@@ -10,6 +10,7 @@ const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>
   user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true, whatsapp: true, preferredContact: true } },
   mosque: { select: { name: true, city: true, address: true, website: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
   category: { select: { id: true, name: true, slug: true, icon: true, isRegulatedProfession: true } },
+  categories: { select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
   serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
   editDrafts: { where: { status: "PENDING" }, orderBy: { submittedAt: "desc" }, take: 1 },
   badges: true,
@@ -108,6 +109,28 @@ export async function getProfessionalForAdmin(id: string): Promise<ProfessionalF
     where: { id },
     include: professionalForAdminInclude,
   });
+}
+
+export async function addSecondaryCategory(professionalId: string, categoryId: string) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
+  await prisma.professional.update({
+    where: { id: professionalId },
+    data: { categories: { connect: { id: categoryId } } },
+  });
+  revalidatePath(`/admin/professionals/${professionalId}`);
+  revalidatePath(`/professionals/${professionalId}`);
+}
+
+export async function removeSecondaryCategory(professionalId: string, categoryId: string) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
+  await prisma.professional.update({
+    where: { id: professionalId },
+    data: { categories: { disconnect: { id: categoryId } } },
+  });
+  revalidatePath(`/admin/professionals/${professionalId}`);
+  revalidatePath(`/professionals/${professionalId}`);
 }
 
 function asNullableString(value: unknown) {
