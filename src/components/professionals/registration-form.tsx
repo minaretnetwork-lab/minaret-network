@@ -581,7 +581,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                     className="text-sm text-green-700 dark:text-green-400 font-medium hover:underline">
                     {photoPreview ? "Change photo" : "Upload profile photo"}
                   </button>
-                  <p className="text-xs text-gray-400 mt-0.5">Optional · Most phone photos work automatically · We optimize on upload</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Optional · Max 40 MB · JPG, PNG, WebP, HEIC</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Best results: square or portrait crop · min 400×400 px · avoid wide/landscape photos</p>
                 </div>
                 <input ref={photoInputRef} type="file" accept="image/*,.heic,.heif,.avif" onChange={handlePhotoChange} className="hidden" />
               </div>
@@ -1063,8 +1064,11 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               {/* Business logo */}
               <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Business Logo <span className="text-gray-400 font-normal">(optional)</span></p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  Your logo appears on your Featured Business card and in the Sponsored carousel on the homepage. Square logos work best (e.g. 400×400 px).
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  Appears on your Featured Business card and Sponsored carousel.
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+                  Best results: <strong className="text-gray-500 dark:text-gray-400">square format</strong> (e.g. 400×400 px) · wide/landscape logos will appear small in the square tile · if your logo is horizontal, add white padding above and below to make it square before uploading · max 40 MB · JPG, PNG, WebP
                 </p>
                 <div className="flex items-center gap-4">
                   <div onClick={() => logoInputRef.current?.click()}
