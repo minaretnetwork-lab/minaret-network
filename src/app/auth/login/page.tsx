@@ -178,7 +178,7 @@ function LoginForm() {
             className="mt-1.5"
             placeholder={focusedField === "email" ? "" : "you@example.com"}
           />
-          {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
+          {errors.email && <p role="alert" className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
         </div>
         <div>
           <div className="flex items-center justify-between mb-1.5">
@@ -193,11 +193,11 @@ function LoginForm() {
             onBlur={() => setFocusedField(null)}
             placeholder={focusedField === "password" ? "" : "••••••••"}
           />
-          {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>}
+          {errors.password && <p role="alert" className="text-xs text-red-600 mt-1">{errors.password.message}</p>}
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+          <p role="alert" className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
             {error}
           </p>
         )}

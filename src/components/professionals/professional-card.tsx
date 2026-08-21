@@ -326,13 +326,14 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               mode="message"
               location={defaultLocation}
               trigger={
-                <div
+                <button
+                  type="button"
                   className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                   aria-label={`Message ${name}`}
                 >
                   <ActionTooltip label="Message" />
                   <MessageCircle className="h-3.5 w-3.5" />
-                </div>
+                </button>
               }
             />
           )}
@@ -355,13 +356,14 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
                 professionalId={professional.id}
                 professionalName={name}
                 trigger={
-                  <div
+                  <button
+                    type="button"
                     className="group/action relative h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
                     aria-label={`WhatsApp ${name}`}
                   >
                     <ActionTooltip label="WhatsApp" />
                     <WhatsAppIcon className="h-4 w-4" />
-                  </div>
+                  </button>
                 }
               />
             )

@@ -31,6 +31,7 @@ const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true"
 
 function SignUpForm() {
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
 
@@ -45,6 +46,7 @@ function SignUpForm() {
         ageAttested: data.ageAttestation === true,
         tosAccepted: data.tosAccepted === true,
       });
+      setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign up failed");
     }
@@ -68,6 +70,21 @@ function SignUpForm() {
         </div>
 
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+          {success ? (
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center h-14 w-14 rounded-full bg-green-100 dark:bg-green-900/30 mx-auto">
+                <svg className="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Check your email</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                We sent a verification link to your email address. Click it to activate your account, then sign in.
+              </p>
+              <Link href="/auth/login" className="inline-flex items-center justify-center w-full h-11 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors">
+                Go to sign in
+              </Link>
+            </div>
+          ) : (
+          <>
           {/* Google Sign Up */}
           <Button
             type="button"
@@ -105,31 +122,31 @@ function SignUpForm() {
               <div>
                 <Label htmlFor="firstName">First Name</Label>
                 <Input id="firstName" {...register("firstName")} className="mt-1.5" placeholder="Ahmad" />
-                {errors.firstName && <p className="text-xs text-red-600 mt-1">{errors.firstName.message}</p>}
+                {errors.firstName && <p role="alert" className="text-xs text-red-600 mt-1">{errors.firstName.message}</p>}
               </div>
               <div>
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input id="lastName" {...register("lastName")} className="mt-1.5" placeholder="Khan" />
-                {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName.message}</p>}
+                {errors.lastName && <p role="alert" className="text-xs text-red-600 mt-1">{errors.lastName.message}</p>}
               </div>
             </div>
 
             <div>
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" {...register("email")} className="mt-1.5" placeholder="you@example.com" />
-              {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
+              {errors.email && <p role="alert" className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" {...register("password")} className="mt-1.5" placeholder="••••••••" />
-              {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>}
+              {errors.password && <p role="alert" className="text-xs text-red-600 mt-1">{errors.password.message}</p>}
             </div>
 
             <div>
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input id="confirmPassword" type="password" {...register("confirmPassword")} className="mt-1.5" placeholder="••••••••" />
-              {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword.message}</p>}
+              {errors.confirmPassword && <p role="alert" className="text-xs text-red-600 mt-1">{errors.confirmPassword.message}</p>}
             </div>
 
             <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
@@ -166,7 +183,7 @@ function SignUpForm() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg px-3 py-2">
+              <p role="alert" className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg px-3 py-2">
                 {error}
               </p>
             )}
@@ -180,6 +197,8 @@ function SignUpForm() {
             Already have an account?{" "}
             <Link href={`/auth/login?redirectTo=${encodeURIComponent(redirectTo)}`} className="text-green-700 hover:underline font-medium">Sign in</Link>
           </p>
+          </>
+          )}
         </div>
       </div>
     </div>
