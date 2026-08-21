@@ -341,7 +341,7 @@ export function OffersDashboard({ offers, professional }: Props) {
               className="mt-0.5 h-4 w-4 flex-shrink-0 accent-emerald-600"
             />
             <span className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              I confirm that I hold all required licenses, permits, and certifications to offer these products or services in Ontario — including any applicable food handling or food premises permits. I understand that Minaret Network does not verify this and that I am solely responsible for compliance with applicable laws.
+              I confirm that I hold all required licences, permits, and certifications to offer these products or services in Ontario — including any food handling or food premises permits required for food-related offers. I understand that Minaret Network does not verify this and that I am solely responsible for compliance with applicable laws.
             </span>
           </label>
 
