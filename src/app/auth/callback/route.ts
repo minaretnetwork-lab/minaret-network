@@ -11,6 +11,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = requestUrl;
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
+  const rawToken = searchParams.get("token");   // {{ .Token }} fallback
+  const emailParam = searchParams.get("email"); // {{ .Email }} fallback
   const type = searchParams.get("type");
   const rawNext = searchParams.get("next") ?? "/dashboard";
   const next = rawNext.startsWith("/") ? rawNext : "/dashboard";
@@ -106,8 +108,7 @@ export async function GET(request: NextRequest) {
   const redirectResponse = NextResponse.redirect(redirectUrl);
   const { client: supabase, getCookiesSet } = makeSupabase(redirectResponse);
 
-  // ── Path 1: token_hash (password reset, magic link via custom email template) ──
-  // Works cross-device/cross-browser — no PKCE verifier cookie needed.
+  // ── Path 1a: token_hash (Supabase {{ .TokenHash }} — cross-device, no PKCE cookie needed) ──
   if (tokenHash && type) {
     log("verifying token_hash", { type });
     const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as never });
@@ -117,6 +118,23 @@ export async function GET(request: NextRequest) {
       return redirectResponse;
     }
     log("token_hash verification failed", { error: error?.message });
+    return NextResponse.redirect(new URL("/auth/forgot-password?error=link_expired", siteUrl));
+  }
+
+  // ── Path 1b: raw token + email (Supabase {{ .Token }} + {{ .Email }} — fallback template) ──
+  if (rawToken && emailParam && type) {
+    log("verifying raw token", { type, email: emailParam });
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: emailParam,
+      token: rawToken,
+      type: type as never,
+    });
+    if (!error && data.user?.email) {
+      log("raw token verified", { email: data.user.email, cookiesSet: getCookiesSet() });
+      await upsertDbUser({ ...data.user, email: data.user.email });
+      return redirectResponse;
+    }
+    log("raw token verification failed", { error: error?.message });
     return NextResponse.redirect(new URL("/auth/forgot-password?error=link_expired", siteUrl));
   }
 
@@ -138,8 +156,12 @@ export async function GET(request: NextRequest) {
       log("redirecting after OAuth", { redirectTo: redirectUrl.toString() });
       return redirectResponse;
     }
+
+    // PKCE failed (likely cross-device) — send to forgot-password instead of login
+    log("PKCE exchange failed, redirecting to forgot-password");
+    return NextResponse.redirect(new URL("/auth/forgot-password?error=link_expired", siteUrl));
   }
 
-  log("redirecting to login after auth failure");
-  return NextResponse.redirect(new URL("/auth/login?error=auth_failed", siteUrl));
+  log("no valid auth params in callback");
+  return NextResponse.redirect(new URL("/auth/forgot-password?error=link_expired", siteUrl));
 }
