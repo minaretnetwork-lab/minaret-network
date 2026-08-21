@@ -52,21 +52,23 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
       className="group block bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-emerald-200 dark:hover:border-emerald-800 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-200"
     >
       {/* Hero image */}
-      <div className="relative w-full h-44">
+      <div className="relative w-full h-36 bg-gray-100 dark:bg-gray-800">
         {heroImage ? (
           <img
             src={heroImage}
-            alt={heroIsLogo ? name : name}
-            className={`w-full h-full ${heroIsLogo ? "object-contain p-4 bg-white dark:bg-gray-900" : "object-cover object-top"}`}
+            alt={name}
+            className={`w-full h-full ${heroIsLogo ? "object-contain p-6" : "object-cover object-center"}`}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-            <span className="text-white font-bold text-6xl select-none">
+          <div className="w-full h-full bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/20 flex items-center justify-center">
+            <span className="text-4xl font-bold text-amber-400 dark:text-amber-500 select-none tracking-tight">
               {name.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
-        {/* Chips overlaid on hero */}
+        {/* Subtle gradient fade at bottom so card body reads cleanly */}
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none" />
+        {/* Chips */}
         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between pointer-events-none">
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-amber-200 dark:border-amber-800/50 rounded-full px-2 py-0.5 shadow-sm">
             <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />

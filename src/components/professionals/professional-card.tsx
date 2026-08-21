@@ -149,20 +149,21 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
 
       {/* Hero image — featured/sponsored cards only */}
       {(isSponsored || isFeatured) && (
-        <div className="relative w-full h-44 flex-shrink-0">
+        <div className="relative w-full h-36 flex-shrink-0 bg-gray-100 dark:bg-gray-800">
           {heroImage ? (
             <img
               src={heroImage}
               alt={heroIsLogo ? `${professional.businessName ?? name} logo` : name}
-              className={`w-full h-full ${heroIsLogo ? "object-contain p-4 bg-white dark:bg-gray-900" : "object-cover object-top"}`}
+              className={`w-full h-full ${heroIsLogo ? "object-contain p-6" : "object-cover object-center"}`}
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
-              <span className="text-white font-bold text-6xl select-none">
+            <div className="w-full h-full bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/20 flex items-center justify-center">
+              <span className="text-4xl font-bold text-emerald-400 dark:text-emerald-500 select-none tracking-tight">
                 {(professional.businessName ?? name).charAt(0).toUpperCase()}
               </span>
             </div>
           )}
+          <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none" />
           {/* Badge chip overlaid on hero */}
           <div className="pointer-events-none absolute top-2.5 right-2.5 z-20 flex flex-col items-end gap-1">
             {isSponsored && (
