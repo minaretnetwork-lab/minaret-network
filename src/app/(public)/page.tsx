@@ -122,11 +122,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Community Offers ─────────────────────────────────── */}
-      <CommunityOffersSection />
-
       {/* ── Featured Businesses ──────────────────────────────── */}
       <FeaturedSection />
+
+      {/* ── Community Offers ─────────────────────────────────── */}
+      <CommunityOffersSection />
 
       {/* ── Quranic Verse ────────────────────────────────────── */}
       <section className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 py-16">
