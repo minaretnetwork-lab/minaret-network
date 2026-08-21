@@ -78,7 +78,7 @@ export async function CommunityOffersSection() {
 
       {offers.length > 0 && (
         <p className="mt-5 text-[11px] text-gray-400 dark:text-gray-600 leading-relaxed max-w-2xl">
-          <strong className="font-semibold text-gray-500 dark:text-gray-500">Disclaimer:</strong> Community Offers are posted by community members. Minaret Network does not verify business registration, food-handling licenses, permits, or regulatory compliance. Transact at your own discretion — Minaret Network is not a party to any transaction and assumes no liability.{" "}
+          <strong className="font-semibold text-gray-500 dark:text-gray-500">Disclaimer:</strong> Community Offers are posted by community members. Minaret Network does not verify business registration, food handling licences, permits, or regulatory compliance. Transactions are at the user&apos;s own discretion. Minaret Network is not a party to any transaction.{" "}
           <Link href="/offers" className="underline underline-offset-2 hover:text-gray-600">See all offers</Link>
         </p>
       )}
