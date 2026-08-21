@@ -35,6 +35,7 @@ function LoginForm() {
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
   const idleSignOut = searchParams.get("reason") === "idle";
   const passwordUpdated = searchParams.get("password") === "updated";
+  const emailVerified = searchParams.get("verified") === "1";
 
   const clearedOnFocusRef = useRef({ email: false, password: false });
 
@@ -106,6 +107,11 @@ function LoginForm() {
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+      {emailVerified && (
+        <div className="mb-5 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-800 dark:text-green-300">
+          Your email has been verified. Sign in to get started.
+        </div>
+      )}
       {idleSignOut && (
         <div className="mb-5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
           You were signed out after 60 minutes of inactivity.

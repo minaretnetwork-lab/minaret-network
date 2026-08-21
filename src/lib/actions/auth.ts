@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { CURRENT_TOS_VERSION } from "@/lib/constants";
 
 export async function signIn(email: string, password: string) {
@@ -24,12 +25,19 @@ export async function signUp(
   if (!consent?.ageAttested) throw new Error("You must confirm you are 18 years or older to create an account.");
   if (!consent?.tosAccepted) throw new Error("You must accept the Terms of Service and Privacy Policy to create an account.");
 
+  const headersList = await headers();
+  const host = headersList.get("x-forwarded-host") ?? headersList.get("host") ?? "";
+  const proto = headersList.get("x-forwarded-proto") ?? "https";
+  const origin = host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_SITE_URL ?? "");
+  const emailRedirectTo = `${origin}/auth/callback?next=/auth/login?verified=1`;
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { first_name: firstName, last_name: lastName },
+      emailRedirectTo,
     },
   });
 
