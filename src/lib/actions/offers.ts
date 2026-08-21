@@ -182,6 +182,11 @@ export async function submitOffer(data: {
   });
 
   revalidatePath("/dashboard/offers");
+
+  const { sendAdminOfferSubmittedEmail } = await import("@/lib/email");
+  const professionalName = professional.businessName ?? dbUser?.displayName ?? dbUser?.firstName ?? "Unknown";
+  sendAdminOfferSubmittedEmail(professionalName, data.title, region).catch(console.error);
+
   return { success: true };
 }
 

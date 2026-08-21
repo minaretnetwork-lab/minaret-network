@@ -159,6 +159,11 @@ export async function applyForFeatured(serviceAreaId: string) {
   });
 
   revalidatePath("/dashboard/featured");
+
+  const { sendAdminFeaturedApplicationEmail } = await import("@/lib/email");
+  const professionalName = professional.businessName ?? dbUser?.displayName ?? dbUser?.firstName ?? "Unknown";
+  sendAdminFeaturedApplicationEmail(professionalName, "Featured Business", region).catch(console.error);
+
   return { status: "applied" as const, region };
 }
 

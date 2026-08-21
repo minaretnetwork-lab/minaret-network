@@ -149,6 +149,13 @@ export async function applyForSponsorship(categoryId: string, serviceAreaId: str
   });
 
   revalidatePath("/dashboard/promote");
+
+  const { sendAdminSponsoredApplicationEmail } = await import("@/lib/email");
+  const professionalName = professional.businessName ?? dbUser?.displayName ?? dbUser?.firstName ?? "Unknown";
+  prisma.category.findUnique({ where: { id: categoryId }, select: { name: true } }).then((cat) => {
+    sendAdminSponsoredApplicationEmail(professionalName, cat?.name ?? categoryId, serviceArea.name).catch(console.error);
+  }).catch(console.error);
+
   return { status: "applied" as const, region };
 }
 

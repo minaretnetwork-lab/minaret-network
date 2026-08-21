@@ -27,10 +27,12 @@ function button(label: string, href: string) {
   return `<a href="${href}" style="display: inline-block; background: #15803d; color: #ffffff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;">${label}</a>`;
 }
 
+const ADMIN_EMAIL = "salam@minaretnetwork.ca";
+
 export async function sendAdminNewProfileEmail(professionalName: string, category: string) {
   await resend.emails.send({
     from: FROM,
-    to: "salam@minaretnetwork.ca",
+    to: ADMIN_EMAIL,
     subject: `New profile submitted — ${professionalName} (${category})`,
     html: emailWrapper(`
       <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">New profile pending review</h2>
@@ -40,6 +42,60 @@ export async function sendAdminNewProfileEmail(professionalName: string, categor
         <strong>Category:</strong> ${category}
       </p>
       ${button("Review in admin panel", "https://minaretnetwork.ca/admin/professionals")}
+    `),
+  });
+}
+
+export async function sendAdminSponsoredApplicationEmail(professionalName: string, category: string, area: string) {
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `Sponsored listing application — ${professionalName}`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">New sponsored listing application</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        A professional has applied for a sponsored placement and is waiting for your approval.<br><br>
+        <strong>Name:</strong> ${professionalName}<br>
+        <strong>Category:</strong> ${category}<br>
+        <strong>Service area:</strong> ${area}
+      </p>
+      ${button("Review in admin panel", "https://minaretnetwork.ca/admin/sponsored")}
+    `),
+  });
+}
+
+export async function sendAdminFeaturedApplicationEmail(professionalName: string, category: string, region: string) {
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `Featured business application — ${professionalName}`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">New featured business application</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        A professional has applied for a featured business placement and is waiting for your approval.<br><br>
+        <strong>Name:</strong> ${professionalName}<br>
+        <strong>Category:</strong> ${category}<br>
+        <strong>Region:</strong> ${region}
+      </p>
+      ${button("Review in admin panel", "https://minaretnetwork.ca/admin/featured")}
+    `),
+  });
+}
+
+export async function sendAdminOfferSubmittedEmail(professionalName: string, offerTitle: string, region: string) {
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `Community offer submitted — ${professionalName}`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">New community offer pending review</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        A professional has submitted a community offer and is waiting for your approval.<br><br>
+        <strong>Professional:</strong> ${professionalName}<br>
+        <strong>Offer title:</strong> ${offerTitle}<br>
+        <strong>Region:</strong> ${region}
+      </p>
+      ${button("Review in admin panel", "https://minaretnetwork.ca/admin/offers")}
     `),
   });
 }
