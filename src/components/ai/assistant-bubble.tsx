@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Bot, BriefcaseBusiness, Loader2, LocateFixed, Mail, MapPin, MessageCircle, Phone, Send, Sparkles, X } from "lucide-react";
+import { Bot, BriefcaseBusiness, Loader2, LocateFixed, Mail, MapPin, MessageCircle, Phone, Send, Sparkles, X, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CityAutocompleteInput } from "@/components/ui/city-autocomplete-input";
@@ -98,6 +98,7 @@ export function AssistantBubble() {
   const pathname = usePathname();
   const transcriptRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("issue");
   const [issue, setIssue] = useState("");
   const [location, setLocation] = useState("");
@@ -375,18 +376,52 @@ export function AssistantBubble() {
     );
   }
 
+  const WA_URL = `https://wa.me/16479733286?text=${encodeURIComponent("Hi, I need help with Minaret Network")}`;
+
   if (isHoldingPage) return null;
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-5 z-[120] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-2xl ring-4 ring-emerald-100 transition hover:bg-emerald-700 dark:ring-emerald-950"
-        aria-label={open ? "Close AI assistant" : "Open AI assistant"}
-      >
-        {open ? <X className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
-      </button>
+      {/* Help FAB */}
+      <div className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-5 z-[120] flex flex-col items-end gap-3">
+        {/* Expanded options */}
+        {fabOpen && !open && (
+          <div className="flex flex-col items-end gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150">
+            {/* WhatsApp */}
+            <a
+              href={WA_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setFabOpen(false)}
+              className="flex items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-[#20b858]"
+            >
+              <WhatsAppIcon />
+              WhatsApp Support
+            </a>
+            {/* AI assistant */}
+            <button
+              type="button"
+              onClick={() => { setOpen(true); setFabOpen(false); }}
+              className="flex items-center gap-2.5 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700"
+            >
+              <Sparkles className="h-4 w-4 shrink-0" />
+              Ask AI Assistant
+            </button>
+          </div>
+        )}
+
+        {/* Main FAB toggle */}
+        <button
+          type="button"
+          onClick={() => {
+            if (open) { setOpen(false); } else { setFabOpen((v) => !v); }
+          }}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-2xl ring-4 ring-emerald-100 transition hover:bg-emerald-700 dark:ring-emerald-950"
+          aria-label="Help"
+        >
+          {open || fabOpen ? <X className="h-6 w-6" /> : <HelpCircle className="h-6 w-6" />}
+        </button>
+      </div>
 
       {open && (
         <section className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-[120] flex max-h-[calc(100vh-8rem)] w-[calc(100vw-2rem)] max-w-md flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-950 sm:right-5">
@@ -504,5 +539,13 @@ export function AssistantBubble() {
         </section>
       )}
     </>
+  );
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="white" aria-hidden="true">
+      <path d="M16 1C7.716 1 1 7.716 1 16c0 2.628.672 5.096 1.845 7.254L1 31l7.965-2.087A14.927 14.927 0 0 0 16 31c8.284 0 15-6.716 15-15S24.284 1 16 1zm6.73 19.113c-.37-.185-2.184-1.078-2.523-1.2-.34-.123-.587-.185-.834.185-.247.37-.957 1.2-1.173 1.447-.216.247-.432.278-.802.093-.37-.185-1.562-.576-2.975-1.836-1.1-.98-1.842-2.19-2.058-2.56-.216-.37-.023-.57.163-.754.167-.165.37-.432.555-.647.185-.216.247-.37.37-.617.123-.247.062-.463-.031-.648-.093-.185-.834-2.01-1.143-2.751-.301-.722-.607-.624-.834-.636l-.71-.012a1.362 1.362 0 0 0-.988.463c-.34.37-1.296 1.266-1.296 3.086s1.327 3.58 1.512 3.826c.185.247 2.61 3.986 6.326 5.59.884.381 1.573.609 2.11.78.887.282 1.694.242 2.332.147.712-.107 2.184-.894 2.493-1.757.308-.863.308-1.603.216-1.757-.093-.154-.34-.247-.71-.432z" />
+    </svg>
   );
 }

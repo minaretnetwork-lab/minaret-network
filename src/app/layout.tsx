@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { FlashToast } from "@/components/flash-toast";
 import { LazyIdleTimeout } from "@/components/lazy-idle-timeout";
 import { LazyAssistantBubble } from "@/components/ai/lazy-assistant-bubble";
-import { WhatsAppBubble } from "@/components/ui/whatsapp-bubble";
 import { GoogleAnalyticsWithConsent } from "@/components/google-analytics";
 import "./globals.css";
 
@@ -42,7 +41,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
-        <WhatsAppBubble />
         <LazyAssistantBubble />
         <LazyIdleTimeout />
         <Toaster position="bottom-right" />
