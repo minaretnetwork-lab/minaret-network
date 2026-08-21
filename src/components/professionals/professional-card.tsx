@@ -94,6 +94,9 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
     photoUrl: professional.photoUrl,
     avatarUrl: user.avatarUrl,
   });
+  const logoUrl = (professional as typeof professional & { logoUrl?: string | null }).logoUrl ?? null;
+  const heroImage = logoUrl || photoUrl;
+  const heroIsLogo = !!logoUrl;
   const profileUrl = `/professionals/${professional.id}`;
   const whatsappPhone = professional.whatsapp || professional.phone;
   const defaultLocation = serviceAreas[0]?.name ?? "";
@@ -136,38 +139,61 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
 
   return (
     <div
-      className={`group relative cursor-pointer bg-white dark:bg-white/[0.03] border rounded-2xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}
+      className={`group relative cursor-pointer bg-white dark:bg-white/[0.03] border rounded-2xl flex flex-col transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden ${isSponsored ? "border-violet-200 dark:border-violet-800/50 ring-1 ring-violet-100 dark:ring-violet-900/30" : "border-border hover:border-emerald-200 dark:hover:border-emerald-800"}`}
     >
       <Link
         href={profileUrl}
         aria-label={`View ${name}'s professional profile`}
         className="absolute inset-0 z-10 rounded-2xl"
       />
+
+      {/* Hero image — featured/sponsored cards only */}
       {(isSponsored || isFeatured) && (
-        <div className="pointer-events-none absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
-          {isSponsored && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
-              <Sparkles className="h-2.5 w-2.5" />
-              Sponsored
-            </span>
+        <div className="relative w-full h-44 flex-shrink-0">
+          {heroImage ? (
+            <img
+              src={heroImage}
+              alt={heroIsLogo ? `${professional.businessName ?? name} logo` : name}
+              className={`w-full h-full ${heroIsLogo ? "object-contain p-4 bg-white dark:bg-gray-900" : "object-cover object-top"}`}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+              <span className="text-white font-bold text-6xl select-none">
+                {(professional.businessName ?? name).charAt(0).toUpperCase()}
+              </span>
+            </div>
           )}
-          {isFeatured && !isSponsored && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-full px-2 py-0.5">
-              <Star className="h-2.5 w-2.5 fill-current" />
-              Featured
-            </span>
-          )}
+          {/* Badge chip overlaid on hero */}
+          <div className="pointer-events-none absolute top-2.5 right-2.5 z-20 flex flex-col items-end gap-1">
+            {isSponsored && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5 shadow-sm">
+                <Sparkles className="h-2.5 w-2.5" />
+                Sponsored
+              </span>
+            )}
+            {isFeatured && !isSponsored && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-amber-200 dark:border-amber-800/50 rounded-full px-2 py-0.5 shadow-sm">
+                <Star className="h-2.5 w-2.5 fill-current" />
+                Featured
+              </span>
+            )}
+          </div>
         </div>
       )}
 
+      {/* Card body */}
+      <div className={`flex flex-col gap-3 sm:gap-4 ${isSponsored || isFeatured ? "p-4 sm:p-5" : "p-4 sm:p-5"}`}>
+
       {/* Header */}
       <div className="flex items-start gap-3.5">
-        <Avatar className="size-24 flex-shrink-0 rounded-xl ring-2 ring-offset-2 ring-emerald-100 dark:ring-emerald-900/40">
-          <AvatarImage src={photoUrl ?? undefined} alt={name} className="rounded-xl object-cover" />
-          <AvatarFallback className="rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white font-bold text-3xl">
-            {getInitials(name)}
-          </AvatarFallback>
-        </Avatar>
+        {!(isSponsored || isFeatured) && (
+          <Avatar className="size-24 flex-shrink-0 rounded-xl ring-2 ring-offset-2 ring-emerald-100 dark:ring-emerald-900/40">
+            <AvatarImage src={photoUrl ?? undefined} alt={name} className="rounded-xl object-cover" />
+            <AvatarFallback className="rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 text-white font-bold text-3xl">
+              {getInitials(name)}
+            </AvatarFallback>
+          </Avatar>
+        )}
 
         <div className="min-w-0 flex-1 pt-0.5">
           <Link href={profileUrl} className="relative z-20 block">
@@ -420,6 +446,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>{/* end card body */}
     </div>
   );
 }

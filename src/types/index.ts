@@ -26,6 +26,7 @@ export interface ProfessionalWithRelations {
   businessAddress: string | null;
   acceptsWalkIns: boolean;
   photoUrl: string | null;
+  logoUrl: string | null;
   status: ProfessionalStatus;
   isVerified: boolean;
   isFeatured: boolean;
