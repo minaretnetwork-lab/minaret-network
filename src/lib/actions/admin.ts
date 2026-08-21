@@ -436,6 +436,36 @@ export async function createCategory(formData: FormData) {
   revalidatePath("/");
 }
 
+export async function updateCategory(id: string, data: { name?: string; icon?: string }) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
+
+  const update: Record<string, string> = {};
+  if (data.name) {
+    update.name = data.name.trim();
+    update.slug = data.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }
+  if (data.icon !== undefined) update.icon = data.icon.trim() || guessEmoji(data.name ?? "");
+
+  await prisma.category.update({ where: { id }, data: update });
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/categories");
+}
+
+export async function deleteCategory(id: string) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
+
+  const count = await prisma.professional.count({ where: { categoryId: id } });
+  if (count > 0) throw new Error(`Cannot delete — ${count} professional listing(s) are using this category.`);
+
+  await prisma.category.delete({ where: { id } });
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/categories");
+}
+
 export async function toggleCategoryRegulatedStatus(categoryId: string, isRegulated: boolean) {
   await prisma.category.update({
     where: { id: categoryId },
