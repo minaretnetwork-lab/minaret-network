@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { sendProfileApprovedEmail, sendProfileRejectedEmail } from "@/lib/email";
 
 const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>()({
   user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true, whatsapp: true, preferredContact: true } },
@@ -52,6 +53,15 @@ export async function approveProfessional(id: string) {
     data: { status: "APPROVED", approvedAt: new Date(), rejectionReason: null },
   });
   revalidatePath("/admin/professionals");
+
+  const professional = await prisma.professional.findUnique({
+    where: { id },
+    select: { user: { select: { email: true, firstName: true } } },
+  });
+  if (professional?.user.email) {
+    const profileUrl = `https://minaretnetwork.ca/professionals/${id}`;
+    sendProfileApprovedEmail(professional.user.email, professional.user.firstName ?? "there", profileUrl).catch(console.error);
+  }
 }
 
 export async function rejectProfessional(id: string, reason: string) {
@@ -75,6 +85,14 @@ export async function rejectProfessional(id: string, reason: string) {
     data: { status: "REJECTED", rejectionReason: reason },
   });
   revalidatePath("/admin/professionals");
+
+  const rejected = await prisma.professional.findUnique({
+    where: { id },
+    select: { user: { select: { email: true, firstName: true } } },
+  });
+  if (rejected?.user.email) {
+    sendProfileRejectedEmail(rejected.user.email, rejected.user.firstName ?? "there", reason).catch(console.error);
+  }
 }
 
 export async function suspendProfessional(id: string) {

@@ -357,6 +357,12 @@ export async function submitProfessionalApplication(
     });
 
     revalidatePath("/dashboard");
+
+    if (dbUser.email) {
+      const { sendProfileSubmittedEmail } = await import("@/lib/email");
+      sendProfileSubmittedEmail(dbUser.email, dbUser.firstName ?? "there").catch(console.error);
+    }
+
     return { ok: true };
   } catch (err) {
     console.error("submitProfessionalApplication:", err);
