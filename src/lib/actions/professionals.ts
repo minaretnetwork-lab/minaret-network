@@ -358,10 +358,14 @@ export async function submitProfessionalApplication(
 
     revalidatePath("/dashboard");
 
+    const { sendProfileSubmittedEmail, sendAdminNewProfileEmail } = await import("@/lib/email");
     if (dbUser.email) {
-      const { sendProfileSubmittedEmail } = await import("@/lib/email");
       sendProfileSubmittedEmail(dbUser.email, dbUser.firstName ?? "there").catch(console.error);
     }
+    prisma.category.findUnique({ where: { id: categoryId }, select: { name: true } }).then((cat) => {
+      const professionalName = dbUser.displayName ?? `${dbUser.firstName ?? ""} ${dbUser.lastName ?? ""}`.trim() || "Unknown";
+      sendAdminNewProfileEmail(professionalName, cat?.name ?? categoryId).catch(console.error);
+    }).catch(console.error);
 
     return { ok: true };
   } catch (err) {

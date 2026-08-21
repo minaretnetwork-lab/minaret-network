@@ -27,6 +27,23 @@ function button(label: string, href: string) {
   return `<a href="${href}" style="display: inline-block; background: #15803d; color: #ffffff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;">${label}</a>`;
 }
 
+export async function sendAdminNewProfileEmail(professionalName: string, category: string) {
+  await resend.emails.send({
+    from: FROM,
+    to: "salam@minaretnetwork.ca",
+    subject: `New profile submitted — ${professionalName} (${category})`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">New profile pending review</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        A new professional profile has been submitted and is waiting for your approval.<br><br>
+        <strong>Name:</strong> ${professionalName}<br>
+        <strong>Category:</strong> ${category}
+      </p>
+      ${button("Review in admin panel", "https://minaretnetwork.ca/admin/professionals")}
+    `),
+  });
+}
+
 export async function sendProfileSubmittedEmail(to: string, firstName: string) {
   await resend.emails.send({
     from: FROM,
