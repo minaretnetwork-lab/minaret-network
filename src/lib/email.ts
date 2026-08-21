@@ -10,7 +10,7 @@ function emailWrapper(content: string) {
   return `
 <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
   <div style="background: #14532d; padding: 24px 32px; text-align: center;">
-    <img src="${LOGO}" alt="Minaret Network" style="height: 64px; width: auto;" />
+    <img src="${LOGO}" alt="Minaret Network" style="height: 64px; width: auto; display: block; margin: 0 auto;" />
   </div>
   <div style="padding: 32px;">
     ${content}
