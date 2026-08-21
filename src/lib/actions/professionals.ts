@@ -363,7 +363,7 @@ export async function submitProfessionalApplication(
       sendProfileSubmittedEmail(dbUser.email, dbUser.firstName ?? "there").catch(console.error);
     }
     prisma.category.findUnique({ where: { id: categoryId }, select: { name: true } }).then((cat) => {
-      const professionalName = dbUser.displayName ?? `${dbUser.firstName ?? ""} ${dbUser.lastName ?? ""}`.trim() || "Unknown";
+      const professionalName = (dbUser.displayName ?? `${dbUser.firstName ?? ""} ${dbUser.lastName ?? ""}`.trim()) || "Unknown";
       sendAdminNewProfileEmail(professionalName, cat?.name ?? categoryId).catch(console.error);
     }).catch(console.error);
 
