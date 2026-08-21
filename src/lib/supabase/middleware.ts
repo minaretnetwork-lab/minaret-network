@@ -67,5 +67,18 @@ export async function updateSession(request: NextRequest) {
     return redirectToLogin();
   }
 
+  // Block unverified email/password accounts from protected routes.
+  // Google OAuth users always have email_confirmed_at set by Google, so this
+  // only affects users who signed up with email/password and skipped verification.
+  if (user && isProtected && !user.email_confirmed_at) {
+    const provider = user.app_metadata?.provider as string | undefined;
+    if (provider === "email") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/verify-email";
+      url.search = "?blocked=1";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return supabaseResponse;
 }
