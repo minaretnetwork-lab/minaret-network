@@ -100,6 +100,39 @@ export async function sendAdminOfferSubmittedEmail(professionalName: string, off
   });
 }
 
+export async function sendNewLeadEmail(to: string, firstName: string, details: {
+  category: string;
+  area: string;
+  description: string;
+}) {
+  const preview = details.description.length > 200
+    ? details.description.slice(0, 200).trimEnd() + "…"
+    : details.description;
+
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `New lead: ${details.category} request in ${details.area} — Minaret Network`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">New service request for you</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">
+        Assalamu Alaikum ${firstName},<br><br>
+        A community member has submitted a <strong>${details.category}</strong> request in <strong>${details.area}</strong> that matches your listing.
+      </p>
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px 20px; margin: 0 0 24px;">
+        <p style="color: #14532d; font-size: 14px; line-height: 1.7; margin: 0;">${preview}</p>
+      </div>
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
+        Log in to view the full request and respond. Contact details are shared once you start a conversation.
+      </p>
+      ${button("View lead in dashboard", "https://minaretnetwork.ca/dashboard/leads")}
+      <p style="color: #9ca3af; font-size: 13px; margin: 24px 0 0; line-height: 1.6;">
+        You're receiving this because your listing matches this request. If you're not interested, you can simply ignore it.
+      </p>
+    `),
+  });
+}
+
 export async function sendProfileSubmittedEmail(to: string, firstName: string) {
   await resend.emails.send({
     from: FROM,

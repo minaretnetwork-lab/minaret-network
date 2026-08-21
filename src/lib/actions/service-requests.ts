@@ -79,17 +79,27 @@ export async function submitServiceRequest(data: {
     ]);
 
     // Log the broadcast to all BROADCAST_ELIGIBLE professionals in the matching category+area
-    const broadcastEligibleProfessionals = await prisma.professional.findMany({
-      where: {
-        categoryId: data.categoryId,
-        tier: "BROADCAST_ELIGIBLE",
-        status: "APPROVED",
-        ...(data.serviceAreaId
-          ? { serviceAreas: { some: { id: data.serviceAreaId } } }
-          : {}),
-      },
-      select: { id: true },
-    });
+    const [broadcastEligibleProfessionals, categoryRecord, serviceAreaRecord] = await Promise.all([
+      prisma.professional.findMany({
+        where: {
+          categoryId: data.categoryId,
+          tier: "BROADCAST_ELIGIBLE",
+          status: "APPROVED",
+          ...(data.serviceAreaId
+            ? { serviceAreas: { some: { id: data.serviceAreaId } } }
+            : {}),
+        },
+        select: {
+          id: true,
+          businessName: true,
+          user: { select: { email: true, firstName: true, displayName: true } },
+        },
+      }),
+      prisma.category.findUnique({ where: { id: data.categoryId }, select: { name: true } }),
+      data.serviceAreaId
+        ? prisma.serviceArea.findUnique({ where: { id: data.serviceAreaId }, select: { name: true } })
+        : Promise.resolve(null),
+    ]);
 
     if (broadcastEligibleProfessionals.length > 0) {
       await prisma.broadcastLog.createMany({
@@ -99,6 +109,20 @@ export async function submitServiceRequest(data: {
           channel: "platform",
         })),
       });
+
+      // Notify each matched professional by email
+      const { sendNewLeadEmail } = await import("@/lib/email");
+      const categoryName = categoryRecord?.name ?? "Professional";
+      const areaName = serviceAreaRecord?.name ?? "your area";
+      for (const professional of broadcastEligibleProfessionals) {
+        if (!professional.user.email) continue;
+        const firstName = professional.user.firstName ?? professional.user.displayName ?? "there";
+        sendNewLeadEmail(professional.user.email, firstName, {
+          category: categoryName,
+          area: areaName,
+          description: data.description,
+        }).catch(console.error);
+      }
     }
 
     revalidatePath("/dashboard/requests");
