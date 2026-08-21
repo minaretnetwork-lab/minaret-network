@@ -372,11 +372,31 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     if (checked) setValue("whatsapp", phoneValue);
   }
 
+  function checkAspectRatio(file: File, type: "photo" | "logo"): Promise<void> {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const ratio = img.width / img.height;
+        if (type === "logo" && (ratio < 0.5 || ratio > 2)) {
+          alert("Business logo should be roughly square (between 1:2 and 2:1 ratio). Please crop your image before uploading.");
+        } else if (type === "photo" && ratio > 1.5) {
+          alert("Profile photo should be portrait or square, not landscape. Please crop your image before uploading.");
+        }
+        resolve();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+      img.src = url;
+    });
+  }
+
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       validateSelectedUpload(file, "Profile photo");
+      await checkAspectRatio(file, "photo");
       setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file));
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not prepare that profile photo.");
@@ -387,6 +407,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     if (!file) return;
     try {
       validateSelectedUpload(file, "Business logo");
+      await checkAspectRatio(file, "logo");
       setLogoFile(file); setLogoPreview(URL.createObjectURL(file));
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not prepare that business logo.");
