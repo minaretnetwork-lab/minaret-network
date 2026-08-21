@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     return { client, getCookiesSet: () => cookiesSet };
   }
 
-  async function upsertDbUser(user: { id: string; email: string; email_confirmed_at: string | null; user_metadata: Record<string, unknown> }) {
+  async function upsertDbUser(user: { id: string; email: string; email_confirmed_at?: string | null; user_metadata: Record<string, unknown> }) {
     const mosqueSlug = process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
     const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
     const fullName = user.user_metadata.full_name as string | undefined;
