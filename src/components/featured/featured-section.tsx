@@ -52,7 +52,7 @@ export async function FeaturedSection() {
         {/* Cards */}
         <div className={listings.length === 1
           ? "flex justify-center"
-          : "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"
+          : "grid grid-cols-3 lg:grid-cols-6 gap-3"
         }>
           {listings.length === 1 ? (
             <div className="w-full max-w-xs">
