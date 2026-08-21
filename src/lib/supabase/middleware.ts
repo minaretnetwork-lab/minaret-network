@@ -6,7 +6,7 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const { pathname } = request.nextUrl;
   const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
-  const protectedRoutes = ["/dashboard", "/admin", "/auth/update-password"];
+  const protectedRoutes = ["/dashboard", "/admin"];
   const isProtected = protectedRoutes.some((r) => pathname === r || pathname.startsWith(r + "/"));
 
   function clearSupabaseCookies(response: NextResponse) {
