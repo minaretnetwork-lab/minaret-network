@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createMosque, updateMosque, toggleMosqueActive } from "@/lib/actions/mosques";
-import { Building2, ExternalLink, ChevronDown, ChevronUp, Plus, AlertTriangle } from "lucide-react";
+import { Building2, ExternalLink, Plus, AlertTriangle } from "lucide-react";
 
 type Mosque = {
   id: string;
@@ -22,6 +23,81 @@ type Mosque = {
 };
 
 const CHANNEL_TYPES = ["WhatsApp", "Telegram", "Facebook Group", "Discord", "Other"];
+
+type AddressSuggestion = { label: string; address: string; city: string | null };
+
+function AddressAutocomplete({
+  value,
+  onChange,
+  onCityChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onCityChange: (city: string) => void;
+}) {
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const q = e.target.value;
+    onChange(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (q.length < 3) { setSuggestions([]); setOpen(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setSuggestions(data.suggestions ?? []);
+        setOpen((data.suggestions ?? []).length > 0);
+      } catch { setSuggestions([]); }
+    }, 300);
+  }
+
+  function handleSelect(suggestion: AddressSuggestion) {
+    onChange(suggestion.address);
+    if (suggestion.city) onCityChange(suggestion.city);
+    setSuggestions([]);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <Input
+        className="mt-1"
+        value={value}
+        onChange={handleChange}
+        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        placeholder="123 Main St, Keswick, ON"
+        autoComplete="off"
+      />
+      {open && (
+        <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+          {suggestions.map((s, i) => (
+            <li
+              key={i}
+              onMouseDown={() => handleSelect(s)}
+              className="px-3 py-2.5 text-sm cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-gray-800 last:border-0"
+            >
+              {s.address}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function MosqueForm({
   initial,
@@ -66,7 +142,11 @@ function MosqueForm({
       </div>
       <div>
         <Label>Address</Label>
-        <Input className="mt-1" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Main St, Keswick, ON" />
+        <AddressAutocomplete
+          value={form.address}
+          onChange={(address) => setForm((f) => ({ ...f, address }))}
+          onCityChange={(city) => setForm((f) => ({ ...f, city: f.city || city }))}
+        />
       </div>
       <div>
         <Label>Mosque Website</Label>
@@ -111,7 +191,7 @@ function MosqueForm({
 }
 
 export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
-  const [mosques, setMosques] = useState(initial);
+  const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -119,17 +199,20 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
   async function handleCreate(data: Record<string, string>) {
     await createMosque(data as Parameters<typeof createMosque>[0]);
     setAdding(false);
+    router.refresh();
   }
 
   async function handleUpdate(id: string, data: Record<string, string>) {
     await updateMosque(id, data);
     setEditingId(null);
+    router.refresh();
   }
 
   async function handleToggle(id: string, current: boolean) {
     setToggling(id);
     await toggleMosqueActive(id, !current);
     setToggling(null);
+    router.refresh();
   }
 
   return (
@@ -149,7 +232,7 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
       )}
 
       {/* Mosque list */}
-      {mosques.map((mosque) => (
+      {initial.map((mosque) => (
         <div
           key={mosque.id}
           className={`bg-white dark:bg-gray-900 border rounded-xl p-5 ${
@@ -178,7 +261,6 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
                 </div>
                 {mosque.city && <p className="text-sm text-gray-500 mt-0.5">{mosque.city}</p>}
 
-                {/* Community channel */}
                 <div className="mt-2 flex items-center gap-2 flex-wrap">
                   {mosque.communityChannelName && (
                     <span className="text-xs text-gray-500">
@@ -220,7 +302,7 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
         </div>
       ))}
 
-      {mosques.length === 0 && !adding && (
+      {initial.length === 0 && !adding && (
         <div className="text-center py-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
           <p className="text-sm text-gray-400">No mosques yet. Add one to get started.</p>
         </div>
