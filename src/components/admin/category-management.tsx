@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { updateCategory, deleteCategory } from "@/lib/actions/admin";
-import { Pencil, Trash2, ShieldCheck, Check, X } from "lucide-react";
+import { useActionState, useState } from "react";
+import { createCategory, updateCategory, deleteCategory } from "@/lib/actions/admin";
+import { Pencil, Trash2, ShieldCheck, Check, X, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -26,6 +26,14 @@ export function CategoryManagement({
   toggleRegulated: (formData: FormData) => Promise<void>;
 }) {
   const router = useRouter();
+  const [createState, createAction, createPending] = useActionState(
+    async (prev: { error?: string } | null, formData: FormData) => {
+      const result = await createCategory(prev, formData);
+      if (!result.error) router.refresh();
+      return result;
+    },
+    null
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editIcon, setEditIcon] = useState("");
@@ -70,6 +78,39 @@ export function CategoryManagement({
   }
 
   return (
+    <div className="space-y-4">
+      {/* Add category form */}
+      <form
+        action={createAction}
+        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-wrap gap-3 items-end"
+      >
+        <div className="flex-1 min-w-[160px]">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+            Category name <span className="text-red-500">*</span>
+          </label>
+          <Input name="name" required placeholder="e.g. Halal Grocery" />
+        </div>
+        <div className="w-36">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+            Icon (emoji) <span className="text-gray-400 font-normal">— auto if blank</span>
+          </label>
+          <Input name="icon" placeholder="auto" maxLength={4} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <button
+            type="submit"
+            disabled={createPending}
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 px-4 py-2 text-sm font-semibold text-white transition-colors"
+          >
+            <PlusCircle className="h-4 w-4" />
+            {createPending ? "Adding…" : "Add category"}
+          </button>
+          {createState?.error && (
+            <p className="text-xs text-red-600 dark:text-red-400">{createState.error}</p>
+          )}
+        </div>
+      </form>
+
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
       <table className="w-full text-sm">
         <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -213,6 +254,7 @@ export function CategoryManagement({
           )}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { getCategoriesForAdmin, toggleCategoryRegulatedStatus, createCategory } from "@/lib/actions/admin";
-import { ShieldAlert, Tag, PlusCircle } from "lucide-react";
+import { getCategoriesForAdmin, toggleCategoryRegulatedStatus } from "@/lib/actions/admin";
+import { ShieldAlert, Tag } from "lucide-react";
 import { CategoryManagement } from "@/components/admin/category-management";
 
 export const metadata = { title: "Categories | Admin" };
@@ -28,35 +28,7 @@ export default async function AdminCategoriesPage() {
         </div>
       </div>
 
-      {/* Add Category */}
-      <form action={createCategory} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-wrap gap-3 items-end">
-        <div className="flex-1 min-w-[160px]">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Category name <span className="text-red-500">*</span></label>
-          <input
-            name="name"
-            required
-            placeholder="e.g. Halal Grocery"
-            className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-        <div className="w-36">
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Icon (emoji) <span className="text-gray-400 font-normal">— auto if blank</span></label>
-          <input
-            name="icon"
-            placeholder="auto"
-            className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-        <button
-          type="submit"
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-sm font-semibold text-white transition-colors"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Add category
-        </button>
-      </form>
-
-      <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/40 dark:bg-amber-900/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
+<div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/40 dark:bg-amber-900/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
         <ShieldAlert className="h-4 w-4 mt-0.5 flex-shrink-0" />
         <span>
           <strong>{regulatedCount}</strong> regulated {regulatedCount === 1 ? "category" : "categories"}.{" "}

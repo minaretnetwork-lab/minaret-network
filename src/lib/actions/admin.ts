@@ -410,18 +410,24 @@ function guessEmoji(name: string): string {
   return "🏷️";
 }
 
-export async function createCategory(formData: FormData) {
+export async function createCategory(
+  _prev: { error?: string } | null,
+  formData: FormData
+): Promise<{ error?: string }> {
   const user = await getCurrentUser();
-  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) return { error: "Unauthorized" };
 
   const name = String(formData.get("name") ?? "").trim();
   const icon = String(formData.get("icon") ?? "").trim() || guessEmoji(name);
-  if (!name) throw new Error("Name is required.");
+  if (!name) return { error: "Name is required." };
 
   const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+
+  const existing = await prisma.category.findFirst({ where: { OR: [{ slug }, { name }] } });
+  if (existing) return { error: `A category named "${existing.name}" already exists.` };
 
   const mosque = await prisma.mosque.findUnique({
     where: { slug: (await import("@/lib/constants")).DEFAULT_MOSQUE_SLUG },
@@ -434,6 +440,8 @@ export async function createCategory(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidatePath("/");
+  revalidatePath("/categories");
+  return {};
 }
 
 export async function updateCategory(id: string, data: { name?: string; icon?: string }) {
