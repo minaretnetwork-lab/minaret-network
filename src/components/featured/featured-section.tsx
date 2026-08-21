@@ -52,10 +52,10 @@ export async function FeaturedSection() {
         {/* Cards */}
         <div className={listings.length === 1
           ? "flex justify-center"
-          : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5"
+          : "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"
         }>
           {listings.length === 1 ? (
-            <div className="w-full max-w-[500px]">
+            <div className="w-full max-w-xs">
               <FeaturedBusinessCard listing={listings[0] as never} />
             </div>
           ) : listings.map((l) => (

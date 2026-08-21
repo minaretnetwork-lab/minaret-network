@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Star, ArrowRight, CheckCircle2 } from "lucide-react";
-import { CategoryIcon } from "@/components/ui/category-icon";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { trackFeaturedCardClick } from "@/lib/actions/featured";
-import { getProfessionalDisplayPhotoUrl } from "@/lib/public-asset-url";
 
 type FeaturedCardData = {
   id: string;
@@ -14,7 +11,6 @@ type FeaturedCardData = {
   professional: {
     id: string;
     businessName: string | null;
-    bio: string | null;
     photoUrl: string | null;
     logoUrl: string | null;
     user: { firstName: string | null; lastName: string | null; displayName: string | null; avatarUrl: string | null };
@@ -25,18 +21,21 @@ type FeaturedCardData = {
 };
 
 export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData }) {
-  const { professional, city, id: listingId } = listing;
-  const { user, category } = professional;
+  const { professional, id: listingId } = listing;
+  const { user } = professional;
 
   const name = professional.businessName
     || user.displayName
     || [user.firstName, user.lastName].filter(Boolean).join(" ")
     || "Business";
-  const photoUrl = getProfessionalDisplayPhotoUrl({
-    photoUrl: professional.photoUrl,
-    avatarUrl: user.avatarUrl,
-  });
-  const isMosqueAffiliated = professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED");
+
+  // Logo takes priority; fall back to profile photo then user avatar
+  const logoUrl = professional.logoUrl ?? null;
+  const photoUrl = professional.photoUrl ?? user.avatarUrl ?? null;
+  const imageUrl = logoUrl ?? photoUrl;
+  const isLogo = Boolean(logoUrl);
+
+  const initials = getInitials(name);
 
   async function handleClick() {
     await trackFeaturedCardClick(listingId);
@@ -46,55 +45,38 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
     <Link
       href={`/professionals/${professional.id}`}
       onClick={handleClick}
-      className="group block bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:border-emerald-200 dark:hover:border-emerald-800 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-200"
+      className="group block relative aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2"
     >
-      {/* Featured badge */}
-      <div className="flex items-start justify-between mb-4">
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
-          <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
-          Featured
-        </span>
-        {isMosqueAffiliated && professional.mosque && (
-          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 px-2 py-0.5 rounded-full">
-            <CheckCircle2 className="h-2.5 w-2.5" /> {professional.mosque.name}
-          </span>
-        )}
-      </div>
-
-      {/* Identity */}
-      <div className="flex items-start gap-3.5 mb-3">
-        <Avatar className="h-14 w-14 flex-shrink-0 rounded-xl ring-2 ring-offset-2 ring-amber-100 dark:ring-amber-900/30">
-          <AvatarImage src={photoUrl ?? undefined} alt={name} className="rounded-xl object-cover" />
-          <AvatarFallback className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-lg">
-            {getInitials(name)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[15px] group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "var(--font-lora)" }}>
-            {name}
-          </h3>
-          <div className="flex items-center gap-1.5 mt-1">
-            <CategoryIcon slug={category.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{category.name}</span>
-          </div>
-          <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
-            <MapPin className="h-3 w-3 flex-shrink-0" />
-            {city}
-          </div>
+      {/* Image or placeholder */}
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          className={[
+            "absolute inset-0 w-full h-full transition-transform duration-500 group-hover:scale-[1.04]",
+            isLogo
+              ? "object-contain p-6 bg-white dark:bg-gray-950"
+              : "object-cover object-center",
+          ].join(" ")}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+          <span className="text-white font-bold text-4xl select-none">{initials}</span>
         </div>
-      </div>
-
-      {/* Description */}
-      {professional.bio && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4 line-clamp-3">
-          {professional.bio}
-        </p>
       )}
 
-      {/* CTA */}
-      <div className="flex items-center justify-end">
-        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 group-hover:gap-1.5 transition-all">
-          View Business <ArrowRight className="h-3.5 w-3.5" />
+      {/* Bottom gradient + name */}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent pt-10 pb-4 px-4">
+        <p className="text-white font-bold text-[15px] leading-tight drop-shadow-sm line-clamp-2">
+          {name}
+        </p>
+      </div>
+
+      {/* Featured badge */}
+      <div className="absolute top-2.5 left-2.5">
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-50/90 backdrop-blur-sm border border-amber-200 rounded-full px-2 py-0.5 shadow-sm">
+          <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+          Featured
         </span>
       </div>
     </Link>
