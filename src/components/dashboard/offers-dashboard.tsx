@@ -319,7 +319,8 @@ export function OffersDashboard({ offers, professional }: Props) {
               <label htmlFor="offer-image" className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors bg-gray-50 dark:bg-gray-800/50">
                 <ImagePlus className="h-7 w-7 text-gray-400 mb-2" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">Click to upload an image</p>
-                <p className="text-xs text-gray-400 mt-0.5">JPEG, PNG or WebP · max 5MB</p>
+                <p className="text-xs text-gray-400 mt-0.5">JPEG, PNG or WebP · max 5 MB</p>
+                <p className="text-xs text-gray-400 mt-0.5">Best size: <strong className="text-gray-500 dark:text-gray-300">1200 × 800 px</strong> (landscape) — portrait images may be cropped</p>
                 <input
                   id="offer-image"
                   type="file"
