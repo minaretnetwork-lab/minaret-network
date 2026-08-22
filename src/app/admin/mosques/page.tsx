@@ -8,12 +8,17 @@ export default async function AdminMosquesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mosques</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Onboard mosques and configure their community channels. Professionals select their mosque when registering,
-          and admins use the community channel link to verify affiliation before awarding the badge.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mosques</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Onboard mosques and configure their community channels. Professionals select their mosque when registering,
+            and admins use the community channel link to verify affiliation before awarding the badge.
+          </p>
+        </div>
+        <span className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-semibold text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+          {mosques.length} mosques
+        </span>
       </div>
       <section className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5 dark:border-emerald-900/30 dark:bg-emerald-950/10">
         <div className="flex flex-wrap items-start justify-between gap-3">
