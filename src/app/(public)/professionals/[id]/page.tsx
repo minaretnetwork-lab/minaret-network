@@ -3,10 +3,9 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
-  Globe, Phone, Mail, MapPin, Clock, Award, MessageCircle,
-  ChevronLeft, Calendar, Languages, Star, Lock
+  MapPin, Clock, Award, MessageCircle,
+  ChevronLeft, Calendar, Languages, Star,
 } from "lucide-react";
-import { ContactGateModal } from "@/components/ui/contact-gate-modal";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
@@ -15,7 +14,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { ReportRecommendationButton } from "@/components/professionals/report-recommendation-button";
 import { PendingChatRedirect } from "@/components/professionals/pending-chat-redirect";
-import { ContactTracker } from "@/components/professionals/contact-tracker";
+import { ContactLinks } from "@/components/professionals/contact-links";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getExistingConversationWithProfessional } from "@/lib/actions/messages";
@@ -127,85 +126,18 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               </div>
             )}
 
-            <ContactTracker professionalId={professional.id}>
-              {(track) => (
-                <>
-                  <div className="mt-5 space-y-2">
-                    {professional.phone && (
-                      currentUser ? (
-                        <a href={`tel:${professional.phone}`} onClick={() => track("phone")} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
-                          <Phone className="h-4 w-4 flex-shrink-0" />
-                          {professional.phone}
-                        </a>
-                      ) : (
-                        <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
-                          <Lock className="h-4 w-4 flex-shrink-0" />
-                          Sign in to see phone
-                        </a>
-                      )
-                    )}
-                    {professional.email && (
-                      currentUser ? (
-                        <a href={`mailto:${professional.email}`} onClick={() => track("email")} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center break-all">
-                          <Mail className="h-4 w-4 flex-shrink-0" />
-                          {professional.email}
-                        </a>
-                      ) : (
-                        <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
-                          <Lock className="h-4 w-4 flex-shrink-0" />
-                          Sign in to see email
-                        </a>
-                      )
-                    )}
-                    {professional.website && (
-                      <a href={professional.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
-                        <Globe className="h-4 w-4 flex-shrink-0" />
-                        {websiteLabel}
-                      </a>
-                    )}
-                  </div>
-
-                  {professional.whatsapp && (
-                    currentUser ? (
-                      <a
-                        href={buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => track("whatsapp")}
-                        className="mt-4 flex"
-                      >
-                        <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
-                          <MessageCircle className="h-4 w-4" />
-                          WhatsApp
-                        </Button>
-                      </a>
-                    ) : (
-                      <div className="mt-4">
-                        <ContactGateModal
-                          professionalId={professional.id}
-                          professionalName={name}
-                          trigger={
-                            <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
-                              <MessageCircle className="h-4 w-4" />
-                              Chat on WhatsApp
-                            </Button>
-                          }
-                        />
-                      </div>
-                    )
-                  )}
-                </>
-              )}
-            </ContactTracker>
-
-            {currentUser && existingConversation && (
-              <Link href={`/dashboard/messages/${existingConversation.id}`} className="mt-2 flex">
-                <Button variant="outline" className="w-full gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-                  <MessageCircle className="h-4 w-4" />
-                  Continue chat
-                </Button>
-              </Link>
-            )}
+            <ContactLinks
+              professionalId={professional.id}
+              professionalName={name}
+              phone={professional.phone}
+              email={professional.email}
+              website={professional.website}
+              websiteLabel={websiteLabel}
+              whatsapp={professional.whatsapp}
+              whatsappHref={professional.whatsapp ? buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`) : null}
+              isLoggedIn={!!currentUser}
+              existingConversationId={existingConversation?.id}
+            />
 
             <p className="mt-4 text-center text-[11px] text-gray-400 dark:text-gray-500">
               <Link href="/before-you-hire" className="underline underline-offset-2 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
