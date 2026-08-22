@@ -40,8 +40,6 @@ export async function GET(request: Request) {
           { title: { contains: q, mode: "insensitive" } },
           { user: { displayName: { contains: q, mode: "insensitive" } } },
           { user: { firstName: { contains: q, mode: "insensitive" } } },
-          { category: { name: { contains: q, mode: "insensitive" } } },
-          { categories: { some: { name: { contains: q, mode: "insensitive" } } } },
         ],
       },
       select: {
