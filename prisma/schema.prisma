@@ -160,6 +160,9 @@ model Professional {
   profileViews      Int                @default(0)
   searchAppearances Int                @default(0)
   contactClicks     Int                @default(0)
+  phoneClicks       Int                @default(0)
+  emailClicks       Int                @default(0)
+  whatsappClicks    Int                @default(0)
   availability                  String?
   rejectionReason               String?
   mosqueAffiliationConsentAt    DateTime?

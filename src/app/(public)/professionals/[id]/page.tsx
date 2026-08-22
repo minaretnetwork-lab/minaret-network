@@ -15,6 +15,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { ReportRecommendationButton } from "@/components/professionals/report-recommendation-button";
 import { PendingChatRedirect } from "@/components/professionals/pending-chat-redirect";
+import { ContactTracker } from "@/components/professionals/contact-tracker";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getExistingConversationWithProfessional } from "@/lib/actions/messages";
@@ -126,69 +127,76 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               </div>
             )}
 
-            <div className="mt-5 space-y-2">
-              {professional.phone && (
-                currentUser ? (
-                  <a href={`tel:${professional.phone}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
-                    <Phone className="h-4 w-4 flex-shrink-0" />
-                    {professional.phone}
-                  </a>
-                ) : (
-                  <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
-                    <Lock className="h-4 w-4 flex-shrink-0" />
-                    Sign in to see phone
-                  </a>
-                )
-              )}
-              {professional.email && (
-                currentUser ? (
-                  <a href={`mailto:${professional.email}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center break-all">
-                    <Mail className="h-4 w-4 flex-shrink-0" />
-                    {professional.email}
-                  </a>
-                ) : (
-                  <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
-                    <Lock className="h-4 w-4 flex-shrink-0" />
-                    Sign in to see email
-                  </a>
-                )
-              )}
-              {professional.website && (
-                <a href={professional.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
-                  <Globe className="h-4 w-4 flex-shrink-0" />
-                  {websiteLabel}
-                </a>
-              )}
-            </div>
+            <ContactTracker professionalId={professional.id}>
+              {(track) => (
+                <>
+                  <div className="mt-5 space-y-2">
+                    {professional.phone && (
+                      currentUser ? (
+                        <a href={`tel:${professional.phone}`} onClick={() => track("phone")} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
+                          <Phone className="h-4 w-4 flex-shrink-0" />
+                          {professional.phone}
+                        </a>
+                      ) : (
+                        <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
+                          <Lock className="h-4 w-4 flex-shrink-0" />
+                          Sign in to see phone
+                        </a>
+                      )
+                    )}
+                    {professional.email && (
+                      currentUser ? (
+                        <a href={`mailto:${professional.email}`} onClick={() => track("email")} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center break-all">
+                          <Mail className="h-4 w-4 flex-shrink-0" />
+                          {professional.email}
+                        </a>
+                      ) : (
+                        <a href={`/auth/login?redirectTo=/professionals/${professional.id}`} className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 w-full justify-center">
+                          <Lock className="h-4 w-4 flex-shrink-0" />
+                          Sign in to see email
+                        </a>
+                      )
+                    )}
+                    {professional.website && (
+                      <a href={professional.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 w-full justify-center">
+                        <Globe className="h-4 w-4 flex-shrink-0" />
+                        {websiteLabel}
+                      </a>
+                    )}
+                  </div>
 
-            {professional.whatsapp && (
-              currentUser ? (
-                <a
-                  href={buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 flex"
-                >
-                  <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
-                  </Button>
-                </a>
-              ) : (
-                <div className="mt-4">
-                  <ContactGateModal
-                    professionalId={professional.id}
-                    professionalName={name}
-                    trigger={
-                      <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
-                        <MessageCircle className="h-4 w-4" />
-                        Chat on WhatsApp
-                      </Button>
-                    }
-                  />
-                </div>
-              )
-            )}
+                  {professional.whatsapp && (
+                    currentUser ? (
+                      <a
+                        href={buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => track("whatsapp")}
+                        className="mt-4 flex"
+                      >
+                        <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
+                          <MessageCircle className="h-4 w-4" />
+                          WhatsApp
+                        </Button>
+                      </a>
+                    ) : (
+                      <div className="mt-4">
+                        <ContactGateModal
+                          professionalId={professional.id}
+                          professionalName={name}
+                          trigger={
+                            <Button className="w-full bg-green-500 hover:bg-green-600 text-white gap-2">
+                              <MessageCircle className="h-4 w-4" />
+                              Chat on WhatsApp
+                            </Button>
+                          }
+                        />
+                      </div>
+                    )
+                  )}
+                </>
+              )}
+            </ContactTracker>
 
             {currentUser && existingConversation && (
               <Link href={`/dashboard/messages/${existingConversation.id}`} className="mt-2 flex">

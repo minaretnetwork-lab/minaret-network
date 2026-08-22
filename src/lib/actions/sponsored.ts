@@ -339,10 +339,11 @@ export async function updatePricingTier(id: string, data: {
 
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
-export async function incrementContactClick(professionalId: string) {
+export async function incrementContactClick(professionalId: string, type: "phone" | "email" | "whatsapp") {
+  const field = type === "phone" ? "phoneClicks" : type === "email" ? "emailClicks" : "whatsappClicks";
   await prisma.professional.update({
     where: { id: professionalId },
-    data: { contactClicks: { increment: 1 } },
+    data: { contactClicks: { increment: 1 }, [field]: { increment: 1 } },
   });
 }
 

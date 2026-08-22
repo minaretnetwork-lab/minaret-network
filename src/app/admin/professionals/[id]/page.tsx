@@ -12,9 +12,11 @@ import {
   Layers,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   Star,
   Tag,
+  TrendingUp,
   User,
   XCircle,
 } from "lucide-react";
@@ -227,6 +229,44 @@ export default async function AdminProfessionalDetailPage({
             <Info label="Badges" value={professional.badges.map((badge) => badge.type.replaceAll("_", " ")).join(", ")} multiline />
             <Info label="Approved recommendations" value={String(professional.recommendations.length)} />
           </Card>
+
+          {professional.status === "APPROVED" && (() => {
+            const views = professional.profileViews;
+            const total = professional.phoneClicks + professional.emailClicks + professional.whatsappClicks;
+            const rate = views > 0 ? ((total / views) * 100).toFixed(1) : "—";
+            return (
+              <Card title="Analytics" icon={<TrendingUp className="h-4 w-4" />}>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/50">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Profile views</p>
+                    <p className="mt-0.5 text-xl font-bold text-gray-900 dark:text-white">{views.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-lg border border-green-100 bg-green-50 p-3 dark:border-green-900/40 dark:bg-green-900/20">
+                    <p className="text-xs text-green-700 dark:text-green-400">Conversions</p>
+                    <p className="mt-0.5 text-xl font-bold text-green-800 dark:text-green-300">{total.toLocaleString()}</p>
+                  </div>
+                </div>
+                <div className="mt-3 rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/50">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Conversion rate</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">{rate}{rate !== "—" ? "%" : ""}</p>
+                </div>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400"><Phone className="h-3.5 w-3.5" /> Phone</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{professional.phoneClicks}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400"><Mail className="h-3.5 w-3.5" /> Email</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{professional.emailClicks}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{professional.whatsappClicks}</span>
+                  </div>
+                </div>
+              </Card>
+            );
+          })()}
 
           <Card title="Images" icon={<Star className="h-4 w-4" />}>
             <ImagePreview label="Profile photo" src={professional.photoUrl} />
