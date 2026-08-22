@@ -635,6 +635,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   </button>
                   <p className="text-xs text-gray-400 mt-0.5">Optional · Max 40 MB · JPG, PNG, WebP, HEIC</p>
                   <p className="text-xs text-gray-400 mt-0.5">Best results: square or portrait crop · min 400×400 px · avoid wide/landscape photos</p>
+                  <p className="text-xs text-gray-400 mt-1.5 max-w-xs mx-auto leading-relaxed">By uploading a photo, you confirm it is your own image and you consent to it being displayed publicly on your Minaret Network profile.</p>
                 </div>
                 <input ref={photoInputRef} type="file" accept="image/*,.heic,.heif,.avif" onChange={handlePhotoChange} className="hidden" />
               </div>
