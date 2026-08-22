@@ -45,6 +45,7 @@ export default async function EditProfessionalPage({
         logoUrl: true,
         categories: { select: { id: true } },
         serviceAreas: { select: { id: true } },
+        galleryImages: { select: { id: true, url: true, caption: true }, orderBy: { sortOrder: "asc" } },
       },
     }),
     prisma.mosque.findMany({

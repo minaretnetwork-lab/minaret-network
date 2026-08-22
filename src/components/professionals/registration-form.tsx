@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LANGUAGES } from "@/lib/constants";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { useRouter } from "next/navigation";
-import { Camera, X, Building2, ChevronRight, ChevronLeft, Check, Lightbulb } from "lucide-react";
+import { Camera, X, Building2, ChevronRight, ChevronLeft, Check, Lightbulb, ImagePlus } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { submitCategorySuggestion } from "@/lib/actions/category-suggestions";
 import { IMAGE_UPLOAD_LIMIT_BYTES, isAcceptedUploadImageType } from "@/lib/upload-image-config";
@@ -98,6 +98,7 @@ export interface ProfessionalFormInitialData {
   availability: string | null;
   photoUrl: string | null;
   logoUrl: string | null;
+  galleryImages?: { id: string; url: string; caption: string | null }[];
   serviceAreas: { id: string }[];
 }
 interface Props {
@@ -220,6 +221,11 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.logoUrl ?? null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [galleryFiles, setGalleryFiles] = useState<(File | null)[]>([null, null, null]);
+  const [galleryPreviews, setGalleryPreviews] = useState<(string | null)[]>([null, null, null]);
+  const galleryInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+  const [existingGallery, setExistingGallery] = useState<{ id: string; url: string }[]>(initialData?.galleryImages ?? []);
+  const [galleryRemovals, setGalleryRemovals] = useState<string[]>([]);
   const goNextPending = useRef(false);
   const [termsAccepted, setTermsAccepted] = useState(Boolean(isEdit));
   const [affiliationConsent, setAffiliationConsent] = useState(Boolean(isEdit));
@@ -429,6 +435,32 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     }
   }
 
+  const GALLERY_MAX = 3;
+  async function handleGalleryChange(e: React.ChangeEvent<HTMLInputElement>, slot: number) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const GALLERY_SIZE_LIMIT = 20 * 1024 * 1024;
+    if (file.size > GALLERY_SIZE_LIMIT) {
+      alert("Gallery photos must be under 20 MB.");
+      return;
+    }
+    const newFiles = [...galleryFiles]; newFiles[slot] = file;
+    const newPreviews = [...galleryPreviews]; newPreviews[slot] = URL.createObjectURL(file);
+    setGalleryFiles(newFiles); setGalleryPreviews(newPreviews);
+  }
+  function removeGallerySlot(slot: number) {
+    const newFiles = [...galleryFiles]; newFiles[slot] = null;
+    const newPreviews = [...galleryPreviews]; if (newPreviews[slot]) URL.revokeObjectURL(newPreviews[slot]!); newPreviews[slot] = null;
+    setGalleryFiles(newFiles); setGalleryPreviews(newPreviews);
+    if (galleryInputRefs[slot].current) galleryInputRefs[slot].current!.value = "";
+  }
+  function removeExistingGallery(id: string) {
+    setGalleryRemovals((prev) => [...prev, id]);
+    setExistingGallery((prev) => prev.filter((img) => img.id !== id));
+  }
+  const galleryTotalKept = existingGallery.length + galleryFiles.filter(Boolean).length;
+  const galleryNewSlots = Math.max(0, GALLERY_MAX - existingGallery.length);
+
   function lockAndScroll(changeFn: () => void) {
     setTransitioning(true);
     changeFn();
@@ -475,6 +507,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       });
       if (photoFile) fd.append("photo", photoFile);
       if (logoFile) fd.append("logo", logoFile);
+      galleryFiles.forEach((f, i) => { if (f) fd.append(`gallery_${i}`, f); });
+      galleryRemovals.forEach((id) => fd.append("galleryRemove", id));
       if (initialData?.id) fd.append("professionalId", initialData.id);
       if (affiliationConsent) fd.append("mosqueAffiliationConsent", "true");
       const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
@@ -1108,6 +1142,68 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   </div>
                 </div>
                 <input ref={logoInputRef} type="file" accept="image/*,.heic,.heif,.avif" onChange={handleLogoChange} className="hidden" />
+              </div>
+
+              {/* Gallery photos */}
+              <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  Gallery Photos <span className="text-gray-400 font-normal">(optional)</span>
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  Up to 3 photos · JPG, PNG, WebP · Max 20 MB each — we compress automatically. Great for contractors, designers, clothing brands, or anyone showing their work.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {/* Existing gallery images (edit mode) */}
+                  {existingGallery.map((img) => (
+                    <div key={img.id} className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+                      <img src={img.url} alt="Gallery" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeExistingGallery(img.id)}
+                        className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {/* New upload slots */}
+                  {Array.from({ length: galleryNewSlots }).map((_, i) => (
+                    <div key={`slot-${i}`} className="relative h-20 w-20 flex-shrink-0">
+                      {galleryPreviews[i] ? (
+                        <div className="relative h-full w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                          <img src={galleryPreviews[i]!} alt={`Gallery ${i + 1}`} className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removeGallerySlot(i)}
+                            className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => galleryInputRefs[i].current?.click()}
+                          disabled={galleryTotalKept >= GALLERY_MAX && !galleryPreviews[i]}
+                          className="h-full w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <ImagePlus className="h-5 w-5" />
+                          <span className="text-xs">Add</span>
+                        </button>
+                      )}
+                      <input
+                        ref={galleryInputRefs[i]}
+                        type="file"
+                        accept="image/*,.heic,.heif,.avif"
+                        onChange={(e) => handleGalleryChange(e, i)}
+                        className="hidden"
+                      />
+                    </div>
+                  ))}
+                  {galleryTotalKept >= GALLERY_MAX && (
+                    <p className="w-full text-xs text-gray-400 mt-1">Maximum 3 photos reached. Remove one to add another.</p>
+                  )}
+                </div>
               </div>
 
               {/* Disclaimer + Terms */}

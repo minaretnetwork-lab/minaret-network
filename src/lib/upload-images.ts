@@ -3,8 +3,9 @@ import { IMAGE_UPLOAD_LIMIT_BYTES, isAcceptedUploadImageType } from "@/lib/uploa
 
 const MAX_PHOTO_DIMENSION = 2200;
 const MAX_LOGO_DIMENSION = 1600;
+const MAX_GALLERY_DIMENSION = 1200;
 
-type ImageVariant = "photo" | "logo";
+type ImageVariant = "photo" | "logo" | "gallery";
 
 export function validateSourceImageUpload(file: File, label: string) {
   if (!file || file.size <= 0) {
@@ -34,12 +35,12 @@ export async function optimizeUploadedImage(
   width: number | null;
   height: number | null;
 }> {
-  const label = variant === "logo" ? "Business logo" : "Profile photo";
+  const label = variant === "logo" ? "Business logo" : variant === "gallery" ? "Gallery photo" : "Profile photo";
   validateSourceImageUpload(file, label);
   try {
     const input = Buffer.from(await file.arrayBuffer());
-    const maxDimension = variant === "logo" ? MAX_LOGO_DIMENSION : MAX_PHOTO_DIMENSION;
-    const quality = variant === "logo" ? 90 : 82;
+    const maxDimension = variant === "logo" ? MAX_LOGO_DIMENSION : variant === "gallery" ? MAX_GALLERY_DIMENSION : MAX_PHOTO_DIMENSION;
+    const quality = variant === "logo" ? 90 : variant === "gallery" ? 75 : 82;
 
     let pipeline = sharp(input, { failOn: "none" }).rotate();
     const metadata = await pipeline.metadata();

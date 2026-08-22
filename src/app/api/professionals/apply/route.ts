@@ -116,6 +116,17 @@ export async function POST(request: Request) {
       );
     }
 
+    // Gallery images — max 3 total (existing kept + new uploads)
+    const GALLERY_MAX = 3;
+    const galleryRemoveIds = formData.getAll("galleryRemove") as string[];
+    const galleryFiles = [0, 1, 2]
+      .map((i) => formData.get(`gallery_${i}`) as File | null)
+      .filter((f): f is File => Boolean(f && f.size > 0));
+
+    if (galleryFiles.length > GALLERY_MAX) {
+      return NextResponse.json({ ok: false, error: "You can upload a maximum of 3 gallery photos." }, { status: 400 });
+    }
+
     const mosqueAffiliationConsent = formData.get("mosqueAffiliationConsent") === "true";
     const { CURRENT_TOS_VERSION } = await import("@/lib/constants");
     const now = new Date();
@@ -244,6 +255,30 @@ export async function POST(request: Request) {
             requestedById: dbUser.id,
             professionalId: storageListingId,
           },
+        });
+      }
+    }
+
+    // Process gallery: remove deleted images, then upload new ones
+    const targetId = professionalId ?? storageListingId;
+    if (galleryRemoveIds.length > 0) {
+      await prisma.galleryImage.deleteMany({
+        where: { id: { in: galleryRemoveIds }, professionalId: targetId },
+      });
+    }
+    if (galleryFiles.length > 0) {
+      const existingCount = await prisma.galleryImage.count({ where: { professionalId: targetId } });
+      const slotsLeft = GALLERY_MAX - existingCount;
+      const toUpload = galleryFiles.slice(0, slotsLeft);
+      for (let i = 0; i < toUpload.length; i++) {
+        const optimized = await optimizeUploadedImage(toUpload[i], "gallery");
+        const url = await uploadToStorage(
+          "professional-gallery",
+          `${dbUser.id}/${targetId}/gallery_${Date.now()}_${i}.${optimized.extension}`,
+          optimized,
+        );
+        await prisma.galleryImage.create({
+          data: { professionalId: targetId, url, sortOrder: existingCount + i },
         });
       }
     }
