@@ -545,9 +545,9 @@ export async function getAdminStats(mosqueSlug: string) {
     pendingProfessionalEdits,
     openReports,
   ] = await Promise.all([
-    prisma.professional.count({ where: { mosqueId: mosque.id, status: { not: "WITHDRAWN" } } }),
-    prisma.professional.count({ where: { mosqueId: mosque.id, status: "PENDING" } }),
-    prisma.professional.count({ where: { mosqueId: mosque.id, status: "APPROVED" } }),
+    prisma.professional.count({ where: { status: { not: "WITHDRAWN" } } }),
+    prisma.professional.count({ where: { status: "PENDING" } }),
+    prisma.professional.count({ where: { status: "APPROVED" } }),
     prisma.user.count({ where: { mosqueId: mosque.id, role: "MEMBER" } }),
     prisma.serviceRequest.count({ where: { mosqueId: mosque.id, status: "OPEN" } }),
     prisma.recommendation.count({ where: { status: "PENDING" } }),
