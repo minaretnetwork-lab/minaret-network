@@ -45,9 +45,6 @@ export async function getProfessionals(
 ) {
   const { query, categorySlug, serviceAreaSlug, locationText, languages, gender, verifiedOnly, affiliatedMosqueSlug, sortBy } = filters;
 
-  const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
-  if (!mosque) return [];
-
   // Location filter: slug takes precedence (sidebar), else free-text from GPS/hero
   const areaFilter: Prisma.ProfessionalWhereInput = serviceAreaSlug
     ? { serviceAreas: { some: { slug: serviceAreaSlug } } }
@@ -78,7 +75,6 @@ export async function getProfessionals(
   }
 
   const where: Prisma.ProfessionalWhereInput = {
-    mosqueId: mosque.id,
     status: "APPROVED",
     ...(andFilters.length > 0 && { AND: andFilters }),
     ...areaFilter,
@@ -192,12 +188,9 @@ export async function getProfessionalById(id: string) {
   return professional ? normalizeProfessionalAssets(professional) : null;
 }
 
-export async function getFeaturedProfessionals(mosqueSlug: string, limit = 6) {
-  const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
-  if (!mosque) return [];
-
+export async function getFeaturedProfessionals(_mosqueSlug: string, limit = 6) {
   const professionals = await prisma.professional.findMany({
-    where: { mosqueId: mosque.id, status: "APPROVED", isFeatured: true },
+    where: { status: "APPROVED", isFeatured: true },
     take: limit,
     include: {
       user: { select: { id: true, firstName: true, lastName: true, displayName: true, avatarUrl: true } },
