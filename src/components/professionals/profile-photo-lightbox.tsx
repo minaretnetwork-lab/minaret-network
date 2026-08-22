@@ -31,7 +31,9 @@ export function ProfilePhotoLightbox({
             <img
               src={photoUrl}
               alt={name}
-              className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.06]"
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.06] select-none pointer-events-none"
             />
           </button>
         ) : (
@@ -52,11 +54,13 @@ export function ProfilePhotoLightbox({
               onClick={() => setOpen(false)}
               className="w-full cursor-zoom-out rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
               aria-label={`Close full size profile photo for ${name}`}
+              onContextMenu={(e) => e.preventDefault()}
             >
-              <img
-                src={photoUrl}
-                alt={name}
-                className="max-h-[85vh] w-full rounded-2xl object-contain shadow-2xl"
+              <div
+                role="img"
+                aria-label={name}
+                style={{ backgroundImage: `url(${photoUrl})` }}
+                className="max-h-[85vh] w-full rounded-2xl shadow-2xl aspect-square bg-cover bg-center select-none"
               />
             </button>
           </DialogContent>
