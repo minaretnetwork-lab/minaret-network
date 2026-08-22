@@ -181,7 +181,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mt-1.5">
             {displayCategories.slice(0, 2).map((displayCategory) => (
               <Link key={displayCategory.id} href={`/professionals?category=${displayCategory.slug}`} className="relative z-20 flex items-center gap-1.5 hover:underline">
-                <CategoryIcon slug={displayCategory.slug} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+                <CategoryIcon slug={displayCategory.slug} icon={displayCategory.icon} className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
                 <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{displayCategory.name}</span>
               </Link>
             ))}

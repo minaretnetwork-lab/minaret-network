@@ -76,10 +76,14 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 interface Props {
   slug: string;
+  /** Emoji fallback stored on the category record — shown when slug has no Lucide mapping. */
+  icon?: string | null;
   className?: string;
 }
 
-export function CategoryIcon({ slug, className = "h-4 w-4" }: Props) {
-  const Icon = ICON_MAP[slug] ?? MoreHorizontal;
-  return <Icon className={className} />;
+export function CategoryIcon({ slug, icon, className = "h-4 w-4" }: Props) {
+  const Icon = ICON_MAP[slug];
+  if (Icon) return <Icon className={className} />;
+  if (icon) return <span aria-hidden="true" className="leading-none">{icon}</span>;
+  return <MoreHorizontal className={className} />;
 }

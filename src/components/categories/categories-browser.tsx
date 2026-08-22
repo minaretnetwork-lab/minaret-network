@@ -83,6 +83,7 @@ export function CategoriesBrowser({ categories }: { categories: CategoryItem[] }
             >
               <CategoryIcon
                 slug={category.slug}
+                icon={category.icon}
                 className="h-8 w-8 text-gray-500 transition-colors group-hover:text-green-700 dark:text-gray-400 dark:group-hover:text-green-400"
               />
               <span className="text-sm font-medium leading-tight text-gray-800 transition-colors group-hover:text-green-700 dark:text-gray-200 dark:group-hover:text-green-400">

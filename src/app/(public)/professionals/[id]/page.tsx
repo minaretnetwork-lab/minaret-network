@@ -106,7 +106,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               <p className="text-sm text-gray-500 dark:text-gray-400">{professional.businessName}</p>
             )}
             <p className="text-green-700 dark:text-green-400 font-medium text-sm mt-1">
-              <CategoryIcon slug={professional.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{professional.category.name}
+              <CategoryIcon slug={professional.category.slug} icon={professional.category.icon} className="inline h-4 w-4 mr-1 -mt-0.5" />{professional.category.name}
             </p>
 
             {professional.badges.length > 0 && (
