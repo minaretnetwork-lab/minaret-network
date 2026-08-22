@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -23,16 +22,9 @@ export async function GET(request: Request) {
   }
 
   // Keyword suggestions — categories + professionals
-  const mosque = await prisma.mosque.findUnique({
-    where: { slug: DEFAULT_MOSQUE_SLUG },
-    select: { id: true },
-  });
-  if (!mosque) return NextResponse.json([]);
-
   const [categories, professionals] = await Promise.all([
     prisma.category.findMany({
       where: {
-        mosqueId: mosque.id,
         isActive: true,
         name: { contains: q, mode: "insensitive" },
       },
@@ -42,7 +34,6 @@ export async function GET(request: Request) {
     }),
     prisma.professional.findMany({
       where: {
-        mosqueId: mosque.id,
         status: "APPROVED",
         OR: [
           { businessName: { contains: q, mode: "insensitive" } },
