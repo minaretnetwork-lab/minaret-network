@@ -19,24 +19,29 @@ import { IMAGE_UPLOAD_LIMIT_BYTES, isAcceptedUploadImageType } from "@/lib/uploa
 const BIO_MIN_LENGTH = 50;
 const BIO_MAX_LENGTH = 1000;
 
-function normalizeUrl(raw: unknown): unknown {
-  if (!raw || typeof raw !== "string") return raw;
-  const trimmed = raw.trim();
-  if (!trimmed) return trimmed;
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+function normalizeUrl(v: string | undefined): string | undefined {
+  if (!v) return v;
+  const t = v.trim();
+  if (!t) return t;
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+}
+
+function isValidUrl(v: string): boolean {
+  if (!v) return true;
+  try { new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`); return true; } catch { return false; }
 }
 
 const urlField = (msg = "Enter a valid URL") =>
-  z.preprocess(normalizeUrl, z.string().url(msg).or(z.literal("")));
+  z.string().refine(v => !v || isValidUrl(v.trim()), msg).optional().or(z.literal(""));
 
 const schema = z.object({
   mosqueId: z.string().optional(),
   mosqueSuggestionName: z.string().optional(),
   mosqueSuggestionCity: z.string().optional(),
   mosqueSuggestionAddress: z.string().optional(),
-  mosqueSuggestionWebsite: urlField("Enter a valid website URL").optional(),
+  mosqueSuggestionWebsite: urlField("Enter a valid website URL"),
   mosqueSuggestionChannelName: z.string().optional(),
-  mosqueSuggestionChannelLink: urlField("Enter a valid community link").optional(),
+  mosqueSuggestionChannelLink: urlField("Enter a valid community link"),
   mosqueSuggestionNotes: z.string().optional(),
   categoryId: z.string().optional(),
   categoryIds: z.array(z.string()).min(1, "Please select at least one category"),
@@ -49,7 +54,7 @@ const schema = z.object({
   languages: z.array(z.string()).min(1, "Select at least one language"),
   phone: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
-  website: urlField().optional(),
+  website: urlField(),
   whatsapp: z.string().optional(),
   whatsappSameAsPhone: z.boolean().optional(),
   businessAddress: z.string().optional(),
@@ -460,6 +465,9 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       return;
     }
     try {
+      data.website = normalizeUrl(data.website as string | undefined);
+      data.mosqueSuggestionWebsite = normalizeUrl(data.mosqueSuggestionWebsite as string | undefined);
+      data.mosqueSuggestionChannelLink = normalizeUrl(data.mosqueSuggestionChannelLink as string | undefined);
       const fd = new window.FormData();
       Object.entries(data).forEach(([key, value]) => {
         if (Array.isArray(value)) value.forEach((v) => fd.append(key, v));
