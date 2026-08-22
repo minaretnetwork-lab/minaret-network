@@ -19,14 +19,24 @@ import { IMAGE_UPLOAD_LIMIT_BYTES, isAcceptedUploadImageType } from "@/lib/uploa
 const BIO_MIN_LENGTH = 50;
 const BIO_MAX_LENGTH = 1000;
 
+function normalizeUrl(raw: unknown): unknown {
+  if (!raw || typeof raw !== "string") return raw;
+  const trimmed = raw.trim();
+  if (!trimmed) return trimmed;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+const urlField = (msg = "Enter a valid URL") =>
+  z.preprocess(normalizeUrl, z.string().url(msg).or(z.literal("")));
+
 const schema = z.object({
   mosqueId: z.string().optional(),
   mosqueSuggestionName: z.string().optional(),
   mosqueSuggestionCity: z.string().optional(),
   mosqueSuggestionAddress: z.string().optional(),
-  mosqueSuggestionWebsite: z.string().url("Enter a valid website URL").optional().or(z.literal("")),
+  mosqueSuggestionWebsite: urlField("Enter a valid website URL").optional(),
   mosqueSuggestionChannelName: z.string().optional(),
-  mosqueSuggestionChannelLink: z.string().url("Enter a valid community link").optional().or(z.literal("")),
+  mosqueSuggestionChannelLink: urlField("Enter a valid community link").optional(),
   mosqueSuggestionNotes: z.string().optional(),
   categoryId: z.string().optional(),
   categoryIds: z.array(z.string()).min(1, "Please select at least one category"),
@@ -39,7 +49,7 @@ const schema = z.object({
   languages: z.array(z.string()).min(1, "Select at least one language"),
   phone: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
-  website: z.string().url().optional().or(z.literal("")),
+  website: urlField().optional(),
   whatsapp: z.string().optional(),
   whatsappSameAsPhone: z.boolean().optional(),
   businessAddress: z.string().optional(),
