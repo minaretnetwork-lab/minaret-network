@@ -34,18 +34,29 @@ export function useCookieConsent() {
 }
 
 export function CookieBanner({ onConsent }: { onConsent?: (consent: CookieConsent) => void }) {
-  const consent = useCookieConsent();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // Start as non-null (hidden) so nothing renders before we read localStorage.
+  // After mount we set the real value — if null, banner appears; otherwise stays hidden.
+  const [consent, setConsent] = useState<CookieConsent>("essential");
+
+  useEffect(() => {
+    setConsent(getCookieConsent());
+    const handler = () => setConsent(getCookieConsent());
+    window.addEventListener("storage", handler);
+    window.addEventListener(CONSENT_EVENT, handler);
+    return () => {
+      window.removeEventListener("storage", handler);
+      window.removeEventListener(CONSENT_EVENT, handler);
+    };
+  }, []);
 
   function accept(choice: "all" | "essential") {
     try { window.localStorage.setItem(CONSENT_KEY, choice); } catch {}
+    setConsent(choice);
     window.dispatchEvent(new Event(CONSENT_EVENT));
     onConsent?.(choice);
   }
 
-  // Don't render until after hydration — prevents flash when consent is already stored
-  if (!mounted || consent !== null) return null;
+  if (consent !== null) return null;
 
   return (
     <div
