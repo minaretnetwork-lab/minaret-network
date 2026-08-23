@@ -838,6 +838,9 @@ export async function approveProfileClaim(claimId: string): Promise<{ ok: boolea
   if (claim.status !== "PENDING") return { ok: false, error: "Claim is no longer pending." };
   if (claim.professional.claimedByUserId) return { ok: false, error: "This profile has already been claimed." };
 
+  const claimant = await prisma.user.findUnique({ where: { id: claim.userId }, select: { role: true } });
+  const shouldUpgradeRole = claimant && !["ADMIN", "SUPER_ADMIN"].includes(claimant.role);
+
   await prisma.$transaction([
     prisma.profileClaim.update({
       where: { id: claimId },
@@ -851,10 +854,10 @@ export async function approveProfileClaim(claimId: string): Promise<{ ok: boolea
         claimedAt: new Date(),
       },
     }),
-    prisma.user.update({
+    ...(shouldUpgradeRole ? [prisma.user.update({
       where: { id: claim.userId },
       data: { role: "PROFESSIONAL" },
-    }),
+    })] : []),
     prisma.profileClaim.updateMany({
       where: { professionalId: claim.professionalId, id: { not: claimId }, status: "PENDING" },
       data: { status: "REJECTED", adminNote: "Another claim was approved for this profile.", reviewedAt: new Date() },
