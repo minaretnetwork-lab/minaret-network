@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { LANGUAGES } from "@/lib/constants";
 import { createUnclaimedProfessional } from "@/lib/actions/admin";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TIME_OPTIONS = [
@@ -28,6 +28,7 @@ const PRESETS = [
 ];
 
 type DaySchedule = { from: string; to: string };
+type AddressSuggestion = { label: string; address: string; city: string | null; province: string | null };
 
 function timeToMinutes(value: string) {
   const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -57,6 +58,7 @@ function buildAvailabilityString(schedules: Record<string, DaySchedule>, emergen
 }
 
 const selectClass = "block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500";
+const inputClass = "block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-gray-400";
 
 interface Category { id: string; name: string; slug: string; icon?: string | null }
 interface ServiceArea { id: string; name: string }
@@ -70,21 +72,87 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  // Categories
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [catSearch, setCatSearch] = useState("");
+  const [catOpen, setCatOpen] = useState(false);
+  const catRef = useRef<HTMLDivElement>(null);
+
+  // Service areas
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [areaSearch, setAreaSearch] = useState("");
+
+  // Languages
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [acceptsWalkIns, setAcceptsWalkIns] = useState(false);
+
+  // Contact
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [whatsappSameAsPhone, setWhatsappSameAsPhone] = useState(false);
+  const [acceptsWalkIns, setAcceptsWalkIns] = useState(false);
+
+  // Address
+  const [businessAddress, setBusinessAddress] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [addressLookupOpen, setAddressLookupOpen] = useState(false);
+  const [addressLookupLoading, setAddressLookupLoading] = useState(false);
+  const addressRef = useRef<HTMLDivElement>(null);
+
+  // Availability
   const [avSchedules, setAvSchedules] = useState<Record<string, DaySchedule>>({});
   const [avEmergency, setAvEmergency] = useState(false);
 
-  function toggleSet<T extends string>(
-    set: T[],
-    setFn: (v: T[]) => void,
-    value: T
-  ) {
-    setFn(set.includes(value) ? set.filter((v) => v !== value) : [...set, value]);
+  // Close category dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) {
+        setCatOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Close address dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (addressRef.current && !addressRef.current.contains(e.target as Node)) {
+        setAddressLookupOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Address geocode lookup
+  useEffect(() => {
+    const query = businessAddress.trim();
+    if (query.length < 3) { setAddressSuggestions([]); setAddressLookupLoading(false); return; }
+    let cancelled = false;
+    const timeout = window.setTimeout(async () => {
+      setAddressLookupLoading(true);
+      try {
+        const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json() as { suggestions?: AddressSuggestion[] };
+        if (!cancelled) setAddressSuggestions(data.suggestions ?? []);
+      } catch {
+        if (!cancelled) setAddressSuggestions([]);
+      } finally {
+        if (!cancelled) setAddressLookupLoading(false);
+      }
+    }, 450);
+    return () => { cancelled = true; window.clearTimeout(timeout); };
+  }, [businessAddress]);
+
+  function addCategory(id: string) {
+    if (!id || selectedCategories.includes(id)) return;
+    setSelectedCategories((prev) => [...prev, id]);
+  }
+
+  function removeCategory(id: string) {
+    setSelectedCategories((prev) => prev.filter((c) => c !== id));
   }
 
   function toggleDay(day: string) {
@@ -105,6 +173,16 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
     setAvSchedules(next);
   }
 
+  function handlePhoneChange(value: string) {
+    setPhone(value);
+    if (whatsappSameAsPhone) setWhatsapp(value);
+  }
+
+  function handleWhatsappSameAsPhone(checked: boolean) {
+    setWhatsappSameAsPhone(checked);
+    if (checked) setWhatsapp(phone);
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -114,6 +192,7 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
     fd.set("whatsapp", whatsapp);
     fd.set("acceptsWalkIns", String(acceptsWalkIns));
     fd.set("availability", buildAvailabilityString(avSchedules, avEmergency));
+    fd.set("businessAddress", businessAddress);
     selectedCategories.forEach((id) => fd.append("categoryIds", id));
     if (selectedCategories[0]) fd.set("categoryId", selectedCategories[0]);
     selectedAreas.forEach((id) => fd.append("serviceAreaIds", id));
@@ -121,40 +200,77 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
 
     startTransition(async () => {
       const result = await createUnclaimedProfessional(fd);
-      if (!result.ok) {
-        setError(result.error ?? "Something went wrong.");
-        return;
-      }
+      if (!result.ok) { setError(result.error ?? "Something went wrong."); return; }
       router.push(`/admin/professionals/${result.id}`);
     });
   }
 
+  const filteredCategories = catSearch
+    ? categories.filter((c) => c.name.toLowerCase().includes(catSearch.toLowerCase()) && !selectedCategories.includes(c.id))
+    : categories.filter((c) => !selectedCategories.includes(c.id));
+
+  const visibleServiceAreas = areaSearch.trim()
+    ? serviceAreas.filter((a) => a.name.toLowerCase().includes(areaSearch.toLowerCase()) || selectedAreas.includes(a.id))
+    : serviceAreas;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
-      {/* Categories */}
+
+      {/* Categories — searchable combobox */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-1">
           Category <span className="text-red-500">*</span>
         </h2>
-        <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => {
-            const selected = selectedCategories.includes(cat.id);
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => toggleSet(selectedCategories, setSelectedCategories, cat.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm transition-colors ${
-                  selected
-                    ? "bg-emerald-600 text-white border-emerald-600"
-                    : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-emerald-400"
-                }`}
-              >
-                <CategoryIcon slug={cat.slug} icon={cat.icon} className="h-3.5 w-3.5" />
-                {cat.name}
+        <p className="text-xs text-gray-400 mb-2">The first selected category is treated as primary.</p>
+        <div ref={catRef} className="relative">
+          <div className="relative">
+            <input
+              type="text"
+              value={catSearch}
+              onChange={(e) => { setCatSearch(e.target.value); setCatOpen(true); }}
+              onFocus={() => setCatOpen(true)}
+              placeholder={selectedCategories.length ? "Add another category…" : "Search categories…"}
+              autoComplete="off"
+              className={inputClass}
+            />
+            {catSearch && (
+              <button type="button" onClick={() => { setCatSearch(""); setCatOpen(false); }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X className="h-3.5 w-3.5" />
               </button>
-            );
-          })}
+            )}
+          </div>
+
+          {selectedCategories.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {selectedCategories.map((id, index) => {
+                const cat = categories.find((c) => c.id === id);
+                if (!cat) return null;
+                return (
+                  <button key={id} type="button" onClick={() => removeCategory(id)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                    <CategoryIcon slug={cat.slug} icon={cat.icon} className="h-3.5 w-3.5" />
+                    {cat.name}
+                    {index === 0 && <span className="text-[10px] uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Primary</span>}
+                    <X className="h-3 w-3" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {catOpen && filteredCategories.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-y-auto max-h-52">
+              {filteredCategories.map((cat) => (
+                <button key={cat.id} type="button"
+                  onMouseDown={(e) => { e.preventDefault(); addCategory(cat.id); setCatSearch(""); setCatOpen(false); }}
+                  className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors text-gray-800 dark:text-gray-200">
+                  <CategoryIcon slug={cat.slug} icon={cat.icon} className="h-4 w-4 flex-shrink-0" />
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         {selectedCategories.length === 0 && (
           <p className="text-xs text-gray-400 mt-2">Select at least one category</p>
@@ -267,11 +383,22 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Phone</Label>
-            <PhoneInput value={phone} onChange={setPhone} />
+            <PhoneInput value={phone} onChange={handlePhoneChange} />
           </div>
           <div className="space-y-1.5">
             <Label>WhatsApp</Label>
-            <PhoneInput value={whatsapp} onChange={setWhatsapp} />
+            <div className={whatsappSameAsPhone ? "pointer-events-none opacity-50" : ""}>
+              <PhoneInput value={whatsapp} onChange={setWhatsapp} />
+            </div>
+            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 cursor-pointer mt-1">
+              <input
+                type="checkbox"
+                checked={whatsappSameAsPhone}
+                onChange={(e) => handleWhatsappSameAsPhone(e.target.checked)}
+                className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              Same as phone number
+            </label>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
@@ -282,10 +409,47 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
             <Input id="website" name="website" placeholder="example.com" />
           </div>
         </div>
+
+        {/* Business address with geocode lookup */}
         <div className="space-y-1.5">
-          <Label htmlFor="businessAddress">Business Address</Label>
-          <Input id="businessAddress" name="businessAddress" placeholder="123 Main St, Toronto, ON" />
+          <Label>Business Address</Label>
+          <div ref={addressRef} className="relative">
+            <Input
+              value={businessAddress}
+              onChange={(e) => { setBusinessAddress(e.target.value); setAddressLookupOpen(true); }}
+              onFocus={() => setAddressLookupOpen(true)}
+              placeholder="Start typing an address, e.g. 123 Main St, Newmarket"
+              autoComplete="street-address"
+            />
+            {addressLookupOpen && businessAddress.trim().length >= 3 && (
+              <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-auto rounded-xl border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                {addressLookupLoading ? (
+                  <p className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Looking up addresses…</p>
+                ) : addressSuggestions.length > 0 ? (
+                  addressSuggestions.map((s) => (
+                    <button key={`${s.address}-${s.label}`} type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { setBusinessAddress(s.address); setAddressLookupOpen(false); }}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-emerald-50 focus:bg-emerald-50 focus:outline-none dark:hover:bg-emerald-900/20">
+                      <span className="block font-medium text-gray-900 dark:text-white">{s.address}</span>
+                      {(s.city || s.province) && (
+                        <span className="block text-xs text-gray-500 dark:text-gray-400">
+                          {[s.city, s.province].filter(Boolean).join(", ")}
+                        </span>
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <p className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                    No matching address found. You can still type it manually.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-400">Suggestions use free OpenStreetMap data. You can always type manually.</p>
         </div>
+
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -304,16 +468,13 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
           {LANGUAGES.map((lang) => {
             const selected = selectedLanguages.includes(lang);
             return (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => toggleSet(selectedLanguages, setSelectedLanguages, lang)}
+              <button key={lang} type="button"
+                onClick={() => setSelectedLanguages((prev) => selected ? prev.filter((l) => l !== lang) : [...prev, lang])}
                 className={`px-3 py-1.5 rounded-full border text-sm transition-colors ${
                   selected
                     ? "bg-emerald-600 text-white border-emerald-600"
                     : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-emerald-400"
-                }`}
-              >
+                }`}>
                 {lang}
               </button>
             );
@@ -323,26 +484,49 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
 
       {/* Service areas */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Service Areas</h2>
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-1">Service Areas</h2>
+        <p className="text-xs text-gray-400 mb-2">Select all areas this business serves.</p>
+        <Input
+          type="search"
+          value={areaSearch}
+          onChange={(e) => setAreaSearch(e.target.value)}
+          className="mb-2 max-w-sm"
+          placeholder="Type a city or area to filter…"
+        />
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <button type="button"
+            onClick={() => setSelectedAreas(serviceAreas.map((a) => a.id))}
+            className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+            Select all GTA areas
+          </button>
+          <button type="button"
+            onClick={() => setSelectedAreas([])}
+            className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+            Clear all
+          </button>
+          {selectedAreas.length > 0 && (
+            <span className="text-xs text-gray-400">{selectedAreas.length} of {serviceAreas.length} selected</span>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
-          {serviceAreas.map((area) => {
+          {visibleServiceAreas.map((area) => {
             const selected = selectedAreas.includes(area.id);
             return (
-              <button
-                key={area.id}
-                type="button"
-                onClick={() => toggleSet(selectedAreas, setSelectedAreas, area.id)}
+              <button key={area.id} type="button"
+                onClick={() => setSelectedAreas((prev) => selected ? prev.filter((id) => id !== area.id) : [...prev, area.id])}
                 className={`px-3 py-1.5 rounded-full border text-sm transition-colors ${
                   selected
                     ? "bg-emerald-600 text-white border-emerald-600"
                     : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-emerald-400"
-                }`}
-              >
+                }`}>
                 {area.name}
               </button>
             );
           })}
         </div>
+        {visibleServiceAreas.length === 0 && (
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No service areas match that search.</p>
+        )}
       </section>
 
       {error && (
