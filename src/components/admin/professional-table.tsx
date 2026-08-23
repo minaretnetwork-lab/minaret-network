@@ -129,7 +129,11 @@ export function AdminProfessionalTable({ professionals }: Props) {
         </div>
       )}
       {professionals.map((p) => {
-        const name = p.user.displayName ?? [p.user.firstName, p.user.lastName].filter(Boolean).join(" ") ?? p.user.email;
+        const pAny = p as unknown as { isAdminCreated?: boolean; claimedByUserId?: string | null };
+        const isUnclaimed = pAny.isAdminCreated && !pAny.claimedByUserId;
+        const name = p.user
+          ? (p.user.displayName ?? [p.user.firstName, p.user.lastName].filter(Boolean).join(" ") ?? p.user.email)
+          : ((p as unknown as { businessName?: string | null }).businessName ?? (p as unknown as { title?: string | null }).title ?? "Unnamed");
         const hasMosqueAffiliated = p.badges.some((b) => b.type === "MOSQUE_AFFILIATED");
         const hasHighlyRecommended = p.badges.some((b) => b.type === "HIGHLY_RECOMMENDED");
         const channelType = p.mosque?.communityChannelType ?? "WhatsApp";
@@ -163,8 +167,18 @@ export function AdminProfessionalTable({ professionals }: Props) {
                       PENDING EDITS
                     </span>
                   )}
+                  {isUnclaimed && (
+                    <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      UNCLAIMED
+                    </span>
+                  )}
+                  {pAny.isAdminCreated && pAny.claimedByUserId && (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      CLAIMED
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{p.user.email}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{p.user?.email ?? <span className="italic text-amber-600">Admin-created · unclaimed</span>}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {p.category.name} · {p.recommendations.length} recommendations
                 </p>

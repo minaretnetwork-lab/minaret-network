@@ -15,11 +15,13 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-function displayName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string }) {
+function displayName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string } | null) {
+  if (!user) return "Business";
   return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "User";
 }
 
-function firstName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string }) {
+function firstName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email?: string } | null) {
+  if (!user) return "them";
   return user.firstName || user.displayName?.split(" ")[0] || user.email?.split("@")[0] || "them";
 }
 
@@ -59,7 +61,7 @@ export default async function ConversationPage({ params }: Props) {
     ? conversation.professional.whatsapp || conversation.professional.phone
     : conversation.serviceRequest.contactPhone;
   const email = isRequester
-    ? conversation.professional.email || conversation.professional.user.email
+    ? conversation.professional.email || conversation.professional.user?.email
     : conversation.serviceRequest.contactEmail || conversation.requester.email;
   const callPhone = isRequester
     ? conversation.professional.phone || conversation.professional.whatsapp

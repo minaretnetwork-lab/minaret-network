@@ -49,9 +49,12 @@ export default async function AdminProfessionalDetailPage({
   if (!professional) notFound();
 
   const applicantName =
-    professional.user.displayName ??
-    [professional.user.firstName, professional.user.lastName].filter(Boolean).join(" ") ??
-    professional.user.email;
+    professional.businessName ??
+    professional.user?.displayName ??
+    ([professional.user?.firstName, professional.user?.lastName].filter(Boolean).join(" ") || null) ??
+    professional.user?.email ??
+    professional.title ??
+    "Unnamed";
   const status = STATUS_UI[professional.status] ?? STATUS_UI.PENDING;
   const pendingDraft = professional.editDrafts[0] ?? null;
   const mapsUrl = professional.businessAddress
@@ -216,10 +219,10 @@ export default async function AdminProfessionalDetailPage({
         <aside className="space-y-6">
           <Card title="Applicant contact" icon={<Mail className="h-4 w-4" />}>
             <Info label="Name" value={applicantName} />
-            <Info label="Email" value={professional.user.email} href={`mailto:${professional.user.email}`} />
-            <Info label="Phone" value={professional.user.phone ?? professional.phone} href={professional.user.phone || professional.phone ? `tel:${professional.user.phone ?? professional.phone}` : null} />
-            <Info label="WhatsApp" value={professional.user.whatsapp ?? professional.whatsapp} />
-            <Info label="Preferred contact" value={professional.user.preferredContact?.toLowerCase()} />
+            <Info label="Email" value={professional.user?.email} href={professional.user?.email ? `mailto:${professional.user.email}` : null} />
+            <Info label="Phone" value={professional.user?.phone ?? professional.phone} href={professional.user?.phone || professional.phone ? `tel:${professional.user?.phone ?? professional.phone}` : null} />
+            <Info label="WhatsApp" value={professional.user?.whatsapp ?? professional.whatsapp} />
+            <Info label="Preferred contact" value={professional.user?.preferredContact?.toLowerCase()} />
             <Info label="Business email" value={professional.email} href={professional.email ? `mailto:${professional.email}` : null} />
             <Info label="Business phone" value={professional.phone} href={professional.phone ? `tel:${professional.phone}` : null} />
             <Info label="Website" value={professional.website} href={professional.website} icon={<Globe className="h-3.5 w-3.5" />} />

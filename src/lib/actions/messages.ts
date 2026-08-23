@@ -17,7 +17,7 @@ function isConversationArchivedForUser(
   conversation: {
     requesterId: string;
     requesterArchivedAt: Date | null;
-    professional: { userId: string };
+    professional: { userId: string | null };
     professionalArchivedAt: Date | null;
   },
   userId: string

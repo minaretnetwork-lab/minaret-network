@@ -44,8 +44,10 @@ export default async function RequestDetailPage({ params }: Props) {
 
   const ui = STATUS_STYLES[req.status] ?? STATUS_STYLES.OPEN;
   const assignedName = req.assignedTo
-    ? (req.assignedTo.user.displayName ??
-       [req.assignedTo.user.firstName, req.assignedTo.user.lastName].filter(Boolean).join(" "))
+    ? (req.assignedTo.user?.displayName ??
+       ([req.assignedTo.user?.firstName, req.assignedTo.user?.lastName].filter(Boolean).join(" ") || null) ??
+       req.assignedTo.businessName ??
+       null)
     : null;
 
   return (
@@ -165,9 +167,11 @@ export default async function RequestDetailPage({ params }: Props) {
           <div className="mt-4 space-y-2">
             {conversations.map((conversation) => {
               const proName =
-                conversation.professional.user.displayName ||
-                [conversation.professional.user.firstName, conversation.professional.user.lastName].filter(Boolean).join(" ") ||
-                conversation.professional.user.email;
+                conversation.professional.businessName ||
+                conversation.professional.user?.displayName ||
+                [conversation.professional.user?.firstName, conversation.professional.user?.lastName].filter(Boolean).join(" ") ||
+                conversation.professional.user?.email ||
+                "Business";
               const lastMessage = conversation.messages[0];
 
               return (

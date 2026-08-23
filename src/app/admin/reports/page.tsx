@@ -38,7 +38,7 @@ export default async function AdminReportsPage() {
   }
   function professionalName(r: typeof reports[number]) {
     const u = r.recommendation.professional.user;
-    return u.displayName ?? [u.firstName, u.lastName].filter(Boolean).join(" ") ?? "Unknown";
+    return u?.displayName ?? ([u?.firstName, u?.lastName].filter(Boolean).join(" ") || "Unknown");
   }
 
   return (

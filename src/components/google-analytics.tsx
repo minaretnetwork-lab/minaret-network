@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import Script from "next/script";
-import { CookieBanner, useCookieConsent } from "./cookie-banner";
+import { useCookieConsent } from "./cookie-banner";
 
 const GA_ID = "G-6NWWGPL859";
 
@@ -27,7 +27,6 @@ export function GoogleAnalyticsWithConsent() {
 
   return (
     <>
-      <CookieBanner />
       {consent === "all" && (
         <>
           <Script

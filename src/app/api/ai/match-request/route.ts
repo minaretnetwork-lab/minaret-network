@@ -28,11 +28,13 @@ function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim().slice(0, 2000) : "";
 }
 
-function nameForUser(user: { displayName: string | null; firstName: string | null; lastName: string | null }) {
+function nameForUser(user: { displayName: string | null; firstName: string | null; lastName: string | null } | null) {
+  if (!user) return "Professional";
   return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || "Professional";
 }
 
-function firstNameForUser(user: { displayName: string | null; firstName: string | null; lastName: string | null }) {
+function firstNameForUser(user: { displayName: string | null; firstName: string | null; lastName: string | null } | null) {
+  if (!user) return "Professional";
   return user.firstName || user.displayName?.split(" ")[0] || [user.firstName, user.lastName].filter(Boolean).join(" ") || "Professional";
 }
 
@@ -297,7 +299,7 @@ export async function POST(request: Request) {
         whatsappUrl: whatsappPhone
           ? buildWhatsAppUrl(whatsappPhone, `Hi ${businessName}, I found your profile on Minaret Network.`)
           : null,
-        emailUrl: professional.email || professional.user.email ? `mailto:${professional.email || professional.user.email}` : null,
+        emailUrl: professional.email || professional.user?.email ? `mailto:${professional.email || professional.user?.email}` : null,
         callUrl: professional.phone ? `tel:${professional.phone}` : null,
       };
     }),

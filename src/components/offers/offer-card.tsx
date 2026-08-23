@@ -13,7 +13,7 @@ type OfferCardProps = {
     professional: {
       phone: string | null;
       whatsapp: string | null;
-      user: { firstName: string | null; lastName: string | null; displayName: string | null };
+      user: { firstName: string | null; lastName: string | null; displayName: string | null } | null;
       category: { name: string; slug: string; icon: string | null } | null;
     };
   };
@@ -21,7 +21,7 @@ type OfferCardProps = {
 
 export function OfferCard({ offer }: OfferCardProps) {
   const pro = offer.professional;
-  const displayName = pro.user.displayName ?? pro.user.firstName ?? "Professional";
+  const displayName = pro.user?.displayName ?? pro.user?.firstName ?? "Professional";
   const phone = pro.phone ?? null;
   const whatsapp = pro.whatsapp ?? pro.phone ?? null;
 

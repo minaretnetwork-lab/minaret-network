@@ -60,7 +60,7 @@ export async function GET(request: Request) {
       slug: c.slug,
     })),
     ...professionals.map((p) => ({
-      label: p.businessName ?? p.user.displayName ?? `${p.user.firstName ?? ""} ${p.user.lastName ?? ""}`.trim(),
+      label: p.businessName ?? p.user?.displayName ?? (`${p.user?.firstName ?? ""} ${p.user?.lastName ?? ""}`.trim() || "Business"),
       type: "professional" as const,
       slug: p.id,
     })),

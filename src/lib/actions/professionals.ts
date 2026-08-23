@@ -184,6 +184,15 @@ export async function getProfessionalById(id: string) {
       credentials: { where: { isVerified: true } },
     },
   });
+  // isAdminCreated and claimedByUserId live on the professional row but aren't in the include
+  // We reselect them directly to avoid changing every downstream type reference.
+  if (professional) {
+    const extra = await prisma.professional.findUnique({
+      where: { id },
+      select: { isAdminCreated: true, claimedByUserId: true },
+    });
+    Object.assign(professional, extra ?? {});
+  }
 
   return professional ? normalizeProfessionalAssets(professional) : null;
 }

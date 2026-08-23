@@ -112,8 +112,10 @@ export default async function MyRequestsPage({ searchParams }: MyRequestsPagePro
           ) : filteredRequests.map((req) => {
             const ui = STATUS_STYLES[req.status] ?? STATUS_STYLES.OPEN;
             const assignedName = req.assignedTo
-              ? (req.assignedTo.user.displayName ??
-                 [req.assignedTo.user.firstName, req.assignedTo.user.lastName].filter(Boolean).join(" "))
+              ? (req.assignedTo.user?.displayName ??
+                 ([req.assignedTo.user?.firstName, req.assignedTo.user?.lastName].filter(Boolean).join(" ") || null) ??
+                 req.assignedTo.businessName ??
+                 null)
               : null;
 
             const canArchive = ["CLOSED", "CANCELLED"].includes(req.status);

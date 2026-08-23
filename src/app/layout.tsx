@@ -7,6 +7,7 @@ import { FlashToast } from "@/components/flash-toast";
 import { LazyIdleTimeout } from "@/components/lazy-idle-timeout";
 import { LazyAssistantBubble } from "@/components/ai/lazy-assistant-bubble";
 import { GoogleAnalyticsWithConsent } from "@/components/google-analytics";
+import { CookieBanner } from "@/components/cookie-banner";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -47,6 +48,7 @@ export default function RootLayout({
         <Suspense>
           <FlashToast />
         </Suspense>
+        <CookieBanner />
         <GoogleAnalyticsWithConsent />
       </body>
     </html>

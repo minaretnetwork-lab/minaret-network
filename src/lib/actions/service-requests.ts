@@ -115,8 +115,8 @@ export async function submitServiceRequest(data: {
       const categoryName = categoryRecord?.name ?? "Professional";
       const areaName = serviceAreaRecord?.name ?? "your area";
       for (const professional of broadcastEligibleProfessionals) {
-        if (!professional.user.email) continue;
-        const firstName = professional.user.firstName ?? professional.user.displayName ?? "there";
+        if (!professional.user?.email) continue;
+        const firstName = professional.user?.firstName ?? professional.user?.displayName ?? "there";
         sendNewLeadEmail(professional.user.email, firstName, {
           category: categoryName,
           area: areaName,

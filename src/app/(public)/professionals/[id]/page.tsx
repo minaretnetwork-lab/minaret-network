@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { ProfilePhotoLightbox } from "@/components/professionals/profile-photo-lightbox";
+import { ClaimProfileBanner } from "@/components/professionals/claim-profile-banner";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { ReportRecommendationButton } from "@/components/professionals/report-recommendation-button";
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props) {
   const { id } = await params;
   const professional = await getProfessionalById(id);
   if (!professional) return { title: "Professional Not Found" };
-  const name = professional.user.displayName ?? [professional.user.firstName, professional.user.lastName].filter(Boolean).join(" ");
+  const name = professional.businessName ?? professional.user?.displayName ?? ([professional.user?.firstName, professional.user?.lastName].filter(Boolean).join(" ") || "Business");
   const display = professional.businessName ? `${name} — ${professional.businessName}` : name;
   return { title: display };
 }
@@ -61,13 +62,21 @@ export default async function ProfessionalProfilePage({ params }: Props) {
 
   const user = professional.user;
   const name =
-    user.displayName ??
-    [user.firstName, user.lastName].filter(Boolean).join(" ") ??
-    user.email;
+    professional.businessName ??
+    (user
+      ? (user.displayName ?? [user.firstName, user.lastName].filter(Boolean).join(" ") ?? user.email)
+      : null) ??
+    professional.title ??
+    "Business";
   const photoUrl = getProfessionalDisplayPhotoUrl({
     photoUrl: professional.photoUrl,
-    avatarUrl: user.avatarUrl,
+    avatarUrl: user?.avatarUrl ?? null,
   });
+  const isUnclaimed = !!(professional as { isAdminCreated?: boolean }).isAdminCreated &&
+    !(professional as { claimedByUserId?: string | null }).claimedByUserId;
+  const currentUserName = currentUser
+    ? (currentUser.displayName ?? [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ") ?? null)
+    : null;
   const mapsUrl = professional.businessAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(professional.businessAddress)}`
     : null;
@@ -80,6 +89,16 @@ export default async function ProfessionalProfilePage({ params }: Props) {
   return (
     <div className="container mx-auto px-4 py-10 max-w-5xl">
       {currentUser && <PendingChatRedirect professionalId={professional.id} />}
+
+      {/* Claim banner for admin-seeded unclaimed profiles */}
+      {isUnclaimed && (
+        <ClaimProfileBanner
+          professionalId={professional.id}
+          isLoggedIn={!!currentUser}
+          currentUserEmail={currentUser?.email ?? null}
+          currentUserName={currentUserName}
+        />
+      )}
 
       {/* Back */}
       <Link

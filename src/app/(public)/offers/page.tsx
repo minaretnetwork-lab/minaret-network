@@ -134,7 +134,7 @@ export default async function OffersPage({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {offers.map((offer) => {
               const pro = offer.professional;
-              const displayName = pro.user.displayName ?? pro.user.firstName ?? "Professional";
+              const displayName = pro.user?.displayName ?? pro.user?.firstName ?? "Professional";
               const phone = pro.phone ?? null;
               const whatsapp = pro.whatsapp ?? pro.phone ?? null;
 

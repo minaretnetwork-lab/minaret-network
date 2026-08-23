@@ -71,6 +71,7 @@ model User {
   sentMessages               Message[]
   eventListings              EventListing[]
   eventListingReports        EventListingReport[] @relation("EventListingReportedBy")
+  profileClaims              ProfileClaim[]
 
   @@map("users")
 }
@@ -129,8 +130,8 @@ model ServiceArea {
 
 model Professional {
   id                String             @id @default(cuid())
-  userId            String
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String?
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
   mosqueId          String?
   mosque            Mosque?            @relation(fields: [mosqueId], references: [id])
   categoryId        String
@@ -169,6 +170,9 @@ model Professional {
   mosqueAffiliationVisible      Boolean            @default(true)
   listingConsentAt              DateTime?
   listingConsentVersion         String?
+  isAdminCreated                Boolean            @default(false)
+  claimedByUserId               String?
+  claimedAt                     DateTime?
   submittedAt                   DateTime           @default(now())
   approvedAt                    DateTime?
   createdAt                     DateTime           @default(now())
@@ -188,8 +192,35 @@ model Professional {
   conversations     Conversation[]
   editDrafts        ProfessionalEditDraft[]
   broadcastLogs     BroadcastLog[]
+  profileClaims     ProfileClaim[]
 
   @@map("professionals")
+}
+
+model ProfileClaim {
+  id             String       @id @default(cuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  claimantName   String
+  claimantEmail  String
+  claimantPhone  String?
+  claimantNote   String
+  status         ClaimStatus  @default(PENDING)
+  adminNote      String?
+  createdAt      DateTime     @default(now())
+  reviewedAt     DateTime?
+
+  @@unique([professionalId, userId])
+  @@index([status, createdAt])
+  @@map("profile_claims")
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum Gender {

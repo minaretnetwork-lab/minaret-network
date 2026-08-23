@@ -59,7 +59,7 @@ export async function approveProfessional(id: string) {
     where: { id },
     select: { user: { select: { email: true, firstName: true } } },
   });
-  if (professional?.user.email) {
+  if (professional?.user?.email) {
     const profileUrl = `https://minaretnetwork.ca/professionals/${id}`;
     sendProfileApprovedEmail(professional.user.email, professional.user.firstName ?? "there", profileUrl).catch(console.error);
   }
@@ -91,7 +91,7 @@ export async function rejectProfessional(id: string, reason: string) {
     where: { id },
     select: { user: { select: { email: true, firstName: true } } },
   });
-  if (rejected?.user.email) {
+  if (rejected?.user?.email) {
     sendProfileRejectedEmail(rejected.user.email, rejected.user.firstName ?? "there", reason).catch(console.error);
   }
 }
@@ -699,9 +699,10 @@ export async function getAdminAnalytics() {
       id: listing.id,
       name:
         listing.businessName ??
-        listing.user.displayName ??
-        [listing.user.firstName, listing.user.lastName].filter(Boolean).join(" ") ??
-        listing.title,
+        listing.user?.displayName ??
+        ([listing.user?.firstName, listing.user?.lastName].filter(Boolean).join(" ") || null) ??
+        listing.title ??
+        "Unnamed",
       category: listing.category.name,
       profileViews: listing.profileViews,
     })),
@@ -734,6 +735,150 @@ export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: str
   });
 
   return professionals;
+}
+
+export async function createUnclaimedProfessional(formData: FormData): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) return { ok: false, error: "Unauthorized" };
+
+  const businessName = String(formData.get("businessName") ?? "").trim() || null;
+  const title = String(formData.get("title") ?? "").trim() || null;
+  const bio = String(formData.get("bio") ?? "").trim() || null;
+  const categoryId = String(formData.get("categoryId") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim() || null;
+  const email = String(formData.get("email") ?? "").trim() || null;
+  const website = String(formData.get("website") ?? "").trim() || null;
+  const whatsapp = String(formData.get("whatsapp") ?? "").trim() || null;
+  const businessAddress = String(formData.get("businessAddress") ?? "").trim() || null;
+  const acceptsWalkIns = formData.get("acceptsWalkIns") === "true";
+  const availability = String(formData.get("availability") ?? "").trim() || null;
+  const yearsOfExperience = Number(formData.get("yearsOfExperience")) || null;
+  const qualifications = String(formData.get("qualifications") ?? "").trim() || null;
+  const licenses = String(formData.get("licenses") ?? "").trim() || null;
+  const languages = formData.getAll("languages").filter((v): v is string => typeof v === "string" && Boolean(v));
+  const serviceAreaIds = formData.getAll("serviceAreaIds").filter((v): v is string => typeof v === "string" && Boolean(v));
+  const categoryIds = formData.getAll("categoryIds").filter((v): v is string => typeof v === "string" && Boolean(v));
+  const primaryCategoryId = categoryId || categoryIds[0];
+
+  if (!primaryCategoryId) return { ok: false, error: "Category is required." };
+  if (!businessName && !title) return { ok: false, error: "Business name or title is required." };
+
+  const { randomUUID } = await import("crypto");
+  const id = randomUUID().replace(/-/g, "").substring(0, 25);
+
+  await prisma.professional.create({
+    data: {
+      id,
+      userId: null,
+      categoryId: primaryCategoryId,
+      categories: { connect: [primaryCategoryId, ...categoryIds.filter(c => c !== primaryCategoryId)].map(cid => ({ id: cid })) },
+      serviceAreas: serviceAreaIds.length > 0 ? { connect: serviceAreaIds.map(aid => ({ id: aid })) } : undefined,
+      businessName,
+      title,
+      bio,
+      phone,
+      email,
+      website,
+      whatsapp,
+      businessAddress,
+      acceptsWalkIns,
+      availability,
+      yearsOfExperience,
+      qualifications,
+      licenses,
+      languages,
+      status: "APPROVED",
+      isAdminCreated: true,
+      approvedAt: new Date(),
+      listingConsentAt: new Date(),
+      listingConsentVersion: "admin-created",
+    },
+  });
+
+  revalidatePath("/admin/professionals");
+  revalidatePath("/professionals");
+  return { ok: true, id };
+}
+
+export async function getProfileClaims(status?: "PENDING" | "APPROVED" | "REJECTED") {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
+
+  return prisma.profileClaim.findMany({
+    where: status ? { status } : undefined,
+    include: {
+      user: { select: { id: true, displayName: true, firstName: true, lastName: true, email: true } },
+      professional: {
+        select: {
+          id: true,
+          businessName: true,
+          title: true,
+          isAdminCreated: true,
+          claimedByUserId: true,
+          category: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function approveProfileClaim(claimId: string): Promise<{ ok: boolean; error?: string }> {
+  const admin = await getCurrentUser();
+  if (!admin || (admin.role !== "ADMIN" && admin.role !== "SUPER_ADMIN")) return { ok: false, error: "Unauthorized" };
+
+  const claim = await prisma.profileClaim.findUnique({
+    where: { id: claimId },
+    include: { professional: { select: { id: true, claimedByUserId: true } } },
+  });
+  if (!claim) return { ok: false, error: "Claim not found." };
+  if (claim.status !== "PENDING") return { ok: false, error: "Claim is no longer pending." };
+  if (claim.professional.claimedByUserId) return { ok: false, error: "This profile has already been claimed." };
+
+  await prisma.$transaction([
+    prisma.profileClaim.update({
+      where: { id: claimId },
+      data: { status: "APPROVED", reviewedAt: new Date() },
+    }),
+    prisma.professional.update({
+      where: { id: claim.professionalId },
+      data: {
+        userId: claim.userId,
+        claimedByUserId: claim.userId,
+        claimedAt: new Date(),
+      },
+    }),
+    prisma.user.update({
+      where: { id: claim.userId },
+      data: { role: "PROFESSIONAL" },
+    }),
+    prisma.profileClaim.updateMany({
+      where: { professionalId: claim.professionalId, id: { not: claimId }, status: "PENDING" },
+      data: { status: "REJECTED", adminNote: "Another claim was approved for this profile.", reviewedAt: new Date() },
+    }),
+  ]);
+
+  revalidatePath("/admin/claims");
+  revalidatePath(`/admin/professionals/${claim.professionalId}`);
+  revalidatePath(`/professionals/${claim.professionalId}`);
+  return { ok: true };
+}
+
+export async function rejectProfileClaim(claimId: string, adminNote: string): Promise<{ ok: boolean; error?: string }> {
+  const admin = await getCurrentUser();
+  if (!admin || (admin.role !== "ADMIN" && admin.role !== "SUPER_ADMIN")) return { ok: false, error: "Unauthorized" };
+
+  const claim = await prisma.profileClaim.findUnique({ where: { id: claimId } });
+  if (!claim) return { ok: false, error: "Claim not found." };
+  if (claim.status !== "PENDING") return { ok: false, error: "Claim is no longer pending." };
+
+  await prisma.profileClaim.update({
+    where: { id: claimId },
+    data: { status: "REJECTED", adminNote: adminNote || "Claim rejected by admin.", reviewedAt: new Date() },
+  });
+
+  revalidatePath("/admin/claims");
+  return { ok: true };
 }
 
 export async function getUsersForAdmin(search?: string, role?: string) {

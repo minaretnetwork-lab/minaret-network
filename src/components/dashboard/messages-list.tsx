@@ -26,7 +26,7 @@ type ConversationItem = {
       firstName: string | null;
       lastName: string | null;
       email: string;
-    };
+    } | null;
   };
   serviceRequest: {
     status: string;
@@ -44,7 +44,8 @@ const REQUEST_STATUS_STYLES: Record<string, { label: string; className: string }
   CANCELLED: { label: "Cancelled", className: "border-red-200 bg-red-100 text-red-700" },
 };
 
-function displayName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email: string }) {
+function displayName(user: { displayName: string | null; firstName: string | null; lastName: string | null; email: string } | null) {
+  if (!user) return "Business";
   return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 }
 
