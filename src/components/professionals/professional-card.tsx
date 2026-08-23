@@ -145,7 +145,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
         aria-label={`View ${name}'s professional profile`}
         className="absolute inset-0 z-10 rounded-2xl"
       />
-      {(isSponsored || isFeatured || isUnclaimed) && (
+      {(isSponsored || isFeatured) && (
         <div className="pointer-events-none absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
           {isSponsored && (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
@@ -158,11 +158,6 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               <Star className="h-2.5 w-2.5 fill-current" />
               Featured
             </span>
-          )}
-          {isUnclaimed && (
-            <Link href={profileUrl} className="pointer-events-auto inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-full px-2 py-0.5 hover:bg-amber-100 transition-colors relative z-20">
-              Unclaimed · Claim →
-            </Link>
           )}
         </div>
       )}
@@ -311,7 +306,17 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
           )}
         </div>
 
-        <div className="relative z-20 flex items-center justify-end gap-1.5">
+        <div className="relative z-20 flex items-center justify-between gap-1.5">
+          {isUnclaimed && (
+            <Link
+              href={`/auth/signup?redirectTo=${encodeURIComponent(profileUrl)}`}
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-20 inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
+            >
+              Claim this business →
+            </Link>
+          )}
+          <div className={`flex items-center gap-1.5 ${isUnclaimed ? "" : "ml-auto"}`}>
           {isLoggedIn ? (
             <button
               type="button"
@@ -397,6 +402,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               <Phone className="h-3.5 w-3.5" />
             </a>
           )}
+          </div>
         </div>
       </div>
 

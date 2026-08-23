@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     return { client, getCookiesSet: () => cookiesSet };
   }
 
-  async function upsertDbUser(user: { id: string; email: string; email_confirmed_at?: string | null; user_metadata: Record<string, unknown> }) {
+  async function upsertDbUser(user: { id: string; email: string; email_confirmed_at?: string | null; user_metadata: Record<string, unknown> }): Promise<{ needsConsent: boolean }> {
     const mosqueSlug = process.env.NEXT_PUBLIC_DEFAULT_MOSQUE_SLUG ?? "al-falah";
     const mosque = await prisma.mosque.findUnique({ where: { slug: mosqueSlug } });
     const fullName = user.user_metadata.full_name as string | undefined;
@@ -63,16 +63,16 @@ export async function GET(request: NextRequest) {
     const lastName = fullName?.split(" ").slice(1).join(" ") ?? null;
     const avatarUrl = user.user_metadata.avatar_url as string | undefined;
 
-    const existingBySupabaseId = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+    const existingBySupabaseId = await prisma.user.findUnique({ where: { supabaseId: user.id }, select: { id: true, avatarUrl: true, tosVersion: true } });
     if (existingBySupabaseId) {
       log("matched existing user by Supabase id", { dbUserId: existingBySupabaseId.id.slice(0, 8) });
       await prisma.user.update({
         where: { id: existingBySupabaseId.id },
         data: { emailVerified: !!user.email_confirmed_at, avatarUrl: existingBySupabaseId.avatarUrl ?? avatarUrl ?? null },
       });
-      return;
+      return { needsConsent: !existingBySupabaseId.tosVersion };
     }
-    const existingByEmail = await prisma.user.findUnique({ where: { email: user.email } });
+    const existingByEmail = await prisma.user.findUnique({ where: { email: user.email }, select: { id: true, firstName: true, lastName: true, displayName: true, avatarUrl: true, mosqueId: true, tosVersion: true } });
     if (existingByEmail) {
       log("matched existing user by email", { dbUserId: existingByEmail.id.slice(0, 8) });
       await prisma.user.update({
@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
           mosqueId: existingByEmail.mosqueId ?? mosque?.id,
         },
       });
+      return { needsConsent: !existingByEmail.tosVersion };
     } else {
       log("creating user from OAuth", { email: user.email });
       await prisma.user.create({
@@ -101,6 +102,7 @@ export async function GET(request: NextRequest) {
           emailVerified: !!user.email_confirmed_at,
         },
       });
+      return { needsConsent: true };
     }
   }
 
@@ -146,13 +148,21 @@ export async function GET(request: NextRequest) {
 
     if (!error && data.user?.email) {
       log("OAuth exchange succeeded", { email: data.user.email, cookiesSet: getCookiesSet() });
-      await upsertDbUser({ ...data.user, email: data.user.email });
+      const { needsConsent } = await upsertDbUser({ ...data.user, email: data.user.email });
       redirectResponse.cookies.set("mn_last_google_email", data.user.email, {
         maxAge: 60 * 60 * 24 * 365,
         sameSite: "lax",
         path: "/",
         httpOnly: false,
       });
+      if (needsConsent) {
+        const consentUrl = new URL("/auth/re-consent", siteUrl);
+        consentUrl.searchParams.set("next", next);
+        const consentResponse = NextResponse.redirect(consentUrl);
+        redirectResponse.cookies.getAll().forEach((cookie) => consentResponse.cookies.set(cookie.name, cookie.value));
+        log("redirecting to re-consent", { redirectTo: consentUrl.toString() });
+        return consentResponse;
+      }
       log("redirecting after OAuth", { redirectTo: redirectUrl.toString() });
       return redirectResponse;
     }

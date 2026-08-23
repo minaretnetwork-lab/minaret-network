@@ -193,7 +193,8 @@ export async function reAcceptTos(formData: FormData) {
     },
   });
 
-  redirect("/dashboard");
+  const next = String(formData.get("next") ?? "").trim();
+  redirect(next && next.startsWith("/") ? next : "/dashboard");
 }
 
 export async function updateUserProfile(data: {

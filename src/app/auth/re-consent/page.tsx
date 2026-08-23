@@ -6,10 +6,17 @@ import { CURRENT_TOS_VERSION } from "@/lib/constants";
 import { reAcceptTos } from "@/lib/actions/auth";
 import { ReConsentSubmitButton } from "./submit-button";
 
-export default async function ReConsentPage() {
+export default async function ReConsentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
+
+  const { next } = await searchParams;
+  const nextUrl = next && next.startsWith("/") ? next : "/dashboard";
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
@@ -21,6 +28,7 @@ export default async function ReConsentPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
       <div className="w-full max-w-md">
         <form action={reAcceptTos} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+          <input type="hidden" name="next" value={nextUrl} />
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {isFirstTime ? "Before you continue" : "Updated Terms & Privacy Policy"}
           </h1>
