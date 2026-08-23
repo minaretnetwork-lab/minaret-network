@@ -80,9 +80,10 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
   const [messageLoading, setMessageLoading] = useState(false);
 
   const name =
-    user.displayName ??
-    [user.firstName, user.lastName].filter(Boolean).join(" ") ??
-    user.email;
+    professional.businessName ??
+    user?.displayName ??
+    ([user?.firstName, user?.lastName].filter(Boolean).join(" ") || null) ??
+    "Business";
 
   const approvedRecs = recommendations.filter((r) => r.status === "APPROVED");
   const recCount = approvedRecs.length;
@@ -92,7 +93,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
 
   const photoUrl = getProfessionalDisplayPhotoUrl({
     photoUrl: professional.photoUrl,
-    avatarUrl: user.avatarUrl,
+    avatarUrl: user?.avatarUrl ?? null,
   });
   const profileUrl = `/professionals/${professional.id}`;
   const whatsappPhone = professional.whatsapp || professional.phone;

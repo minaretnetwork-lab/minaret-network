@@ -8,7 +8,7 @@ export type Gender = "MALE" | "FEMALE" | "PREFER_NOT_TO_SAY";
 
 export interface ProfessionalWithRelations {
   id: string;
-  userId: string;
+  userId: string | null;
   mosqueId: string;
   categoryId: string;
   businessName: string | null;
@@ -44,7 +44,7 @@ export interface ProfessionalWithRelations {
     displayName: string | null;
     email: string;
     avatarUrl: string | null;
-  };
+  } | null;
   mosque: { id: string; name: string; slug: string } | null;
   category: {
     id: string;
