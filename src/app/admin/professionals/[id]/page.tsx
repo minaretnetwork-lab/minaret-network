@@ -13,6 +13,7 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  Pencil,
   Phone,
   Star,
   Tag,
@@ -25,6 +26,7 @@ import { approveProfessional, getCategoriesForAdmin, getProfessionalForAdmin, re
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
 import { ProfessionalCategories } from "@/components/admin/professional-categories";
+import { DeleteProfessionalButton } from "@/components/admin/delete-professional-button";
 
 const STATUS_UI: Record<string, { label: string; classes: string }> = {
   PENDING: { label: "Pending Review", classes: "bg-amber-100 text-amber-700 border-amber-200" },
@@ -122,6 +124,12 @@ export default async function AdminProfessionalDetailPage({
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <Link href={`/admin/professionals/${id}/edit`}>
+              <Button variant="outline" className="gap-1.5">
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
             {(pendingDraft || (professional.status !== "APPROVED" && professional.status !== "WITHDRAWN")) && (
               <form action={approveAction}>
                 <Button type="submit" className="gap-1.5 bg-green-600 text-white hover:bg-green-700">
@@ -138,6 +146,7 @@ export default async function AdminProfessionalDetailPage({
                 </Button>
               </form>
             )}
+            <DeleteProfessionalButton professionalId={id} name={applicantName} />
           </div>
         </div>
       </section>

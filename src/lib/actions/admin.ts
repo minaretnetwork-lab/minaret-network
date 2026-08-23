@@ -800,6 +800,77 @@ export async function createUnclaimedProfessional(formData: FormData): Promise<{
   return { ok: true, id };
 }
 
+export async function deleteProfessional(id: string): Promise<{ ok: boolean; error?: string }> {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) return { ok: false, error: "Unauthorized" };
+
+  await prisma.professional.delete({ where: { id } });
+  revalidatePath("/admin/professionals");
+  revalidatePath("/professionals");
+  return { ok: true };
+}
+
+export async function updateProfessionalByAdmin(
+  id: string,
+  formData: FormData
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) return { ok: false, error: "Unauthorized" };
+
+  const businessName = String(formData.get("businessName") ?? "").trim() || null;
+  const title = String(formData.get("title") ?? "").trim() || null;
+  const bio = String(formData.get("bio") ?? "").trim() || null;
+  const categoryId = String(formData.get("categoryId") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim() || null;
+  const email = String(formData.get("email") ?? "").trim() || null;
+  const website = String(formData.get("website") ?? "").trim() || null;
+  const whatsapp = String(formData.get("whatsapp") ?? "").trim() || null;
+  const businessAddress = String(formData.get("businessAddress") ?? "").trim() || null;
+  const acceptsWalkIns = formData.get("acceptsWalkIns") === "on";
+  const availability = String(formData.get("availability") ?? "").trim() || null;
+  const yearsOfExperience = Number(formData.get("yearsOfExperience")) || null;
+  const qualifications = String(formData.get("qualifications") ?? "").trim() || null;
+  const licenses = String(formData.get("licenses") ?? "").trim() || null;
+  const languages = formData.getAll("languages").filter((v): v is string => typeof v === "string" && Boolean(v));
+  const serviceAreaIds = formData.getAll("serviceAreaIds").filter((v): v is string => typeof v === "string" && Boolean(v));
+  const categoryIds = formData.getAll("categoryIds").filter((v): v is string => typeof v === "string" && Boolean(v));
+  const primaryCategoryId = categoryId || categoryIds[0];
+
+  if (!primaryCategoryId) return { ok: false, error: "Category is required." };
+  if (!businessName && !title) return { ok: false, error: "Business name or title is required." };
+
+  const allCategoryIds = [primaryCategoryId, ...categoryIds.filter(c => c !== primaryCategoryId)];
+
+  await prisma.professional.update({
+    where: { id },
+    data: {
+      categoryId: primaryCategoryId,
+      categories: { set: allCategoryIds.map(cid => ({ id: cid })) },
+      serviceAreas: { set: serviceAreaIds.map(aid => ({ id: aid })) },
+      businessName,
+      title,
+      bio,
+      phone,
+      email,
+      website,
+      whatsapp,
+      businessAddress,
+      acceptsWalkIns,
+      availability,
+      yearsOfExperience,
+      qualifications,
+      licenses,
+      languages,
+    },
+  });
+
+  revalidatePath("/admin/professionals");
+  revalidatePath(`/admin/professionals/${id}`);
+  revalidatePath(`/professionals/${id}`);
+  revalidatePath("/professionals");
+  return { ok: true };
+}
+
 export async function getProfileClaims(status?: "PENDING" | "APPROVED" | "REJECTED") {
   const user = await getCurrentUser();
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) throw new Error("Unauthorized");
