@@ -68,7 +68,7 @@ export function ClaimProfileBanner({
           <div>
             <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">Claim submitted!</p>
             <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-0.5">
-              We&apos;ll contact you at {email} to verify ownership before granting access.
+              We&apos;ll review your claim and notify you at {email} once it&apos;s approved.
             </p>
           </div>
         </div>
@@ -95,10 +95,10 @@ export function ClaimProfileBanner({
                 </Button>
               ) : (
                 <Link
-                  href={`/auth/register?next=/professionals/${professionalId}`}
+                  href={`/auth/signup?redirectTo=${encodeURIComponent(`/professionals/${professionalId}`)}`}
                   className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3 py-1.5 transition-colors"
                 >
-                  Sign in to claim
+                  Claim your profile
                 </Link>
               )
             )}
