@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { randomUUID } from "crypto";
+import { sendAdminNewClaimEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const professional = await prisma.professional.findUnique({
     where: { id },
-    select: { id: true, isAdminCreated: true, claimedByUserId: true, status: true },
+    select: { id: true, isAdminCreated: true, claimedByUserId: true, status: true, businessName: true, title: true },
   });
 
   if (!professional || professional.status !== "APPROVED") {
@@ -68,6 +69,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       status: "PENDING",
     },
   });
+
+  const businessName = professional.businessName ?? professional.title ?? "Business";
+  sendAdminNewClaimEmail(businessName, claimantName, claimantEmail).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

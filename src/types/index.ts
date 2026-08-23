@@ -9,6 +9,8 @@ export type Gender = "MALE" | "FEMALE" | "PREFER_NOT_TO_SAY";
 export interface ProfessionalWithRelations {
   id: string;
   userId: string | null;
+  isAdminCreated: boolean;
+  claimedByUserId: string | null;
   mosqueId: string;
   categoryId: string;
   businessName: string | null;

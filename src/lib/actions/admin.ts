@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { sendProfileApprovedEmail, sendProfileRejectedEmail } from "@/lib/email";
+import { sendProfileApprovedEmail, sendProfileRejectedEmail, sendClaimApprovedEmail, sendClaimRejectedEmail } from "@/lib/email";
 
 const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>()({
   user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true, whatsapp: true, preferredContact: true } },
@@ -829,7 +829,10 @@ export async function approveProfileClaim(claimId: string): Promise<{ ok: boolea
 
   const claim = await prisma.profileClaim.findUnique({
     where: { id: claimId },
-    include: { professional: { select: { id: true, claimedByUserId: true } } },
+    include: {
+      professional: { select: { id: true, businessName: true, title: true, claimedByUserId: true } },
+      user: { select: { id: true, email: true, firstName: true, displayName: true } },
+    },
   });
   if (!claim) return { ok: false, error: "Claim not found." };
   if (claim.status !== "PENDING") return { ok: false, error: "Claim is no longer pending." };
@@ -858,6 +861,11 @@ export async function approveProfileClaim(claimId: string): Promise<{ ok: boolea
     }),
   ]);
 
+  const businessName = claim.professional.businessName ?? claim.professional.title ?? "your listing";
+  const claimantFirstName = claim.user.displayName ?? claim.user.firstName ?? claim.claimantName.split(" ")[0];
+  const profileUrl = `https://minaretnetwork.ca/professionals/${claim.professionalId}`;
+  sendClaimApprovedEmail(claim.user.email, claimantFirstName, businessName, profileUrl).catch(() => {});
+
   revalidatePath("/admin/claims");
   revalidatePath(`/admin/professionals/${claim.professionalId}`);
   revalidatePath(`/professionals/${claim.professionalId}`);
@@ -868,7 +876,13 @@ export async function rejectProfileClaim(claimId: string, adminNote: string): Pr
   const admin = await getCurrentUser();
   if (!admin || (admin.role !== "ADMIN" && admin.role !== "SUPER_ADMIN")) return { ok: false, error: "Unauthorized" };
 
-  const claim = await prisma.profileClaim.findUnique({ where: { id: claimId } });
+  const claim = await prisma.profileClaim.findUnique({
+    where: { id: claimId },
+    include: {
+      professional: { select: { businessName: true, title: true } },
+      user: { select: { email: true, firstName: true, displayName: true } },
+    },
+  });
   if (!claim) return { ok: false, error: "Claim not found." };
   if (claim.status !== "PENDING") return { ok: false, error: "Claim is no longer pending." };
 
@@ -876,6 +890,10 @@ export async function rejectProfileClaim(claimId: string, adminNote: string): Pr
     where: { id: claimId },
     data: { status: "REJECTED", adminNote: adminNote || "Claim rejected by admin.", reviewedAt: new Date() },
   });
+
+  const businessName = claim.professional.businessName ?? claim.professional.title ?? "your listing";
+  const claimantFirstName = claim.user.displayName ?? claim.user.firstName ?? claim.claimantName.split(" ")[0];
+  sendClaimRejectedEmail(claim.user.email, claimantFirstName, businessName, adminNote || undefined).catch(() => {});
 
   revalidatePath("/admin/claims");
   return { ok: true };

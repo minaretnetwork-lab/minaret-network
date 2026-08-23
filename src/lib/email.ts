@@ -172,6 +172,64 @@ export async function sendProfileApprovedEmail(to: string, firstName: string, pr
   });
 }
 
+export async function sendAdminNewClaimEmail(businessName: string, claimantName: string, claimantEmail: string) {
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `New profile claim — ${businessName}`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">New profile claim submitted</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        Someone has submitted a claim for an unclaimed business listing and is awaiting verification.<br><br>
+        <strong>Business:</strong> ${businessName}<br>
+        <strong>Claimant:</strong> ${claimantName}<br>
+        <strong>Contact:</strong> ${claimantEmail}
+      </p>
+      ${button("Review claim in admin panel", "https://minaretnetwork.ca/admin/claims")}
+    `),
+  });
+}
+
+export async function sendClaimApprovedEmail(to: string, firstName: string, businessName: string, profileUrl: string) {
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Your claim for ${businessName} has been approved — Minaret Network`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">Your claim was approved!</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        Assalamu Alaikum ${firstName},<br><br>
+        We have verified your ownership of <strong>${businessName}</strong> on Minaret Network. You now have full control of your listing.
+      </p>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        Sign in and visit your dashboard to update your profile, add photos, set your availability, and connect with the community.
+      </p>
+      ${button("Manage your listing", "https://minaretnetwork.ca/dashboard/professional")}
+      <p style="color: #9ca3af; font-size: 13px; margin: 24px 0 0; line-height: 1.6;">
+        You can also <a href="${profileUrl}" style="color: #15803d;">view your public profile</a> to see how it appears to the community.
+      </p>
+    `),
+  });
+}
+
+export async function sendClaimRejectedEmail(to: string, firstName: string, businessName: string, adminNote?: string) {
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Update on your claim for ${businessName} — Minaret Network`,
+    html: emailWrapper(`
+      <h2 style="color: #111827; font-size: 22px; margin: 0 0 12px;">Claim review update</h2>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+        Assalamu Alaikum ${firstName},<br><br>
+        We were unable to verify your ownership claim for <strong>${businessName}</strong> at this time.
+        ${adminNote ? `<br><br><strong>Note from our team:</strong> ${adminNote}` : ""}
+        <br><br>
+        If you believe this is an error or have additional documentation, please reply to this email and we'll be happy to help.
+      </p>
+    `),
+  });
+}
+
 export async function sendProfileRejectedEmail(to: string, firstName: string, reason?: string) {
   await resend.emails.send({
     from: FROM,

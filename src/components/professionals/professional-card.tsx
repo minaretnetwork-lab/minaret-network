@@ -72,6 +72,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
   const displayCategories = professional.categories?.length ? professional.categories : [category];
   const isSponsored = (professional as typeof professional & { isSponsored?: boolean }).isSponsored === true;
   const isFeatured = (professional as typeof professional & { isFeatured?: boolean }).isFeatured === true;
+  const isUnclaimed = professional.isAdminCreated && !professional.claimedByUserId;
   const distanceKm = professional.fallbackDistanceKm;
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
@@ -144,7 +145,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
         aria-label={`View ${name}'s professional profile`}
         className="absolute inset-0 z-10 rounded-2xl"
       />
-      {(isSponsored || isFeatured) && (
+      {(isSponsored || isFeatured || isUnclaimed) && (
         <div className="pointer-events-none absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
           {isSponsored && (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
@@ -157,6 +158,11 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
               <Star className="h-2.5 w-2.5 fill-current" />
               Featured
             </span>
+          )}
+          {isUnclaimed && (
+            <Link href={profileUrl} className="pointer-events-auto inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-full px-2 py-0.5 hover:bg-amber-100 transition-colors relative z-20">
+              Unclaimed · Claim →
+            </Link>
           )}
         </div>
       )}
