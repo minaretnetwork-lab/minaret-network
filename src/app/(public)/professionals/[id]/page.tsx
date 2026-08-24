@@ -14,6 +14,7 @@ import { ClaimProfileBanner } from "@/components/professionals/claim-profile-ban
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
 import { ReportRecommendationButton } from "@/components/professionals/report-recommendation-button";
+import { ReportProfessionalButton } from "@/components/professionals/report-professional-button";
 import { PendingChatRedirect } from "@/components/professionals/pending-chat-redirect";
 import { ContactLinks } from "@/components/professionals/contact-links";
 import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
@@ -163,6 +164,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                 Before You Hire →
               </Link>
             </p>
+            <ReportProfessionalButton professionalId={professional.id} />
             </div>{/* end p-6 */}
           </div>
 

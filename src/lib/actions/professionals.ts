@@ -398,3 +398,22 @@ export async function toggleMosqueAffiliationVisibility(professionalId: string, 
   revalidatePath("/dashboard/professional");
   revalidatePath(`/professionals/${professionalId}`);
 }
+
+export async function reportProfessional(
+  professionalId: string,
+  reason: string,
+  detail?: string,
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const dbUser = user ? await prisma.user.findUnique({ where: { supabaseId: user.id }, select: { id: true } }) : null;
+
+  await prisma.professionalReport.create({
+    data: {
+      professionalId,
+      reportedById: dbUser?.id ?? null,
+      reason,
+      detail: detail?.trim() || null,
+    },
+  });
+}

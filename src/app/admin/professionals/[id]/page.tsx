@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { approveProfessional, getCategoriesForAdmin, getProfessionalForAdmin, rejectProfessional, setListingTier, suspendProfessional } from "@/lib/actions/admin";
+import { prisma } from "@/lib/prisma";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
 import { ProfessionalCategories } from "@/components/admin/professional-categories";
@@ -44,9 +45,14 @@ export default async function AdminProfessionalDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [professional, allCategories] = await Promise.all([
+  const [professional, allCategories, reports] = await Promise.all([
     getProfessionalForAdmin(id),
     getCategoriesForAdmin(),
+    prisma.professionalReport.findMany({
+      where: { professionalId: id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, reason: true, detail: true, status: true, createdAt: true },
+    }),
   ]);
   if (!professional) notFound();
 
@@ -333,6 +339,27 @@ export default async function AdminProfessionalDetailPage({
             <Info label="Updated" value={formatDate(professional.updatedAt)} />
             {professional.rejectionReason && <Info label="Rejection reason" value={professional.rejectionReason} multiline />}
           </Card>
+
+          {reports.length > 0 && (
+            <Card title={`Reports (${reports.length})`} icon={<AlertCircle className="h-4 w-4 text-red-500" />}>
+              <div className="space-y-3">
+                {reports.map((r) => (
+                  <div key={r.id} className="rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3 text-sm">
+                    <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                      <span className="font-medium text-gray-800 dark:text-gray-200">{r.reason}</span>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+                        r.status === "OPEN" ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400" :
+                        r.status === "ACTIONED" ? "bg-green-50 text-green-700 border-green-200" :
+                        "bg-gray-100 text-gray-500 border-gray-200"
+                      }`}>{r.status}</span>
+                    </div>
+                    {r.detail && <p className="text-gray-500 dark:text-gray-400 text-xs">{r.detail}</p>}
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(r.createdAt)}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </aside>
       </div>
     </div>

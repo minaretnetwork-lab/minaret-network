@@ -71,6 +71,7 @@ model User {
   sentMessages               Message[]
   eventListings              EventListing[]
   eventListingReports        EventListingReport[] @relation("EventListingReportedBy")
+  professionalReports        ProfessionalReport[] @relation("ProfessionalReportedBy")
   profileClaims              ProfileClaim[]
 
   @@map("users")
@@ -193,8 +194,33 @@ model Professional {
   editDrafts        ProfessionalEditDraft[]
   broadcastLogs     BroadcastLog[]
   profileClaims     ProfileClaim[]
+  reports           ProfessionalReport[]
 
   @@map("professionals")
+}
+
+model ProfessionalReport {
+  id             String                    @id @default(cuid())
+  professionalId String
+  professional   Professional              @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  reportedById   String?
+  reportedBy     User?                     @relation("ProfessionalReportedBy", fields: [reportedById], references: [id])
+  reason         String
+  detail         String?
+  status         ProfessionalReportStatus  @default(OPEN)
+  resolutionNote String?
+  createdAt      DateTime                  @default(now())
+  resolvedAt     DateTime?
+
+  @@index([status, createdAt])
+  @@map("professional_reports")
+}
+
+enum ProfessionalReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
 }
 
 model ProfileClaim {
