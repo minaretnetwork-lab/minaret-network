@@ -393,6 +393,30 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     if (checked) setValue("whatsapp", phoneValue);
   }
 
+  function compressImageFile(file: File, maxDimension = 1920, quality = 0.8): Promise<File> {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) { height = Math.round((height * maxDimension) / width); width = maxDimension; }
+          else { width = Math.round((width * maxDimension) / height); height = maxDimension; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
+          else resolve(file);
+        }, "image/jpeg", quality);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
   function checkAspectRatio(file: File, type: "photo" | "logo"): Promise<void> {
     return new Promise((resolve) => {
       const url = URL.createObjectURL(file);
@@ -418,7 +442,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     try {
       validateSelectedUpload(file, "Profile photo");
       await checkAspectRatio(file, "photo");
-      setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file));
+      const compressed = await compressImageFile(file);
+      setPhotoFile(compressed); setPhotoPreview(URL.createObjectURL(compressed));
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not prepare that profile photo.");
     }
@@ -429,7 +454,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     try {
       validateSelectedUpload(file, "Business logo");
       await checkAspectRatio(file, "logo");
-      setLogoFile(file); setLogoPreview(URL.createObjectURL(file));
+      const compressed = await compressImageFile(file);
+      setLogoFile(compressed); setLogoPreview(URL.createObjectURL(compressed));
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not prepare that business logo.");
     }
@@ -444,8 +470,9 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       alert("Gallery photos must be under 20 MB.");
       return;
     }
-    const newFiles = [...galleryFiles]; newFiles[slot] = file;
-    const newPreviews = [...galleryPreviews]; newPreviews[slot] = URL.createObjectURL(file);
+    const compressed = await compressImageFile(file);
+    const newFiles = [...galleryFiles]; newFiles[slot] = compressed;
+    const newPreviews = [...galleryPreviews]; newPreviews[slot] = URL.createObjectURL(compressed);
     setGalleryFiles(newFiles); setGalleryPreviews(newPreviews);
   }
   function removeGallerySlot(slot: number) {
@@ -511,6 +538,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       galleryRemovals.forEach((id) => fd.append("galleryRemove", id));
       if (initialData?.id) fd.append("professionalId", initialData.id);
       if (affiliationConsent) fd.append("mosqueAffiliationConsent", "true");
+      const imageBytes = [photoFile, logoFile, ...galleryFiles].reduce((sum, f) => sum + (f?.size ?? 0), 0);
+      if (imageBytes > 4 * 1024 * 1024) {
+        setErrorMsg("Your images are too large to upload even after compression. Please use smaller photos (try cropping them) and submit again.");
+        setSubmitStatus("error");
+        return;
+      }
       const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
       const contentType = res.headers.get("content-type") ?? "";
       const result: { ok: boolean; error?: string } = contentType.includes("application/json")
@@ -525,7 +558,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       }
     } catch (err) {
       const message = err instanceof TypeError && err.message.toLowerCase().includes("fetch")
-        ? "The upload did not reach the server. Please try again on a steadier connection, or remove/reselect the photo or logo and submit again."
+        ? "The upload did not reach the server. Please check your connection and try again."
         : err instanceof Error ? err.message : "Something went wrong. Please try again.";
       setErrorMsg(message);
       setSubmitStatus("error");
