@@ -1030,8 +1030,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="website">Website</Label>
-                  <Input id="website" type="url" {...register("website")} className="mt-1.5" placeholder="https://yoursite.com" />
+                  <Label htmlFor="website">Website <span className="text-gray-400 font-normal text-xs">(optional)</span></Label>
+                  <Input id="website" type="text" {...register("website")} className="mt-1.5" placeholder="https://yoursite.com" />
                   {errors.website && <p className="text-xs text-red-600 mt-1">{errors.website.message}</p>}
                 </div>
               </div>
