@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -208,6 +208,8 @@ const STEP_FIELDS: (keyof FormData)[][] = [
   [],
 ];
 
+const DRAFT_KEY = "mn_professional_draft";
+
 export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas, initialData = null, mode = "create", onSubmitted }: Props) {
   const isEdit = mode === "edit" && initialData;
   const [step, setStep] = useState(0);
@@ -232,6 +234,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   const [avSchedules, setAvSchedules] = useState<Record<string, DaySchedule>>({});
   const [avEmergency, setAvEmergency] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
   // category combobox
   const [catSearch, setCatSearch] = useState("");
   const [catOpen, setCatOpen] = useState(false);
@@ -327,6 +330,44 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       window.clearTimeout(timeout);
     };
   }, [businessAddressValue]);
+
+  const saveDraft = useCallback(() => {
+    if (isEdit) return;
+    try {
+      const values = watch();
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, avSchedules, avEmergency, step }));
+    } catch {}
+  }, [isEdit, watch, avSchedules, avEmergency, step]);
+
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setHasDraft(false);
+  }
+
+  useEffect(() => {
+    if (isEdit) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) setHasDraft(true);
+    } catch {}
+  }, [isEdit]);
+
+  function restoreDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const { values, avSchedules: savedSchedules, avEmergency: savedEmergency, step: savedStep } = JSON.parse(raw);
+      if (values) {
+        (Object.keys(values) as (keyof FormData)[]).forEach((key) => {
+          setValue(key, values[key]);
+        });
+      }
+      if (savedSchedules) setAvSchedules(savedSchedules);
+      if (typeof savedEmergency === "boolean") setAvEmergency(savedEmergency);
+      if (typeof savedStep === "number") lockAndScroll(() => setStep(savedStep));
+      setHasDraft(false);
+    } catch {}
+  }
 
   function syncAvailability(schedules: Record<string, DaySchedule>, emergency: boolean) {
     if (getInvalidAvailabilityDays(schedules).length === 0) setAvailabilityError("");
@@ -505,7 +546,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       }
       const fields = STEP_FIELDS[step];
       const valid = fields.length === 0 || await trigger(fields);
-      if (valid) lockAndScroll(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)));
+      if (valid) {
+        saveDraft();
+        lockAndScroll(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)));
+      }
     } finally {
       goNextPending.current = false;
     }
@@ -553,6 +597,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         setErrorMsg(result.error ?? "Something went wrong. Please try again.");
         setSubmitStatus("error");
       } else {
+        clearDraft();
         setSubmitStatus("success");
         onSubmitted?.();
       }
@@ -591,6 +636,22 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   return (
     <div className="space-y-6">
+
+      {/* ── Draft resume banner ── */}
+      {!isEdit && hasDraft && (
+        <div className="flex items-center justify-between gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl px-4 py-3 text-sm">
+          <span className="text-amber-800 dark:text-amber-200 font-medium">You have a saved draft. Resume where you left off?</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button type="button" onClick={restoreDraft} className="text-amber-800 dark:text-amber-200 font-semibold underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100">
+              Resume
+            </button>
+            <span className="text-amber-400">·</span>
+            <button type="button" onClick={clearDraft} className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200">
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Step indicator ── */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
