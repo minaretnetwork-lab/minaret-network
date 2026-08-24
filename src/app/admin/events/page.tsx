@@ -119,6 +119,8 @@ export default async function AdminEventsPage() {
                       <AdminEventActionsClient
                         eventId={event.id}
                         canApprove={event.status === "PENDING_ADMIN"}
+                        isActive={event.status === "ACTIVE"}
+                        isFeatured={event.listingType === "FEATURED"}
                       />
                     )}
                   </div>

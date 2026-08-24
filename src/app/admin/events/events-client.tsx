@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, Trash2 } from "lucide-react";
+import { CheckCircle, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { adminRemoveEventListing, adminApproveEventListing } from "@/lib/actions/event-listings";
+import { adminRemoveEventListing, adminApproveEventListing, adminSetEventFeatured } from "@/lib/actions/event-listings";
 import { useRouter } from "next/navigation";
 
 export function AdminEventActionsClient({
   eventId,
   canApprove,
+  isFeatured,
+  isActive,
 }: {
   eventId: string;
   canApprove?: boolean;
+  isFeatured?: boolean;
+  isActive?: boolean;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"idle" | "remove">("idle");
@@ -22,6 +26,16 @@ export function AdminEventActionsClient({
     setLoading(true);
     try {
       await adminApproveEventListing(eventId);
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleToggleFeatured() {
+    setLoading(true);
+    try {
+      await adminSetEventFeatured(eventId, !isFeatured);
       router.refresh();
     } finally {
       setLoading(false);
@@ -79,6 +93,20 @@ export function AdminEventActionsClient({
         >
           <CheckCircle className="h-3.5 w-3.5 mr-1" />
           {loading ? "Approving…" : "Approve"}
+        </Button>
+      )}
+      {isActive && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleToggleFeatured}
+          disabled={loading}
+          className={isFeatured
+            ? "border-violet-300 text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400 dark:hover:bg-violet-900/20 text-xs"
+            : "border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/20 text-xs"}
+        >
+          <Star className={`h-3.5 w-3.5 mr-1 ${isFeatured ? "fill-violet-600 text-violet-600" : ""}`} />
+          {isFeatured ? "Unfeature" : "Make Featured"}
         </Button>
       )}
       <Button

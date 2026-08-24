@@ -145,6 +145,20 @@ export async function reportEventListing(
 
 // ── Admin actions ────────────────────────────────────────────────────────────
 
+export async function adminSetEventFeatured(id: string, featured: boolean) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+    throw new Error("Unauthorized");
+  }
+  await prisma.eventListing.update({
+    where: { id },
+    data: { listingType: featured ? "FEATURED" : "STANDARD" },
+  });
+  revalidatePath("/admin/events");
+  revalidatePath("/events");
+  revalidatePath("/");
+}
+
 export async function adminApproveEventListing(id: string) {
   const user = await getCurrentUser();
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
@@ -165,6 +179,7 @@ export async function adminApproveEventListing(id: string) {
 
   revalidatePath("/admin/events");
   revalidatePath("/events");
+  revalidatePath("/");
 }
 
 export async function adminRemoveEventListing(id: string, removalReason: string) {

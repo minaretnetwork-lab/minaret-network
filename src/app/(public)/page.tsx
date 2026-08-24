@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Search, Phone, Handshake, Star, Users,
-  Building2, ShieldCheck, ArrowRight, CalendarDays,
+  Building2, ShieldCheck, ArrowRight, CalendarDays, Sparkles, MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
@@ -15,6 +15,7 @@ import { MinaretLogo } from "@/components/ui/minaret-logo";
 import { CommunityOffersSection } from "@/components/offers/community-offers-section";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
+import { getPublicEventListings } from "@/lib/actions/event-listings";
 
 const POPULAR_TAGS = [
   { label: "Plumber", href: "/professionals?category=plumber" },
@@ -39,6 +40,14 @@ export default async function HomePage() {
     categories = mosque?.categories ?? [];
   } catch {
     // fall through with empty list
+  }
+
+  let featuredEvents: Awaited<ReturnType<typeof getPublicEventListings>> = [];
+  try {
+    const all = await getPublicEventListings();
+    featuredEvents = all.filter((e) => e.listingType === "FEATURED").slice(0, 3);
+  } catch {
+    // fall through
   }
 
   return (
@@ -127,6 +136,63 @@ export default async function HomePage() {
 
       {/* ── Community Offers ─────────────────────────────────── */}
       <CommunityOffersSection />
+
+      {/* ── Featured Events ──────────────────────────────────── */}
+      {featuredEvents.length > 0 && (
+        <section className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 py-16">
+          <div className="container mx-auto px-4 lg:px-6 max-w-6xl">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-violet-600" />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-lora)" }}>
+                  Featured Community Events
+                </h2>
+              </div>
+              <Link href="/events" className="text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1">
+                All events <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {featuredEvents.map((event) => (
+                <Link
+                  key={event.id}
+                  href={`/events/${event.id}`}
+                  className="group flex flex-col rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden transition hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md"
+                >
+                  <div className="relative w-full aspect-[16/9] bg-violet-50 dark:bg-violet-900/20 overflow-hidden">
+                    {event.imageUrl ? (
+                      <Image src={event.imageUrl} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <CalendarDays className="h-10 w-10 text-violet-300 dark:text-violet-700" />
+                      </div>
+                    )}
+                    <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-violet-600 px-2 py-0.5 text-[11px] font-semibold text-white shadow">
+                      <Sparkles className="h-2.5 w-2.5" /> Featured
+                    </span>
+                  </div>
+                  <div className="flex flex-col flex-1 p-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-400 transition-colors leading-snug mb-1">
+                      {event.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 flex-1 mb-3">{event.description}</p>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                        <CalendarDays className="h-3.5 w-3.5 text-violet-600 flex-shrink-0" />
+                        {new Date(event.eventDate).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                        {event.location}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Community Events CTA ─────────────────────────────── */}
       <section className="bg-emerald-50 dark:bg-emerald-950/30 border-y border-emerald-100 dark:border-emerald-900/50 py-20">
