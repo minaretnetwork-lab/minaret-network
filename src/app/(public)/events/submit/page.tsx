@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Info, ImagePlus, X } from "lucide-react";
 import { submitEventListing } from "@/lib/actions/event-listings";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 const FREE_UNTIL = new Date("2026-11-01T00:00:00.000Z");
@@ -39,19 +38,14 @@ export default function SubmitEventPage() {
     setImagePreview(preview);
 
     try {
-      const supabase = createClient();
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `events/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("event-images")
-        .upload(path, file, { upsert: false });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from("event-images").getPublicUrl(path);
-      setImageUrl(data.publicUrl);
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/events/upload-image", { method: "POST", body: fd });
+      const result: { ok: boolean; url?: string; error?: string } = await res.json();
+      if (!result.ok || !result.url) throw new Error(result.error ?? "Upload failed");
+      setImageUrl(result.url);
     } catch (err) {
-      setError("Image upload failed. Please try again or continue without an image.");
+      setError(err instanceof Error ? err.message : "Image upload failed. Please try again or continue without an image.");
       setImagePreview(null);
       setImageUrl(null);
     } finally {
