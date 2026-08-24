@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Info, ImagePlus, X } from "lucide-react";
+import { ArrowLeft, Info, ImagePlus, X, MapPin } from "lucide-react";
 import { submitEventListing } from "@/lib/actions/event-listings";
 import { Button } from "@/components/ui/button";
+
+type AddressSuggestion = { label: string; address: string; city: string | null; province: string | null };
 
 const FREE_UNTIL = new Date("2026-11-01T00:00:00.000Z");
 const isFreePromo = new Date() < FREE_UNTIL;
@@ -19,6 +21,31 @@ const PRICE_TABLE = {
 
 export default function SubmitEventPage() {
   useEffect(() => { document.title = "Post an Event | Minaret Network"; }, []);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (addressRef.current && !addressRef.current.contains(e.target as Node)) setAddressOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  useEffect(() => {
+    const query = form.location.trim();
+    if (query.length < 3) { setAddressSuggestions([]); setAddressLoading(false); return; }
+    let cancelled = false;
+    const t = window.setTimeout(async () => {
+      setAddressLoading(true);
+      try {
+        const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json() as { suggestions?: AddressSuggestion[] };
+        if (!cancelled) { setAddressSuggestions(data.suggestions ?? []); setAddressOpen(true); }
+      } catch { if (!cancelled) setAddressSuggestions([]); }
+      finally { if (!cancelled) setAddressLoading(false); }
+    }, 450);
+    return () => { cancelled = true; window.clearTimeout(t); };
+  }, [form.location]);
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +53,10 @@ export default function SubmitEventPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [addressOpen, setAddressOpen] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const addressRef = useRef<HTMLDivElement>(null);
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -317,14 +348,42 @@ export default function SubmitEventPage() {
                 />
               </Field>
               <Field label="Location" required>
-                <input
-                  type="text"
-                  required
-                  value={form.location}
-                  onChange={(e) => set("location", e.target.value)}
-                  placeholder="Address or venue name, city"
-                  className={inputCls}
-                />
+                <div ref={addressRef} className="relative">
+                  <div className="relative">
+                    <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      required
+                      value={form.location}
+                      onChange={(e) => { set("location", e.target.value); setAddressOpen(true); }}
+                      onFocus={() => { if (addressSuggestions.length) setAddressOpen(true); }}
+                      placeholder="Start typing an address…"
+                      className={inputCls + " pl-9"}
+                      autoComplete="off"
+                    />
+                    {addressLoading && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">…</span>
+                    )}
+                  </div>
+                  {addressOpen && addressSuggestions.length > 0 && (
+                    <ul className="absolute z-50 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden text-sm">
+                      {addressSuggestions.map((s, i) => (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            onClick={() => { set("location", s.address); setAddressOpen(false); setAddressSuggestions([]); }}
+                          >
+                            <span className="font-medium text-gray-900 dark:text-white">{s.address}</span>
+                            {(s.city || s.province) && (
+                              <span className="block text-xs text-gray-400 truncate">{[s.city, s.province].filter(Boolean).join(", ")}</span>
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </Field>
             </div>
           </fieldset>

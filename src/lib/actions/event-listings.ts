@@ -6,6 +6,8 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+const FREE_UNTIL = new Date("2026-11-01T00:00:00.000Z");
+
 export interface SubmitEventListingInput {
   organizerName: string;
   organizerContact: string;
@@ -42,10 +44,11 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
 
   // Server-side price — ignore any client-supplied price field
   const listingType = input.listingType === "FEATURED" ? "FEATURED" : "STANDARD";
-  const priceChargedCents = computeEventListingPriceCents(listingType, input.isMosqueOrganized);
+  const isPromo = new Date() < FREE_UNTIL;
+  const priceChargedCents = isPromo ? 0 : computeEventListingPriceCents(listingType, input.isMosqueOrganized);
 
-  if (input.isMosqueOrganized) {
-    // Mosque-organized: free, but requires admin approval before going live
+  if (input.isMosqueOrganized || isPromo) {
+    // Free path: mosque-organized always, or any listing during promo period
     const now = new Date();
     await prisma.eventListing.create({
       data: {
@@ -57,11 +60,11 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
         eventDate,
         location: input.location.trim(),
         listingType,
-        isMosqueOrganized: true,
-        mosqueName: input.mosqueName!.trim(),
-        mosqueAuthorizationConfirmedAt: now,
+        isMosqueOrganized: input.isMosqueOrganized,
+        mosqueName: input.isMosqueOrganized ? input.mosqueName!.trim() : null,
+        mosqueAuthorizationConfirmedAt: input.isMosqueOrganized ? now : null,
         status: "PENDING_ADMIN",
-        priceChargedCents: 0,
+        priceChargedCents,
         imageUrl: input.imageUrl ?? null,
       },
     });
