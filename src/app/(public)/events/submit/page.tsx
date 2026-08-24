@@ -20,6 +20,30 @@ const PRICE_TABLE = {
 } as const;
 
 export default function SubmitEventPage() {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [addressOpen, setAddressOpen] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const addressRef = useRef<HTMLDivElement>(null);
+  const [form, setForm] = useState({
+    organizerName: "",
+    organizerContact: "",
+    title: "",
+    description: "",
+    eventDate: "",
+    location: "",
+    listingType: "STANDARD" as "STANDARD" | "FEATURED",
+    isMosqueOrganized: false,
+    mosqueName: "",
+    mosqueAuthorizationConfirmed: false,
+  });
+
   useEffect(() => { document.title = "Post an Event | Minaret Network"; }, []);
 
   useEffect(() => {
@@ -46,17 +70,6 @@ export default function SubmitEventPage() {
     }, 450);
     return () => { cancelled = true; window.clearTimeout(t); };
   }, [form.location]);
-  const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
-  const [addressOpen, setAddressOpen] = useState(false);
-  const [addressLoading, setAddressLoading] = useState(false);
-  const addressRef = useRef<HTMLDivElement>(null);
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -89,19 +102,6 @@ export default function SubmitEventPage() {
     setImageUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
-
-  const [form, setForm] = useState({
-    organizerName: "",
-    organizerContact: "",
-    title: "",
-    description: "",
-    eventDate: "",
-    location: "",
-    listingType: "STANDARD" as "STANDARD" | "FEATURED",
-    isMosqueOrganized: false,
-    mosqueName: "",
-    mosqueAuthorizationConfirmed: false,
-  });
 
   function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
     setForm((f) => ({ ...f, [k]: v }));
