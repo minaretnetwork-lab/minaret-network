@@ -10,6 +10,7 @@ import {
   Clock,
   Globe,
   Layers,
+  Link2,
   Mail,
   MapPin,
   MessageCircle,
@@ -28,6 +29,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
 import { ProfessionalCategories } from "@/components/admin/professional-categories";
 import { DeleteProfessionalButton } from "@/components/admin/delete-professional-button";
+import { ClaimInvitePanel } from "@/components/admin/claim-invite-panel";
 
 const STATUS_UI: Record<string, { label: string; classes: string }> = {
   PENDING: { label: "Pending Review", classes: "bg-amber-100 text-amber-700 border-amber-200" },
@@ -338,6 +340,15 @@ export default async function AdminProfessionalDetailPage({
             <Info label="Created" value={formatDate(professional.createdAt)} />
             <Info label="Updated" value={formatDate(professional.updatedAt)} />
             {professional.rejectionReason && <Info label="Rejection reason" value={professional.rejectionReason} multiline />}
+          </Card>
+
+          <Card title="Claim ownership" icon={<Link2 className="h-4 w-4 text-emerald-600" />}>
+            <ClaimInvitePanel
+              professionalId={id}
+              isClaimed={!!professional.claimedByUserId}
+              existingToken={professional.claimInviteToken ?? null}
+              existingExpiry={professional.claimInviteExpiresAt ?? null}
+            />
           </Card>
 
           {reports.length > 0 && (
