@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, CalendarDays, MapPin, User, Sparkles } from "lucide-react";
 import { getPublicEventListing } from "@/lib/actions/event-listings";
 import { EventDisclaimer } from "@/components/events/event-disclaimer";
@@ -44,6 +45,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         </Link>
 
         <article className="space-y-6">
+          {/* Hero image */}
+          {event.imageUrl && (
+            <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+              <Image src={event.imageUrl} alt={event.title} fill className="object-cover" priority />
+            </div>
+          )}
+
           {/* Badges */}
           <div className="flex flex-wrap gap-2">
             {event.listingType === "FEATURED" && (

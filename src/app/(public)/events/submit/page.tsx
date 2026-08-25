@@ -9,6 +9,7 @@ import { submitEventListing } from "@/lib/actions/event-listings";
 import { Button } from "@/components/ui/button";
 
 type AddressSuggestion = { label: string; address: string; city: string | null; province: string | null };
+type MosqueOption = { id: string; name: string; city: string | null };
 
 const FREE_UNTIL = new Date("2026-11-01T00:00:00.000Z");
 const isFreePromo = new Date() < FREE_UNTIL;
@@ -31,6 +32,8 @@ export default function SubmitEventPage() {
   const [addressOpen, setAddressOpen] = useState(false);
   const [addressLoading, setAddressLoading] = useState(false);
   const addressRef = useRef<HTMLDivElement>(null);
+  const [mosques, setMosques] = useState<MosqueOption[]>([]);
+  const [mosqueOther, setMosqueOther] = useState(false);
   const [form, setForm] = useState({
     organizerName: "",
     organizerContact: "",
@@ -45,6 +48,13 @@ export default function SubmitEventPage() {
   });
 
   useEffect(() => { document.title = "Post an Event | Minaret Network"; }, []);
+
+  useEffect(() => {
+    fetch("/api/mosques")
+      .then((r) => r.json())
+      .then((d: { mosques: MosqueOption[] }) => setMosques(d.mosques))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -241,14 +251,48 @@ export default function SubmitEventPage() {
                   <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                     Mosque name <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    required={form.isMosqueOrganized}
-                    value={form.mosqueName}
-                    onChange={(e) => set("mosqueName", e.target.value)}
-                    placeholder="e.g. Al-Falah Islamic Centre"
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                  {!mosqueOther ? (
+                    <select
+                      required={form.isMosqueOrganized && !mosqueOther}
+                      value={form.mosqueName}
+                      onChange={(e) => {
+                        if (e.target.value === "__other__") {
+                          setMosqueOther(true);
+                          set("mosqueName", "");
+                        } else {
+                          set("mosqueName", e.target.value);
+                        }
+                      }}
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="">Select a mosque…</option>
+                      {mosques.map((m) => (
+                        <option key={m.id} value={m.name}>
+                          {m.name}{m.city ? ` — ${m.city}` : ""}
+                        </option>
+                      ))}
+                      <option value="__other__">Other / not listed</option>
+                    </select>
+                  ) : (
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        required={form.isMosqueOrganized}
+                        value={form.mosqueName}
+                        onChange={(e) => set("mosqueName", e.target.value)}
+                        placeholder="e.g. Al-Falah Islamic Centre"
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setMosqueOther(false); set("mosqueName", ""); }}
+                        className="text-xs text-emerald-700 dark:text-emerald-400 underline"
+                      >
+                        ← Back to list
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <label className="flex items-start gap-2 cursor-pointer">
                   <input
