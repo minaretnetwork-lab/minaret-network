@@ -40,7 +40,7 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
     professional.title ||
     "this listing";
 
-  const location = [professional.city, professional.province].filter(Boolean).join(", ");
+  const location = professional.businessAddress ?? null;
 
   return (
     <main className="min-h-[70vh] flex items-center justify-center bg-white dark:bg-gray-950 px-4">
