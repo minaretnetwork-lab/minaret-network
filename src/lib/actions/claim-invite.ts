@@ -51,7 +51,7 @@ export async function getClaimInviteByToken(token: string) {
     select: {
       id: true,
       businessName: true,
-      fullName: true,
+      title: true,
       city: true,
       province: true,
       status: true,
