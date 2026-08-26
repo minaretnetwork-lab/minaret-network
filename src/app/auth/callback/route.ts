@@ -120,6 +120,13 @@ export async function GET(request: NextRequest) {
     if (!error && data.user?.email) {
       log("token_hash verified", { email: data.user.email, cookiesSet: getCookiesSet() });
       await upsertDbUser({ ...data.user, email: data.user.email });
+      if (type === "signup") {
+        const successUrl = new URL("/auth/email-verified", siteUrl);
+        successUrl.searchParams.set("next", next);
+        const successResponse = NextResponse.redirect(successUrl);
+        redirectResponse.cookies.getAll().forEach((c) => successResponse.cookies.set(c.name, c.value));
+        return successResponse;
+      }
       return redirectResponse;
     }
     log("token_hash verification failed", { error: error?.message });
