@@ -46,7 +46,7 @@ const schema = z.object({
   categoryId: z.string().optional(),
   categoryIds: z.array(z.string()).min(1, "Please select at least one category"),
   businessName: z.string().optional(),
-  title: z.string().min(2, "Job title is required"),
+  title: z.string().optional(),
   bio: z.string().min(BIO_MIN_LENGTH, `Please write at least ${BIO_MIN_LENGTH} characters`).max(BIO_MAX_LENGTH),
   yearsOfExperience: z.string().optional(),
   qualifications: z.string().optional(),
@@ -67,6 +67,13 @@ const schema = z.object({
       code: z.ZodIssueCode.custom,
       path: ["mosqueSuggestionName"],
       message: "Please enter the mosque name so admins can review it.",
+    });
+  }
+  if (!data.businessName?.trim() && !data.title?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["title"],
+      message: "Please enter a job title or a business name.",
     });
   }
 });
@@ -206,7 +213,7 @@ const STEPS = [
 
 // Fields that must pass validation before each step's "Next"
 const STEP_FIELDS: (keyof FormData)[][] = [
-  ["categoryIds", "title"],
+  ["categoryIds"],
   ["bio"],
   ["serviceAreaIds", "languages"],
   [],
@@ -763,7 +770,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                             value={catSearch}
                             onChange={(e) => { setCatSearch(e.target.value); setCatOpen(true); }}
                             onFocus={() => setCatOpen(true)}
-                            placeholder={selectedCategories.length ? "Add another profession…" : "Search profession…"}
+                            placeholder={selectedCategories.length ? "Add another category…" : "Search category…"}
                             autoComplete="off"
                             className={`${selectClass} pr-8`}
                           />
@@ -813,7 +820,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               {/* Title + Business name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">Job Title *</Label>
+                  <Label htmlFor="title">Job Title <span className="text-gray-400 font-normal text-xs">(required if no business name)</span></Label>
                   <Input id="title" {...register("title")} className="mt-1.5"
                     placeholder={(() => { const sel = categories.find((c) => c.id === primaryCategoryId); return sel?.slug === "other" ? "Describe your profession…" : "e.g. Licensed Electrician"; })()} />
                   {errors.title && <p className="text-xs text-red-600 mt-1">{errors.title.message}</p>}
