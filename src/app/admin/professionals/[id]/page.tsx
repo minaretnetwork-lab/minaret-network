@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { approveProfessional, getCategoriesForAdmin, getProfessionalForAdmin, rejectProfessional, setListingTier, suspendProfessional } from "@/lib/actions/admin";
+import { getCurrentUser } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
@@ -47,6 +48,8 @@ export default async function AdminProfessionalDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const viewer = await getCurrentUser();
+  const isFullAdmin = viewer?.role === "ADMIN" || viewer?.role === "SUPER_ADMIN";
   const [professional, allCategories, reports] = await Promise.all([
     getProfessionalForAdmin(id),
     getCategoriesForAdmin(),
@@ -138,7 +141,7 @@ export default async function AdminProfessionalDetailPage({
                 Edit
               </Button>
             </Link>
-            {(pendingDraft || (professional.status !== "APPROVED" && professional.status !== "WITHDRAWN")) && (
+            {isFullAdmin && (pendingDraft || (professional.status !== "APPROVED" && professional.status !== "WITHDRAWN")) && (
               <form action={approveAction}>
                 <Button type="submit" className="gap-1.5 bg-green-600 text-white hover:bg-green-700">
                   <CheckCircle className="h-4 w-4" />
@@ -146,7 +149,7 @@ export default async function AdminProfessionalDetailPage({
                 </Button>
               </form>
             )}
-            {professional.status === "APPROVED" && (
+            {isFullAdmin && professional.status === "APPROVED" && (
               <form action={suspendAction}>
                 <Button type="submit" variant="outline" className="gap-1.5 border-amber-200 text-amber-700 hover:bg-amber-50">
                   <AlertCircle className="h-4 w-4" />
@@ -154,7 +157,7 @@ export default async function AdminProfessionalDetailPage({
                 </Button>
               </form>
             )}
-            <DeleteProfessionalButton professionalId={id} name={applicantName} />
+            {isFullAdmin && <DeleteProfessionalButton professionalId={id} name={applicantName} />}
           </div>
         </div>
       </section>
@@ -215,7 +218,7 @@ export default async function AdminProfessionalDetailPage({
             />
           </Card>
 
-          {(professional.status === "PENDING" || pendingDraft) && (
+          {isFullAdmin && (professional.status === "PENDING" || pendingDraft) && (
             <Card title={pendingDraft ? "Reject edits" : "Reject application"} icon={<XCircle className="h-4 w-4" />}>
               <form action={rejectAction} className="space-y-3">
                 <textarea
@@ -313,7 +316,7 @@ export default async function AdminProfessionalDetailPage({
                 The <strong>broadcast_eligible</strong> tier is blocked and cannot be set.
               </p>
             )}
-            {professional.status === "APPROVED" && (
+            {isFullAdmin && professional.status === "APPROVED" && (
               <form action={setTierAction} className="space-y-2">
                 <select
                   name="tier"
