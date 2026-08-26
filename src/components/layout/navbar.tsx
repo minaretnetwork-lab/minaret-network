@@ -24,7 +24,7 @@ interface NavbarProps {
 
 export function Navbar({ user }: NavbarProps) {
   const displayName = user?.displayName ?? user?.firstName ?? user?.email ?? "User";
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN" || user?.role === "LISTING_MANAGER";
   const isProfessional = user?.isProfessional ?? false;
 
   return (

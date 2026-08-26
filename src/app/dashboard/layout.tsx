@@ -17,7 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const hasProfessionalListings = user.professionals.length > 0;
   const navGroups = getAccountNavigation({
-    isAdmin: user.role === "ADMIN" || user.role === "SUPER_ADMIN",
+    isAdmin: user.role === "ADMIN" || user.role === "SUPER_ADMIN" || user.role === "LISTING_MANAGER",
     isProfessional: user.role === "PROFESSIONAL" || hasProfessionalListings,
     messageHref: user.latestUnreadConversationId ? `/dashboard/messages/${user.latestUnreadConversationId}` : "/dashboard/messages",
     messageBadge: user.unreadMessageCount,
