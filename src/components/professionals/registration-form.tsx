@@ -240,6 +240,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const [catOpen, setCatOpen] = useState(false);
   const [areaSearch, setAreaSearch] = useState("");
   const catRef = useRef<HTMLDivElement>(null);
+  // mosque combobox
+  const [mosqueSearch, setMosqueSearch] = useState("");
+  const [mosqueOpen, setMosqueOpen] = useState(false);
+  const mosqueRef = useRef<HTMLDivElement>(null);
   const addressRef = useRef<HTMLDivElement>(null);
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [addressLookupOpen, setAddressLookupOpen] = useState(false);
@@ -249,6 +253,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (catRef.current && !catRef.current.contains(e.target as Node)) setCatOpen(false);
+      if (mosqueRef.current && !mosqueRef.current.contains(e.target as Node)) setMosqueOpen(false);
       if (addressRef.current && !addressRef.current.contains(e.target as Node)) setAddressLookupOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
@@ -1136,13 +1141,68 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
                   Select the mosque you are affiliated with — an active member of their community channel or regular attendee.
                 </p>
-                <select {...register("mosqueId")} className={selectClass}>
-                  <option value="">Select your mosque…</option>
-                  {mosques.map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}{m.city ? ` — ${m.city}` : ""}</option>
-                  ))}
-                  <option value="unlisted">My mosque is not listed</option>
-                </select>
+                <div ref={mosqueRef} className="relative">
+                  {(() => {
+                    const needle = mosqueSearch.toLowerCase();
+                    const filteredMosques = mosqueSearch
+                      ? mosques.filter((m) => m.name.toLowerCase().includes(needle) || (m.city ?? "").toLowerCase().includes(needle))
+                      : mosques;
+                    const selectedMosque = mosques.find((m) => m.id === selectedMosqueId);
+                    const displayValue = selectedMosqueId === "unlisted"
+                      ? "My mosque is not listed"
+                      : selectedMosque
+                        ? `${selectedMosque.name}${selectedMosque.city ? ` — ${selectedMosque.city}` : ""}`
+                        : "";
+                    return (
+                      <>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={mosqueOpen ? mosqueSearch : displayValue}
+                            onChange={(e) => { setMosqueSearch(e.target.value); setMosqueOpen(true); }}
+                            onFocus={() => { setMosqueSearch(""); setMosqueOpen(true); }}
+                            placeholder="Search for your mosque…"
+                            autoComplete="off"
+                            className={`${selectClass} pr-8`}
+                          />
+                          {(mosqueSearch || selectedMosqueId) && (
+                            <button
+                              type="button"
+                              onClick={() => { setMosqueSearch(""); setMosqueOpen(false); setValue("mosqueId", ""); }}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        {mosqueOpen && (
+                          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-y-auto max-h-52">
+                            {filteredMosques.map((m) => (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onMouseDown={(e) => { e.preventDefault(); setValue("mosqueId", m.id); setMosqueSearch(""); setMosqueOpen(false); }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors text-gray-800 dark:text-gray-200"
+                              >
+                                {m.name}{m.city ? ` — ${m.city}` : ""}
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              onMouseDown={(e) => { e.preventDefault(); setValue("mosqueId", "unlisted"); setMosqueSearch(""); setMosqueOpen(false); }}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 italic"
+                            >
+                              My mosque is not listed
+                            </button>
+                            {filteredMosques.length === 0 && mosqueSearch && (
+                              <p className="px-3 py-2 text-sm text-gray-400">No mosques match &ldquo;{mosqueSearch}&rdquo;</p>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
                 {selectedMosqueId === "unlisted" && (
                   <div className="mt-4 rounded-xl border border-emerald-200 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-gray-950/30">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">Recommend a mosque for admin review</p>
