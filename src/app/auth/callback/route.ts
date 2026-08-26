@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
   const emailParam = searchParams.get("email"); // {{ .Email }} fallback
   const type = searchParams.get("type");
   const rawNext = searchParams.get("next") ?? "/dashboard";
-  const next = rawNext.startsWith("/") ? rawNext : "/dashboard";
+  const cookieNext = request.cookies.get("mn_oauth_next")?.value ?? "";
+  const next = (rawNext !== "/dashboard" && rawNext.startsWith("/"))
+    ? rawNext
+    : (cookieNext.startsWith("/") ? cookieNext : "/dashboard");
   const requestHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? requestUrl.host;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
   const requestId = crypto.randomUUID().slice(0, 8);
@@ -155,6 +158,8 @@ export async function GET(request: NextRequest) {
         path: "/",
         httpOnly: false,
       });
+      // Clear the OAuth next cookie now that we've consumed it
+      redirectResponse.cookies.set("mn_oauth_next", "", { maxAge: 0, path: "/" });
       if (needsConsent) {
         const consentUrl = new URL("/auth/re-consent", siteUrl);
         consentUrl.searchParams.set("next", next);

@@ -62,6 +62,15 @@ export async function GET(request: NextRequest) {
   cookiesToSet.forEach(({ name, value, options }) => {
     response.cookies.set(name, value, options);
   });
+  // Store next in a cookie — query params on the callbackUrl are dropped by Supabase OAuth
+  if (next !== "/dashboard") {
+    response.cookies.set("mn_oauth_next", next, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 10, // 10 minutes
+    });
+  }
   log("redirecting to provider", { cookiesSet: cookiesToSet.length });
   return response;
 }
