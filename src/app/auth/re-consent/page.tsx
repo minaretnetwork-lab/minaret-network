@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CURRENT_TOS_VERSION } from "@/lib/constants";
@@ -16,7 +17,11 @@ export default async function ReConsentPage({
   if (!user) redirect("/auth/login");
 
   const { next } = await searchParams;
-  const nextUrl = next && next.startsWith("/") ? next : "/dashboard";
+  const cookieStore = await cookies();
+  const oauthNext = cookieStore.get("mn_oauth_next")?.value ?? "";
+  const nextUrl = (next && next.startsWith("/") && next !== "/dashboard")
+    ? next
+    : (oauthNext.startsWith("/") ? oauthNext : "/dashboard");
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseId: user.id },
