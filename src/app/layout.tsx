@@ -8,6 +8,7 @@ import { LazyIdleTimeout } from "@/components/lazy-idle-timeout";
 import { LazyAssistantBubble } from "@/components/ai/lazy-assistant-bubble";
 import { GoogleAnalyticsWithConsent } from "@/components/google-analytics";
 import { CookieBanner } from "@/components/cookie-banner";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -40,16 +41,24 @@ export default function RootLayout({
       lang="en"
       className="h-full antialiased"
     >
+      <head>
+        {/* Anti-flash: apply stored theme before first paint */}
+        <script dangerouslySetInnerHTML={{ __html: `
+(function(){try{var t=localStorage.getItem('mn-theme');var dark=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(dark)document.documentElement.classList.add('dark');}catch(e){}})();
+        `.trim() }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
-        <LazyAssistantBubble />
-        <LazyIdleTimeout />
-        <Toaster position="bottom-right" />
-        <Suspense>
-          <FlashToast />
-        </Suspense>
-        <CookieBanner />
-        <GoogleAnalyticsWithConsent />
+        <ThemeProvider>
+          {children}
+          <LazyAssistantBubble />
+          <LazyIdleTimeout />
+          <Toaster position="bottom-right" />
+          <Suspense>
+            <FlashToast />
+          </Suspense>
+          <CookieBanner />
+          <GoogleAnalyticsWithConsent />
+        </ThemeProvider>
       </body>
     </html>
   );

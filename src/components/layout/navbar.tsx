@@ -5,6 +5,7 @@ import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
 import { LogoLink } from "./logo-link";
 import { AdvertiseDropdown } from "./advertise-dropdown";
+import { ThemePicker } from "@/components/theme-picker";
 
 interface NavbarProps {
   user?: {
@@ -64,7 +65,8 @@ export function Navbar({ user }: NavbarProps) {
           </nav>
 
           {/* Desktop Auth */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-3">
+            <ThemePicker />
             {user ? (
               <UserDropdown
                 displayName={displayName}
@@ -92,7 +94,8 @@ export function Navbar({ user }: NavbarProps) {
           </div>
 
           {/* Mobile toggle — isolated client component */}
-          <div className="flex items-center gap-1 lg:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
+            <ThemePicker />
             {user ? (
               <UserDropdown
                 displayName={displayName}
