@@ -154,7 +154,7 @@ function EventCard({
           )}
           {event.isMosqueOrganized && event.mosqueName && (
             <span className="inline-flex items-center gap-1 rounded-full bg-white/90 dark:bg-gray-900/90 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 shadow">
-              ðŸ•Œ {event.mosqueName}
+              🕌 {event.mosqueName}
             </span>
           )}
         </div>
