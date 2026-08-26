@@ -40,6 +40,9 @@ export default function SubmitEventPage() {
     title: "",
     description: "",
     eventDate: "",
+    eventEndDate: "",
+    isRecurring: false,
+    recurrenceNote: "",
     location: "",
     listingType: "STANDARD" as "STANDARD" | "FEATURED",
     isMosqueOrganized: false,
@@ -133,6 +136,9 @@ export default function SubmitEventPage() {
         title: form.title,
         description: form.description,
         eventDate: form.eventDate,
+        eventEndDate: form.eventEndDate || undefined,
+        isRecurring: form.isRecurring,
+        recurrenceNote: form.recurrenceNote || undefined,
         location: form.location,
         listingType: form.listingType,
         isMosqueOrganized: form.isMosqueOrganized,
@@ -382,15 +388,64 @@ export default function SubmitEventPage() {
             </Field>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Event date & time" required>
+              <Field label="Start date & time" required>
                 <input
                   type="datetime-local"
                   required
                   value={form.eventDate}
-                  onChange={(e) => set("eventDate", e.target.value)}
+                  onChange={(e) => {
+                    set("eventDate", e.target.value);
+                    // Clear end date if it's now before start
+                    if (form.eventEndDate && e.target.value > form.eventEndDate) set("eventEndDate", "");
+                  }}
                   className={inputCls}
                 />
               </Field>
+              <Field label="End date & time" >
+                <input
+                  type="datetime-local"
+                  value={form.eventEndDate}
+                  min={form.eventDate || undefined}
+                  onChange={(e) => set("eventEndDate", e.target.value)}
+                  className={inputCls}
+                />
+                <p className="text-xs text-gray-400 mt-1">Leave blank for a single-day event.</p>
+              </Field>
+            </div>
+
+            {/* Recurring */}
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.isRecurring}
+                  onChange={(e) => set("isRecurring", e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-emerald-600"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">This is a recurring event</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">e.g. weekly halaqah, monthly dinner</p>
+                </div>
+              </label>
+              {form.isRecurring && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Recurrence description <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required={form.isRecurring}
+                    maxLength={120}
+                    value={form.recurrenceNote}
+                    onChange={(e) => set("recurrenceNote", e.target.value)}
+                    placeholder="e.g. Every Friday after Jummah, until end of Ramadan"
+                    className={inputCls}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
               <Field label="Location" required>
                 <div ref={addressRef} className="relative">
                   <div className="relative">

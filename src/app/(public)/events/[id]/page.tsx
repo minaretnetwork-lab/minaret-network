@@ -79,13 +79,20 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
           <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600 dark:text-gray-400">
             <span className="inline-flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-              {formatEventDate(event.eventDate)}
+              {event.eventEndDate && formatEventDate(event.eventEndDate) !== formatEventDate(event.eventDate)
+                ? `${formatEventDate(event.eventDate)} – ${formatEventDate(event.eventEndDate)}`
+                : formatEventDate(event.eventDate)}
             </span>
             <span className="inline-flex items-center gap-2">
               <MapPin className="h-4 w-4 text-emerald-600 flex-shrink-0" />
               {event.location}
             </span>
           </div>
+          {event.isRecurring && event.recurrenceNote && (
+            <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">
+              🔁 {event.recurrenceNote}
+            </p>
+          )}
 
           {/* Disclaimer — always visible per spec */}
           <EventDisclaimer />

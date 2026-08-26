@@ -668,6 +668,9 @@ model EventListing {
   title                          String
   description                    String
   eventDate                      DateTime
+  eventEndDate                   DateTime?
+  isRecurring                    Boolean            @default(false)
+  recurrenceNote                 String?
   location                       String
   listingType                    EventListingType   @default(STANDARD)
   isMosqueOrganized              Boolean            @default(false)

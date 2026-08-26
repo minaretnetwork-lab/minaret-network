@@ -155,7 +155,10 @@ function EventCard({
         <div className="space-y-1">
           <p className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
             <CalendarDays className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-            {formatEventDate(event.eventDate)}
+            {event.eventEndDate && formatEventDate(event.eventEndDate) !== formatEventDate(event.eventDate)
+              ? `${formatEventDate(event.eventDate)} – ${formatEventDate(event.eventEndDate)}`
+              : formatEventDate(event.eventDate)}
+            {event.isRecurring && " 🔁"}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
             <MapPin className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />

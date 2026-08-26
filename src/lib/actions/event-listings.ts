@@ -13,7 +13,10 @@ export interface SubmitEventListingInput {
   organizerContact: string;
   title: string;
   description: string;
-  eventDate: string; // ISO string from client
+  eventDate: string;       // ISO string from client
+  eventEndDate?: string;   // optional, ISO string
+  isRecurring?: boolean;
+  recurrenceNote?: string;
   location: string;
   listingType: "STANDARD" | "FEATURED";
   isMosqueOrganized: boolean;
@@ -42,6 +45,9 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
   if (isNaN(eventDate.getTime())) throw new Error("Invalid event date.");
   if (eventDate < new Date()) throw new Error("Event date must be in the future.");
 
+  const eventEndDate = input.eventEndDate ? new Date(input.eventEndDate) : null;
+  if (eventEndDate && eventEndDate < eventDate) throw new Error("End date must be on or after the start date.");
+
   // Server-side price — ignore any client-supplied price field
   const listingType = input.listingType === "FEATURED" ? "FEATURED" : "STANDARD";
   const isPromo = new Date() < FREE_UNTIL;
@@ -58,6 +64,9 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
         title: input.title.trim(),
         description: input.description.trim(),
         eventDate,
+        eventEndDate,
+        isRecurring: input.isRecurring ?? false,
+        recurrenceNote: input.recurrenceNote?.trim() || null,
         location: input.location.trim(),
         listingType,
         isMosqueOrganized: input.isMosqueOrganized,
@@ -81,6 +90,9 @@ export async function submitEventListing(input: SubmitEventListingInput): Promis
       title: input.title.trim(),
       description: input.description.trim(),
       eventDate,
+      eventEndDate,
+      isRecurring: input.isRecurring ?? false,
+      recurrenceNote: input.recurrenceNote?.trim() || null,
       location: input.location.trim(),
       listingType,
       isMosqueOrganized: false,
@@ -169,8 +181,10 @@ export async function adminApproveEventListing(id: string) {
   if (!listing) throw new Error("Listing not found");
 
   const now = new Date();
-  const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const expiresAt = listing.eventDate < thirtyDays ? listing.eventDate : thirtyDays;
+  // Listing expires at end of the last event day (midnight after eventEndDate, or eventDate if single-day)
+  const lastDay = listing.eventEndDate ?? listing.eventDate;
+  const expiresAt = new Date(lastDay);
+  expiresAt.setHours(23, 59, 59, 999);
 
   await prisma.eventListing.update({
     where: { id },
