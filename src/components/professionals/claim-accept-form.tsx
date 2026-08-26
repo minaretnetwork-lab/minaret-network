@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { acceptClaimInvite } from "@/lib/actions/claim-invite";
 
 export function ClaimAcceptForm({ token, businessName }: { token: string; businessName: string }) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
