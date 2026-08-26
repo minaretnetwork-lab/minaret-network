@@ -29,7 +29,10 @@ export async function signUp(
   const host = headersList.get("x-forwarded-host") ?? headersList.get("host") ?? "";
   const proto = headersList.get("x-forwarded-proto") ?? "https";
   const origin = host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_SITE_URL ?? "");
-  const emailRedirectTo = `${origin}/auth/callback?next=/auth/login?verified=1`;
+  const loginDest = redirectTo && redirectTo !== "/dashboard"
+    ? `/auth/login?verified=1&redirectTo=${encodeURIComponent(redirectTo)}`
+    : `/auth/login?verified=1`;
+  const emailRedirectTo = `${origin}/auth/callback?next=${encodeURIComponent(loginDest)}`;
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({

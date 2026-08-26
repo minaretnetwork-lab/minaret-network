@@ -79,7 +79,7 @@ function SignUpForm() {
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 We sent a verification link to your email address. Click it to activate your account, then sign in.
               </p>
-              <Link href="/auth/login" className="inline-flex items-center justify-center w-full h-11 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors">
+              <Link href={`/auth/login${redirectTo !== "/dashboard" ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""}`} className="inline-flex items-center justify-center w-full h-11 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors">
                 Go to sign in
               </Link>
             </div>
