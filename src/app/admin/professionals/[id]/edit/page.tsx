@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getCategoriesForAdmin, getProfessionalForAdmin, updateProfessionalByAdmin } from "@/lib/actions/admin";
 import { prisma } from "@/lib/prisma";
 import { LANGUAGES } from "@/lib/constants";
+import { AddressAutocompleteInput } from "@/components/ui/address-autocomplete-input";
 
 export const metadata = { title: "Edit Listing — Admin" };
 
@@ -169,7 +170,7 @@ export default async function AdminEditProfessionalPage({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="businessAddress">Business Address</Label>
-            <Input id="businessAddress" name="businessAddress" defaultValue={professional.businessAddress ?? ""} />
+            <AddressAutocompleteInput name="businessAddress" defaultValue={professional.businessAddress ?? ""} />
           </div>
           <label className="flex items-center gap-2 text-sm cursor-pointer text-gray-700 dark:text-gray-300">
             <input
