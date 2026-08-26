@@ -160,14 +160,24 @@ export default async function ProfessionalDashboardPage({
                     )}
                   </div>
                 </div>
-                {canEdit && (
-                  <Link href={`/professionals/${professional.id}/edit`} className="flex-shrink-0">
-                    <Button className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-                      <Pencil className="h-4 w-4" />
-                      {professional.status === "WITHDRAWN" ? "Edit & Resubmit" : "Edit Profile"}
-                    </Button>
-                  </Link>
-                )}
+                <div className="flex-shrink-0 flex items-center gap-2">
+                  {professional.status === "APPROVED" && (
+                    <Link href={`/professionals/${professional.id}`}>
+                      <Button variant="outline" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30">
+                        <Eye className="h-4 w-4" />
+                        View Profile
+                      </Button>
+                    </Link>
+                  )}
+                  {canEdit && (
+                    <Link href={`/professionals/${professional.id}/edit`}>
+                      <Button className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <Pencil className="h-4 w-4" />
+                        {professional.status === "WITHDRAWN" ? "Edit & Resubmit" : "Edit Profile"}
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {/* secondary actions bar */}
