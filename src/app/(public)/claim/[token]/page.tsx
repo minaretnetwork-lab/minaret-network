@@ -11,7 +11,16 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
 
   const professional = await getClaimInviteByToken(token);
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   if (!professional) {
+    // Authenticated user on an expired/used token → they almost certainly just
+    // claimed it and the server rerender raced with window.location.replace.
+    // Redirect to their dashboard instead of showing a confusing error.
+    if (user) {
+      redirect("/dashboard/professional?claimed=1");
+    }
     return (
       <main className="min-h-[70vh] flex items-center justify-center bg-white dark:bg-gray-950 px-4">
         <div className="max-w-md text-center space-y-4">
@@ -27,9 +36,6 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
       </main>
     );
   }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(`/claim/${token}`)}`;
