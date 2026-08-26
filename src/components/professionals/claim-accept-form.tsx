@@ -24,19 +24,29 @@ export function ClaimAcceptForm({ token, businessName }: { token: string; busine
   }
 
   return (
-    <div className="space-y-3">
-      {error && (
-        <p className="rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
-          {error}
-        </p>
+    <>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-950">
+          <div className="text-center space-y-3">
+            <div className="h-10 w-10 rounded-full border-4 border-emerald-600 border-t-transparent animate-spin mx-auto" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">Claiming your listing…</p>
+          </div>
+        </div>
       )}
-      <Button
-        onClick={handleClaim}
-        disabled={loading}
-        className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3"
-      >
-        {loading ? "Claiming…" : `Claim "${businessName}"`}
-      </Button>
-    </div>
+      <div className="space-y-3">
+        {error && (
+          <p className="rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+            {error}
+          </p>
+        )}
+        <Button
+          onClick={handleClaim}
+          disabled={loading}
+          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3"
+        >
+          {loading ? "Claiming…" : `Claim "${businessName}"`}
+        </Button>
+      </div>
+    </>
   );
 }
