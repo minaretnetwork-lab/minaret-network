@@ -47,9 +47,14 @@ const STATUS_UI: Record<string, { label: string; color: string; icon: React.Reac
   },
 };
 
-export default async function ProfessionalDashboardPage() {
+export default async function ProfessionalDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ claimed?: string; name?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
+  const { claimed, name } = await searchParams;
 
   const professionals = await prisma.professional.findMany({
     where: { userId: user.id },
@@ -98,6 +103,19 @@ export default async function ProfessionalDashboardPage() {
 
   return (
     <div className="space-y-6">
+      {claimed === "1" && (
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-5 py-4">
+          <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-emerald-900 dark:text-emerald-200">
+              {name ? `"${name}" claimed successfully!` : "Listing claimed successfully!"}
+            </p>
+            <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-0.5">
+              You can now edit your profile details below.
+            </p>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Professional Listings</h1>
         <Link href="/professionals/register">
