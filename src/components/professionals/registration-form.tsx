@@ -108,6 +108,10 @@ interface Props {
   initialData?: ProfessionalFormInitialData | null;
   mode?: "create" | "edit";
   onSubmitted?: () => void;
+  /** Override the POST endpoint (default: /api/professionals/apply) */
+  endpoint?: string;
+  /** Override the href for the success screen's primary button (default: /dashboard/professional) */
+  successRedirectHref?: string;
 }
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -210,7 +214,7 @@ const STEP_FIELDS: (keyof FormData)[][] = [
 
 const DRAFT_KEY = "mn_professional_draft";
 
-export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas, initialData = null, mode = "create", onSubmitted }: Props) {
+export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas, initialData = null, mode = "create", onSubmitted, endpoint = "/api/professionals/apply", successRedirectHref = "/dashboard/professional" }: Props) {
   const isEdit = mode === "edit" && initialData;
   const [step, setStep] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
@@ -593,7 +597,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         setSubmitStatus("error");
         return;
       }
-      const res = await fetch("/api/professionals/apply", { method: "POST", body: fd });
+      const res = await fetch(endpoint, { method: "POST", body: fd });
       const contentType = res.headers.get("content-type") ?? "";
       const result: { ok: boolean; error?: string } = contentType.includes("application/json")
         ? await res.json()
@@ -629,7 +633,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
             ? "Your changes have been saved and sent back for admin review."
             : "Your application has been sent for review. You'll be notified once it's approved by our admin team."}
         </p>
-        <Button onClick={() => router.push("/dashboard/professional")} className="bg-green-600 hover:bg-green-700 text-white">
+        <Button onClick={() => router.push(successRedirectHref)} className="bg-green-600 hover:bg-green-700 text-white">
           Go to Listings
         </Button>
       </div>
