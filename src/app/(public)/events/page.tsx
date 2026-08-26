@@ -113,15 +113,27 @@ function EventCard({
       className="group flex flex-col rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden transition hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md"
     >
       {/* Image */}
-      <div className="relative w-full aspect-[16/9] bg-emerald-50 dark:bg-emerald-900/20 overflow-hidden">
+      <div className="relative w-full aspect-[16/9] bg-gray-900 overflow-hidden">
         {event.imageUrl ? (
-          <Image
-            src={event.imageUrl}
-            alt={event.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          <>
+            {/* blurred background fill */}
+            <Image
+              src={event.imageUrl}
+              alt=""
+              fill
+              aria-hidden
+              className="object-cover scale-110 blur-md opacity-40"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+            {/* actual image, contained */}
+            <Image
+              src={event.imageUrl}
+              alt={event.title}
+              fill
+              className="object-contain"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <CalendarDays className="h-10 w-10 text-emerald-300 dark:text-emerald-700" />

@@ -47,8 +47,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         <article className="space-y-6">
           {/* Hero image */}
           {event.imageUrl && (
-            <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
-              <Image src={event.imageUrl} alt={event.title} fill className="object-cover" priority />
+            <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-gray-900">
+              {/* blurred background fill */}
+              <Image src={event.imageUrl} alt="" fill aria-hidden className="object-cover scale-110 blur-md opacity-40" />
+              {/* actual image, contained */}
+              <Image src={event.imageUrl} alt={event.title} fill className="object-contain" priority />
             </div>
           )}
 
