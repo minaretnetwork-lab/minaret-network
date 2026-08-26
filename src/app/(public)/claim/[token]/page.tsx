@@ -32,7 +32,14 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/auth/login?next=/claim/${token}`);
+    const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(`/claim/${token}`)}`;
+    const claimPath = `/claim/${token}`;
+    return (
+      <script dangerouslySetInnerHTML={{ __html: `
+        try { localStorage.setItem("mn_oauth_next", ${JSON.stringify(claimPath)}); } catch(e) {}
+        window.location.replace(${JSON.stringify(loginUrl)});
+      `.trim() }} />
+    );
   }
 
   const displayName =
