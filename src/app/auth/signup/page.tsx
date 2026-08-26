@@ -55,6 +55,9 @@ function SignUpForm() {
   async function handleGoogleSignUp() {
     if (!googleAuthEnabled) return;
 
+    if (redirectTo && redirectTo !== "/dashboard") {
+      try { localStorage.setItem("mn_oauth_next", redirectTo); } catch {}
+    }
     window.location.href = `/auth/google?next=${encodeURIComponent(redirectTo)}`;
   }
 

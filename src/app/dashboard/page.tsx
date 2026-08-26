@@ -7,6 +7,7 @@ import { FileText, User, Search, ChevronRight, MapPin, Send } from "lucide-react
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { IncomingRequestsAlert } from "@/components/dashboard/incoming-requests-alert";
 import { RecentRequestsPanel } from "@/components/dashboard/recent-requests-panel";
+import { OAuthNextRedirect } from "@/components/dashboard/oauth-next-redirect";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
@@ -49,6 +50,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <OAuthNextRedirect />
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Welcome, {displayName}
