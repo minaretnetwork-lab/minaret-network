@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { promoteToAdmin, promoteToSuperAdmin, demoteAdmin, toggleAdminActive } from "@/lib/actions/admins";
+import { promoteToAdmin, promoteToSuperAdmin, promoteToListingManager, demoteAdmin, toggleAdminActive } from "@/lib/actions/admins";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Loader2, Power, PowerOff, Search, Shield, ShieldOff, Star, UserRound, X } from "lucide-react";
+import { Crown, Loader2, Power, PowerOff, Search, Shield, ShieldOff, Star, UserRound, X, ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export interface AdminManagedUser {
@@ -41,6 +41,14 @@ function getRoleTags(user: AdminManagedUser) {
       label: "Professional",
       className: "bg-emerald-100 text-emerald-700 border-emerald-200",
       icon: Star,
+    });
+  }
+
+  if (user.role === "LISTING_MANAGER") {
+    tags.push({
+      label: "Listing Manager",
+      className: "bg-teal-100 text-teal-700 border-teal-200",
+      icon: ClipboardList,
     });
   }
 
@@ -140,6 +148,18 @@ function UserActions({ user }: { user: AdminManagedUser }) {
 
   return (
     <div className="flex flex-wrap gap-2">
+      {user.role !== "ADMIN" && user.role !== "SUPER_ADMIN" && user.role !== "LISTING_MANAGER" && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="border-teal-300 text-teal-700 hover:bg-teal-50"
+          disabled={pending}
+          onClick={() => run(() => promoteToListingManager(user.id), "User is now a Listing Manager.")}
+        >
+          {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="h-3.5 w-3.5" />}
+          Make Listing Manager
+        </Button>
+      )}
       {user.role !== "ADMIN" && user.role !== "SUPER_ADMIN" && (
         <Button
           size="sm"
@@ -164,10 +184,10 @@ function UserActions({ user }: { user: AdminManagedUser }) {
         </Button>
       )}
 
-      {user.role === "ADMIN" && (
+      {(user.role === "ADMIN" || user.role === "LISTING_MANAGER") && (
         <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700" onClick={() => setConfirm("demote")}>
           <ShieldOff className="h-3.5 w-3.5" />
-          Remove Admin
+          {user.role === "LISTING_MANAGER" ? "Remove Access" : "Remove Admin"}
         </Button>
       )}
 
@@ -204,13 +224,14 @@ export function AdminManagementClient({ users }: { users: AdminManagedUser[] }) 
   const counts = {
     members: users.length,
     professionals: users.filter((user) => user.professionals.length > 0).length,
+    listingManagers: users.filter((user) => user.role === "LISTING_MANAGER").length,
     admins: users.filter((user) => user.role === "ADMIN").length,
     superAdmins: users.filter((user) => user.role === "SUPER_ADMIN").length,
   };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <div className="rounded-xl border border-gray-200 bg-white p-3 text-center">
           <p className="text-xl font-bold text-gray-900">{counts.members}</p>
           <p className="text-xs uppercase tracking-wide text-gray-400">Users</p>
@@ -218,6 +239,10 @@ export function AdminManagementClient({ users }: { users: AdminManagedUser[] }) 
         <div className="rounded-xl border border-gray-200 bg-white p-3 text-center">
           <p className="text-xl font-bold text-emerald-700">{counts.professionals}</p>
           <p className="text-xs uppercase tracking-wide text-gray-400">Professionals</p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-3 text-center">
+          <p className="text-xl font-bold text-teal-700">{counts.listingManagers}</p>
+          <p className="text-xs uppercase tracking-wide text-gray-400">Listing Mgrs</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-3 text-center">
           <p className="text-xl font-bold text-blue-700">{counts.admins}</p>

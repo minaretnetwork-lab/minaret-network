@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { randomBytes } from "crypto";
 
 function isAdmin(role: string) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
+  return role === "ADMIN" || role === "SUPER_ADMIN" || role === "LISTING_MANAGER";
 }
 
 /** Admin: generate (or regenerate) a claim invite link for an unclaimed professional listing. */

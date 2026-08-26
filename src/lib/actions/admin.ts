@@ -737,9 +737,13 @@ export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: str
   return professionals;
 }
 
+function canManageListings(role: string) {
+  return role === "ADMIN" || role === "SUPER_ADMIN" || role === "LISTING_MANAGER";
+}
+
 export async function createUnclaimedProfessional(formData: FormData): Promise<{ ok: boolean; id?: string; error?: string }> {
   const user = await getCurrentUser();
-  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) return { ok: false, error: "Unauthorized" };
+  if (!user || !canManageListings(user.role)) return { ok: false, error: "Unauthorized" };
 
   const businessName = String(formData.get("businessName") ?? "").trim() || null;
   const title = String(formData.get("title") ?? "").trim() || null;

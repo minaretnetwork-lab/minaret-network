@@ -55,6 +55,16 @@ export async function getUsersForAdminManagement() {
   });
 }
 
+export async function promoteToListingManager(userId: string) {
+  const me = await requireSuperAdmin();
+  if (userId === me.id) throw new Error("Cannot change your own role");
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target) throw new Error("User not found");
+  if (target.role === "SUPER_ADMIN") throw new Error("Cannot modify a super admin");
+  await prisma.user.update({ where: { id: userId }, data: { role: "LISTING_MANAGER" } });
+  revalidatePath("/admin/admins");
+}
+
 export async function searchUsers(query: string) {
   await requireSuperAdmin();
   if (!query || query.trim().length < 2) return [];
@@ -105,6 +115,7 @@ export async function demoteAdmin(userId: string) {
   const target = await prisma.user.findUnique({ where: { id: userId } });
   if (!target) throw new Error("User not found");
   if (target.role === "SUPER_ADMIN") throw new Error("Cannot modify a super admin");
+  if (target.role !== "ADMIN" && target.role !== "LISTING_MANAGER") throw new Error("User has no elevated access to remove");
   await prisma.user.update({ where: { id: userId }, data: { role: "MEMBER" } });
   revalidatePath("/admin/admins");
 }

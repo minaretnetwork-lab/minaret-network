@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MinaretLogo } from "@/components/ui/minaret-logo";
+import { ListingManagerGuard } from "@/components/admin/listing-manager-guard";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -31,17 +32,21 @@ const navLinks = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
-  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+  const allowedRoles = ["ADMIN", "SUPER_ADMIN", "LISTING_MANAGER"];
+  if (!user || !allowedRoles.includes(user.role)) {
     redirect("/dashboard");
   }
+  const isListingManager = user.role === "LISTING_MANAGER";
   if (!user.tosVersion || user.tosVersion !== CURRENT_TOS_VERSION) {
     redirect("/auth/re-consent");
   }
   const isSuperAdmin = user.role === "SUPER_ADMIN";
-  const [stats, pendingClaimsCount] = await Promise.all([
-    getAdminStats(DEFAULT_MOSQUE_SLUG),
-    prisma.profileClaim.count({ where: { status: "PENDING" } }),
-  ]);
+  const [stats, pendingClaimsCount] = isListingManager
+    ? [null, 0]
+    : await Promise.all([
+        getAdminStats(DEFAULT_MOSQUE_SLUG),
+        prisma.profileClaim.count({ where: { status: "PENDING" } }),
+      ]);
   const pendingProfessionalReviews = stats?.pendingProfessionalReviews ?? stats?.pendingProfessionals ?? 0;
   const pendingRecommendations = stats?.pendingRecommendations ?? 0;
   const openReports = stats?.openReports ?? 0;
@@ -62,7 +67,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/">
               <MinaretLogo withText={false} className="h-7 w-auto" />
             </Link>
-            <span className="text-sm font-semibold">Admin Panel</span>
+            <span className="text-sm font-semibold">
+            {isListingManager ? "Listings Panel" : "Admin Panel"}
+          </span>
             <span className="text-white/30 text-xs">|</span>
             <Link href="/dashboard" className="text-xs text-white/60 hover:text-white transition-colors">
               My Dashboard
@@ -84,50 +91,65 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="container mx-auto px-4 py-8 flex gap-8">
         <aside className="w-52 flex-shrink-0 hidden md:block">
           <nav className="space-y-1">
-            {navLinks.map((link) => (
+            {isListingManager ? (
               <LinkWithBadge
-                key={link.href}
-                href={link.href}
-                icon={link.icon}
-                label={link.label}
-                badge={badgeForHref(link.href)}
+                href="/admin/professionals"
+                icon={<Users className="h-4 w-4" />}
+                label="Businesses"
+                badge={0}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/10 hover:text-green-700 dark:hover:text-green-400 transition-colors"
               />
-            ))}
-            {isSuperAdmin && (
-              <Link
-                href="/admin/admins"
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors font-medium"
-              >
-                <ShieldCheck className="h-4 w-4" />
-                Manage Admins
-              </Link>
+            ) : (
+              <>
+                {navLinks.map((link) => (
+                  <LinkWithBadge
+                    key={link.href}
+                    href={link.href}
+                    icon={link.icon}
+                    label={link.label}
+                    badge={badgeForHref(link.href)}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/10 hover:text-green-700 dark:hover:text-green-400 transition-colors"
+                  />
+                ))}
+                {isSuperAdmin && (
+                  <Link
+                    href="/admin/admins"
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors font-medium"
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    Manage Admins
+                  </Link>
+                )}
+              </>
             )}
           </nav>
         </aside>
 
         <main className="flex-1 min-w-0">
-          <nav className="mb-6 grid grid-cols-2 gap-2 md:hidden" aria-label="Admin sections">
-            {navLinks.map((link) => (
-              <LinkWithBadge
-                key={link.href}
-                href={link.href}
-                icon={<span className="text-emerald-700">{link.icon}</span>}
-                label={link.label}
-                badge={badgeForHref(link.href)}
-                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
-              />
-            ))}
-            {isSuperAdmin && (
-              <Link
-                href="/admin/admins"
-                className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm font-medium text-amber-800 shadow-sm transition hover:bg-amber-100"
-              >
-                <ShieldCheck className="h-4 w-4" />
-                <span className="min-w-0 truncate">Manage Admins</span>
-              </Link>
-            )}
-          </nav>
+          <ListingManagerGuard role={user.role} />
+          {!isListingManager && (
+            <nav className="mb-6 grid grid-cols-2 gap-2 md:hidden" aria-label="Admin sections">
+              {navLinks.map((link) => (
+                <LinkWithBadge
+                  key={link.href}
+                  href={link.href}
+                  icon={<span className="text-emerald-700">{link.icon}</span>}
+                  label={link.label}
+                  badge={badgeForHref(link.href)}
+                  className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                />
+              ))}
+              {isSuperAdmin && (
+                <Link
+                  href="/admin/admins"
+                  className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm font-medium text-amber-800 shadow-sm transition hover:bg-amber-100"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="min-w-0 truncate">Manage Admins</span>
+                </Link>
+              )}
+            </nav>
+          )}
           {children}
         </main>
       </div>
