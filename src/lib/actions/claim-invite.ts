@@ -83,6 +83,7 @@ export async function acceptClaimInvite(token: string) {
   await prisma.professional.update({
     where: { id: professional.id },
     data: {
+      userId: dbUser.id,
       claimedByUserId: dbUser.id,
       claimedAt: new Date(),
       claimInviteToken: null,
