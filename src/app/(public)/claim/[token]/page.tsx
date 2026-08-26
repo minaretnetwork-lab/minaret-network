@@ -36,7 +36,7 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
     const claimPath = `/claim/${token}`;
     return (
       <script dangerouslySetInnerHTML={{ __html: `
-        try { localStorage.setItem("mn_oauth_next", ${JSON.stringify(claimPath)}); } catch(e) {}
+        try { localStorage.setItem("mn_oauth_next", JSON.stringify({next:${JSON.stringify(claimPath)},ts:Date.now()})); } catch(e) {}
         window.location.replace(${JSON.stringify(loginUrl)});
       `.trim() }} />
     );

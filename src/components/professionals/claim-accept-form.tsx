@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { acceptClaimInvite } from "@/lib/actions/claim-invite";
@@ -16,9 +15,9 @@ export function ClaimAcceptForm({ token, businessName }: { token: string; busine
     setLoading(true);
     setError(null);
     try {
-      const professionalId = await acceptClaimInvite(token);
+      await acceptClaimInvite(token);
+      try { localStorage.removeItem("mn_oauth_next"); } catch {}
       setDone(true);
-      setTimeout(() => router.push(`/professionals/${professionalId}`), 2000);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
       setLoading(false);
@@ -27,12 +26,28 @@ export function ClaimAcceptForm({ token, businessName }: { token: string; busine
 
   if (done) {
     return (
-      <div className="text-center space-y-2">
-        <CheckCircle className="h-10 w-10 text-emerald-600 mx-auto" />
-        <p className="font-semibold text-gray-900 dark:text-white">Listing claimed!</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          You now own <strong>{businessName}</strong> on Minaret Network. Redirecting to your profile…
-        </p>
+      <div className="text-center space-y-4">
+        <CheckCircle className="h-12 w-12 text-emerald-600 mx-auto" />
+        <div className="space-y-1">
+          <p className="font-semibold text-gray-900 dark:text-white text-lg">Listing claimed!</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            You now own <strong>{businessName}</strong> on Minaret Network.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 pt-1">
+          <a
+            href="/dashboard/professional"
+            className="inline-flex items-center justify-center w-full h-11 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition-colors"
+          >
+            Update my profile details
+          </a>
+          <a
+            href="/dashboard"
+            className="inline-flex items-center justify-center w-full h-10 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            Go to dashboard
+          </a>
+        </div>
       </div>
     );
   }
