@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CalendarDays, MapPin, Sparkles, Plus } from "lucide-react";
 import { getPublicEventListings } from "@/lib/actions/event-listings";
 import { EventDisclaimer } from "@/components/events/event-disclaimer";
+import { EventImageViewer } from "@/components/events/event-image-viewer";
 
 export const metadata = {
   title: "Community Events",
@@ -139,6 +140,9 @@ function EventCard({
             <CalendarDays className="h-10 w-10 text-emerald-300 dark:text-emerald-700" />
           </div>
         )}
+
+        {/* Zoom button */}
+        {event.imageUrl && <EventImageViewer src={event.imageUrl} alt={event.title} />}
 
         {/* Badges overlaid on image */}
         <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">

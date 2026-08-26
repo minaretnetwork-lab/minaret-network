@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CalendarDays, MapPin, User, Sparkles } from "lucide-react";
 import { getPublicEventListing } from "@/lib/actions/event-listings";
+import { EventImageViewer } from "@/components/events/event-image-viewer";
 import { EventDisclaimer } from "@/components/events/event-disclaimer";
 import { ReportEventButton } from "@/components/events/report-event-button";
 
@@ -52,6 +53,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               <Image src={event.imageUrl} alt="" fill aria-hidden className="object-cover scale-110 blur-md opacity-40" />
               {/* actual image, contained */}
               <Image src={event.imageUrl} alt={event.title} fill className="object-contain" priority />
+              <EventImageViewer src={event.imageUrl} alt={event.title} />
             </div>
           )}
 
