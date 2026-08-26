@@ -292,21 +292,21 @@ function SponsoredHistory({ listings }: { listings: SponsoredListing[] }) {
         {/* gradient header */}
         <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-4 flex items-center gap-3">
           <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Zap className="h-4.5 w-4.5 text-white" />
+            <Zap className="h-5 w-5 text-white" />
           </div>
           <div>
             <p className="font-bold text-white text-sm">Get Sponsored — Appear First</p>
-            <p className="text-violet-200 text-xs mt-0.5">Be the top result when members search your category</p>
+            <p className="text-violet-200 text-xs mt-0.5">Pin your listing to the top of search results for your category</p>
           </div>
-          <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-full flex-shrink-0">Coming soon</span>
+          <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider bg-white/20 text-white px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap">Free until Oct 31</span>
         </div>
-        {/* benefits */}
-        <div className="bg-white dark:bg-gray-900 px-5 py-4">
+        {/* benefits + CTA */}
+        <div className="bg-white dark:bg-gray-900 px-5 py-4 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { icon: <Eye className="h-4 w-4 text-violet-600" />, title: "Priority placement", desc: "Your listing shows above all standard results" },
-              { icon: <Star className="h-4 w-4 text-violet-600" />, title: "Sponsored badge", desc: "Stand out with a visible trust indicator" },
-              { icon: <Megaphone className="h-4 w-4 text-violet-600" />, title: "More inquiries", desc: "Sponsored pros get significantly more contact requests" },
+              { icon: <Eye className="h-4 w-4 text-violet-600" />, title: "Priority placement", desc: "Appear above all standard results" },
+              { icon: <Star className="h-4 w-4 text-violet-600" />, title: "Sponsored badge", desc: "Visible trust signal on your card" },
+              { icon: <Megaphone className="h-4 w-4 text-violet-600" />, title: "More inquiries", desc: "Sponsored pros attract more contact requests" },
             ].map((b) => (
               <div key={b.title} className="flex gap-2.5 items-start">
                 <div className="mt-0.5 flex-shrink-0 h-7 w-7 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">{b.icon}</div>
@@ -317,9 +317,17 @@ function SponsoredHistory({ listings }: { listings: SponsoredListing[] }) {
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
-            Self-service sponsorship is coming soon. In the meantime, contact the Minaret Network admin to get your listing sponsored.
-          </p>
+          <div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-400">Free until Oct 31, 2026</span>
+              <span className="text-gray-400"> · $19.99 CAD/month after</span>
+            </p>
+            <Link href="/dashboard/promote" className="flex-shrink-0">
+              <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5 h-8 text-xs">
+                <Sparkles className="h-3.5 w-3.5" /> Apply Now
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { getMatchingServiceRequests, getMyServiceRequests } from "@/lib/actions/service-requests";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, User, Search, ChevronRight, MapPin, Send } from "lucide-react";
+import { FileText, User, Search, ChevronRight, MapPin, Send, Sparkles, Zap } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { IncomingRequestsAlert } from "@/components/dashboard/incoming-requests-alert";
 import { RecentRequestsPanel } from "@/components/dashboard/recent-requests-panel";
@@ -61,6 +61,27 @@ export default async function DashboardPage() {
       </div>
 
       {latestProfessional && <IncomingRequestsAlert requestIds={matchingRequests.map((request) => request.id)} />}
+
+      {/* Sponsored upsell — show for approved pros only */}
+      {latestProfessional?.status === "APPROVED" && (
+        <Link href="/dashboard/promote" className="block rounded-xl overflow-hidden border border-violet-200 dark:border-violet-900/50 hover:shadow-md transition-shadow">
+          <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-3.5 flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <Zap className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-white text-sm">Get Sponsored — Appear First in Search</p>
+              <p className="text-violet-200 text-xs mt-0.5 hidden sm:block">Pin your listing above all results · Free until Oct 31, 2026</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-wider bg-white/20 text-white px-2.5 py-1 rounded-full">Free now</span>
+              <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center">
+                <Sparkles className="h-3.5 w-3.5 text-white" />
+              </div>
+            </div>
+          </div>
+        </Link>
+      )}
 
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
