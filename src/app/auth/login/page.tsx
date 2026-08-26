@@ -215,7 +215,7 @@ function LoginForm() {
 
       <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
         Don&apos;t have an account?{" "}
-        <Link href="/auth/signup" className="text-green-700 hover:underline font-medium">Sign up</Link>
+        <Link href={`/auth/signup${redirectTo !== "/dashboard" ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""}`} className="text-green-700 hover:underline font-medium">Sign up</Link>
       </p>
     </div>
   );
