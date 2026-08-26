@@ -172,11 +172,16 @@ export async function GET(request: NextRequest) {
       return redirectResponse;
     }
 
-    // PKCE failed (likely cross-device) — send to forgot-password instead of login
-    log("PKCE exchange failed, redirecting to forgot-password");
-    return NextResponse.redirect(new URL("/auth/forgot-password?error=link_expired", siteUrl));
+    // PKCE failed — likely cross-device (email opened in different browser).
+    // If the next destination implies a signup flow, send to verify-email; otherwise forgot-password.
+    log("PKCE exchange failed, redirecting based on context");
+    const isSignupFlow = next === "/dashboard" || next.startsWith("/dashboard");
+    const failUrl = isSignupFlow
+      ? new URL("/auth/verify-email?error=link_expired", siteUrl)
+      : new URL("/auth/forgot-password?error=link_expired", siteUrl);
+    return NextResponse.redirect(failUrl);
   }
 
   log("no valid auth params in callback");
-  return NextResponse.redirect(new URL("/auth/forgot-password?error=link_expired", siteUrl));
+  return NextResponse.redirect(new URL("/auth/verify-email?error=link_expired", siteUrl));
 }
