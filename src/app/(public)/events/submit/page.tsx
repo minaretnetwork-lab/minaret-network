@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Info, ImagePlus, X, MapPin } from "lucide-react";
+import { ArrowLeft, Info, ImagePlus, X, MapPin, Search, ChevronDown } from "lucide-react";
 import { submitEventListing } from "@/lib/actions/event-listings";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +34,9 @@ export default function SubmitEventPage() {
   const addressRef = useRef<HTMLDivElement>(null);
   const [mosques, setMosques] = useState<MosqueOption[]>([]);
   const [mosqueOther, setMosqueOther] = useState(false);
+  const [mosqueSearch, setMosqueSearch] = useState("");
+  const [mosqueOpen, setMosqueOpen] = useState(false);
+  const mosqueRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState({
     organizerName: "",
     organizerContact: "",
@@ -51,6 +54,22 @@ export default function SubmitEventPage() {
   });
 
   useEffect(() => { document.title = "Post an Event | Minaret Network"; }, []);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (mosqueRef.current && !mosqueRef.current.contains(e.target as Node)) setMosqueOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filteredMosques = useMemo(() => {
+    const q = mosqueSearch.toLowerCase().trim();
+    if (!q) return mosques;
+    return mosques.filter((m) =>
+      m.name.toLowerCase().includes(q) || (m.city ?? "").toLowerCase().includes(q)
+    );
+  }, [mosques, mosqueSearch]);
 
   useEffect(() => {
     fetch("/api/mosques")
@@ -258,27 +277,81 @@ export default function SubmitEventPage() {
                     Mosque name <span className="text-red-500">*</span>
                   </label>
                   {!mosqueOther ? (
-                    <select
-                      required={form.isMosqueOrganized && !mosqueOther}
-                      value={form.mosqueName}
-                      onChange={(e) => {
-                        if (e.target.value === "__other__") {
-                          setMosqueOther(true);
-                          set("mosqueName", "");
-                        } else {
-                          set("mosqueName", e.target.value);
-                        }
-                      }}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    >
-                      <option value="">Select a mosque…</option>
-                      {mosques.map((m) => (
-                        <option key={m.id} value={m.name}>
-                          {m.name}{m.city ? ` — ${m.city}` : ""}
-                        </option>
-                      ))}
-                      <option value="__other__">Other / not listed</option>
-                    </select>
+                    <div ref={mosqueRef} className="relative">
+                      {/* Selected value display / search trigger */}
+                      <button
+                        type="button"
+                        onClick={() => { setMosqueOpen((o) => !o); setMosqueSearch(""); }}
+                        className="w-full flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <span className={form.mosqueName ? "text-gray-900 dark:text-white" : "text-gray-400"}>
+                          {form.mosqueName || "Select a mosque…"}
+                        </span>
+                        <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      </button>
+
+                      {/* Hidden required sentinel */}
+                      <input
+                        tabIndex={-1}
+                        required={form.isMosqueOrganized && !mosqueOther}
+                        value={form.mosqueName}
+                        onChange={() => {}}
+                        className="sr-only"
+                        aria-hidden
+                      />
+
+                      {mosqueOpen && (
+                        <div className="absolute z-50 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden">
+                          {/* Search input */}
+                          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+                            <Search className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                            <input
+                              autoFocus
+                              type="text"
+                              value={mosqueSearch}
+                              onChange={(e) => setMosqueSearch(e.target.value)}
+                              placeholder="Search mosques…"
+                              className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none"
+                            />
+                            {mosqueSearch && (
+                              <button type="button" onClick={() => setMosqueSearch("")}>
+                                <X className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Options */}
+                          <ul className="max-h-52 overflow-y-auto">
+                            {filteredMosques.length === 0 && (
+                              <li className="px-3 py-3 text-sm text-gray-400 text-center">No results</li>
+                            )}
+                            {filteredMosques.map((m) => (
+                              <li key={m.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => { set("mosqueName", m.name); setMosqueOpen(false); setMosqueSearch(""); }}
+                                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                                    form.mosqueName === m.name ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium" : "text-gray-900 dark:text-white"
+                                  }`}
+                                >
+                                  {m.name}
+                                  {m.city && <span className="text-xs text-gray-400 ml-1.5">{m.city}</span>}
+                                </button>
+                              </li>
+                            ))}
+                            <li className="border-t border-gray-100 dark:border-gray-800">
+                              <button
+                                type="button"
+                                onClick={() => { setMosqueOther(true); set("mosqueName", ""); setMosqueOpen(false); }}
+                                className="w-full text-left px-3 py-2.5 text-sm text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                              >
+                                + Not listed — enter manually
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="space-y-1">
                       <input
