@@ -60,7 +60,7 @@ export function EventImageViewer({ src, alt }: { src: string; alt: string }) {
       {/* Trigger — magnifier overlay on the image */}
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
         className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1.5 text-white text-xs font-medium hover:bg-black/80 transition backdrop-blur-sm"
         aria-label="View full image"
       >
