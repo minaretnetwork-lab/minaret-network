@@ -13,7 +13,7 @@ export default async function AdminSponsoredPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sponsored Listings</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Approve applications, manage active slots, and configure pricing
+          Approve applications and manage active sponsored listing slots
         </p>
       </div>
 

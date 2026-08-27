@@ -155,18 +155,16 @@ export function OffersDashboard({ offers, professional }: Props) {
         </div>
       )}
 
-      {/* Free period notice */}
-      {inFreePeriod && (
-        <div className="flex gap-3 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 p-4">
-          <Megaphone className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-emerald-800 dark:text-emerald-400">Free until October 31, 2026</p>
-            <p className="text-sm text-emerald-700 dark:text-emerald-500 mt-0.5">
-              All Community Offers are free during our launch period. Pricing kicks in November 1, 2026.
-            </p>
-          </div>
+      {/* All offers are free */}
+      <div className="flex gap-3 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 p-4">
+        <Megaphone className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-emerald-800 dark:text-emerald-400">Community Offers are FREE</p>
+          <p className="text-sm text-emerald-700 dark:text-emerald-500 mt-0.5">
+            Post special offers and deals for the community at no cost.
+          </p>
         </div>
-      )}
+      </div>
 
       {/* Success */}
       {success && (
@@ -250,13 +248,13 @@ export function OffersDashboard({ offers, professional }: Props) {
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{tierInfo.description}</p>
                 </div>
                 <p className={`text-base font-bold ${tier === "FEATURED" ? "text-amber-700 dark:text-amber-400" : "text-emerald-700 dark:text-emerald-400"}`}>
-                  {inFreePeriod ? "Free" : `$${price?.toFixed(2)}`}
+                  Free
                 </p>
               </div>
             )}
 
             <p className="mt-2 text-xs text-gray-400">
-              ≤3 days {inFreePeriod ? "(free)" : "→ $4.99"} · 4–7 days {inFreePeriod ? "(free)" : "→ $9.99"} · 8–30 days {inFreePeriod ? "(free)" : "→ $19.99"} · Max 30 days
+              Max 30 days per offer · All offers are free
             </p>
           </div>
 

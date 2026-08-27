@@ -329,8 +329,7 @@ function SponsoredHistory({ listings }: { listings: SponsoredListing[] }) {
           </div>
           <div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-100 dark:border-gray-800">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              <span className="font-semibold text-emerald-700 dark:text-emerald-400">Free until Oct 31, 2026</span>
-              <span className="text-gray-400"> · $19.99 CAD/month after</span>
+              <span className="font-semibold text-emerald-700 dark:text-emerald-400">FREE</span>
             </p>
             <Link href="/dashboard/promote" className="flex-shrink-0">
               <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5 h-8 text-xs">

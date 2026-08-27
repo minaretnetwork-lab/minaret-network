@@ -119,8 +119,8 @@ export function FeaturedBusinessDashboard({ listings, waitlist, professional }: 
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Info className="h-4 w-4 flex-shrink-0" />
             <span>
-              <span className="font-semibold text-emerald-700 dark:text-emerald-400">Free until Oct 31, 2026</span>
-              {" · "}$29.99 CAD/month from Nov 1, 2026 · Max 6 businesses per GTA region
+              <span className="font-semibold text-emerald-700 dark:text-emerald-400">FREE</span>
+              {" · "}Max 6 businesses per GTA region
             </span>
           </div>
 
@@ -201,7 +201,7 @@ export function FeaturedBusinessDashboard({ listings, waitlist, professional }: 
                     </div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">Featured Business — {displayRegion} region</p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {new Date() < new Date("2026-11-01T00:00:00.000Z") ? "Free (launch offer)" : `$${price.toFixed(2)} CAD/month`}
+                      Free
                       {l.startDate && ` · Active since ${new Date(l.startDate).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" })}`}
                     </p>
                     {l.adminNote && l.status === "REJECTED" && (

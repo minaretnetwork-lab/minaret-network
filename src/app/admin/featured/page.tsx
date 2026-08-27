@@ -14,7 +14,7 @@ export default async function AdminFeaturedPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Featured Businesses</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Approve applications, manage active listings, and configure city pricing
+          Approve applications and manage active featured business listings
         </p>
       </div>
 

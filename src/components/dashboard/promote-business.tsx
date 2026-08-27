@@ -193,7 +193,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
 
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Info className="h-4 w-4 flex-shrink-0" />
-            <span><span className="font-semibold text-emerald-700 dark:text-emerald-400">Free until Oct 31, 2026</span> · $19.99 CAD/month from Nov 1, 2026</span>
+            <span className="font-semibold text-emerald-700 dark:text-emerald-400">FREE — sponsored listings are free for all professionals</span>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -239,7 +239,7 @@ export function PromoteBusiness({ listings, waitlist, professional }: Props) {
                       <CategoryIcon slug={l.category.slug} className="inline h-4 w-4 mr-1 -mt-0.5" />{l.category.name} · {l.region ?? l.serviceArea.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      ${Number(l.priceMonthly).toFixed(0)} CAD/month
+                      Free
                       {l.startDate && ` · Active since ${new Date(l.startDate).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" })}`}
                     </p>
                     {l.adminNote && l.status === "REJECTED" && (
