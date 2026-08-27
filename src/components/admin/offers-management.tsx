@@ -191,7 +191,7 @@ function AdminCreateOfferForm() {
 
   const proLabel = (p: PickerProfessional) => {
     const fullName = [p.user?.firstName, p.user?.lastName].filter(Boolean).join(" ");
-    const name = p.businessName ?? (p.user?.displayName ?? (fullName || p.user?.email ?? "Unknown"));
+    const name = p.businessName ?? (p.user?.displayName ?? (fullName || (p.user?.email ?? "Unknown")));
     const cat = p.category?.name ?? "";
     const icon = p.category?.icon ?? "";
     return `${icon} ${name} — ${cat}`.trim();
