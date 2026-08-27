@@ -1,4 +1,4 @@
-mport Link from "next/link";
+import Link from "next/link";
 import { ArrowLeft, Sparkles, Star, Tag, Megaphone } from "lucide-react";
 
 export const metadata = {
