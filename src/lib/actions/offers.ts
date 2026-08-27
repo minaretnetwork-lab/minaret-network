@@ -317,8 +317,6 @@ export async function adminCreateOffer(data: {
 }
 
 export async function getApprovedProfessionalsForOfferPicker() {
-  await requireAdminUser();
-
   return prisma.professional.findMany({
     where: { status: "APPROVED" },
     select: {
