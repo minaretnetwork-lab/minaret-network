@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button";
 type AddressSuggestion = { label: string; address: string; city: string | null; province: string | null };
 type MosqueOption = { id: string; name: string; city: string | null };
 
-const FREE_UNTIL = new Date("2026-11-01T00:00:00.000Z");
-const isFreePromo = new Date() < FREE_UNTIL;
+const isFreePromo = true; // free during launch period
 
 const PRICE_TABLE = {
   STANDARD: 24.99,
@@ -199,12 +198,10 @@ export default function SubmitEventPage() {
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
           Reach GTA mosque communities. Listings run for 30 days or until the event date, whichever comes first.
         </p>
-        {isFreePromo && (
-          <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-full px-4 py-1.5 mb-8">
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">🎉 Launch offer</span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">Posting is FREE during our launch period</span>
-          </div>
-        )}
+        <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-full px-4 py-1.5 mb-8">
+          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">🎉 Launch offer</span>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400">Posting is FREE during our launch period</span>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
 
@@ -232,18 +229,12 @@ export default function SubmitEventPage() {
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
                       {type === "STANDARD" ? "Standard" : "Featured"}{" "}
-                      {isFreePromo ? (
-                        <span className="font-bold text-emerald-600">— FREE</span>
-                      ) : (
-                        <span className="font-normal text-gray-500">
-                          — ${type === "STANDARD" ? "24.99" : "49.99"} CAD
-                        </span>
-                      )}
+                      <span className="font-bold text-emerald-600">— FREE</span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {type === "STANDARD"
                         ? "Appears in the community events list."
-                        : "Highlighted at the top of the list with a Featured badge."}
+                        : "Shown at the top of the list — first come, first served. Spots reset every month."}
                     </p>
                   </div>
                 </label>

@@ -140,9 +140,8 @@ export default function AdvertisePage() {
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
-                    “Weekend (up to 3 days) — free during launch”,
-                    “Standard (4–7 days) — free during launch”,
-                    “Featured (8–30 days) — shown first, free during launch”,
+                    “Standard — appears in the community events list”,
+                    “Featured — shown at the top of the list, first come first served, spots reset monthly”,
                     "Approved professionals only â€” admin reviewed",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
