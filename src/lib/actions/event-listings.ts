@@ -247,7 +247,7 @@ export async function getPublicEventListings() {
     },
     orderBy: [
       { listingType: "desc" }, // FEATURED first
-      { eventDate: "asc" },
+      { createdAt: "desc" },   // newest posted first
     ],
   });
 }
