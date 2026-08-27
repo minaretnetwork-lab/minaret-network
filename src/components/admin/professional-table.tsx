@@ -180,9 +180,9 @@ export function AdminProfessionalTable({ professionals }: Props) {
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {p.user?.email ?? <span className="italic text-amber-600">Admin-created · unclaimed</span>}
-                  {pAny.isAdminCreated && pAny.createdByAdmin && (
+                  {pAny.isAdminCreated && (
                     <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
-                      Added by {pAny.createdByAdmin.firstName ?? pAny.createdByAdmin.displayName ?? "Admin"}
+                      Added by {pAny.createdByAdmin?.firstName ?? pAny.createdByAdmin?.displayName ?? "admin"}
                     </span>
                   )}
                 </p>
