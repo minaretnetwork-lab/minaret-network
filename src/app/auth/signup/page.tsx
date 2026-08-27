@@ -33,7 +33,10 @@ function SignUpForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
+  const rawRedirectTo = searchParams.get("redirectTo") ?? "/dashboard";
+  // Don't redirect back to the registration form after email verification —
+  // send to dashboard instead so the user can choose to register or skip.
+  const redirectTo = rawRedirectTo === "/professionals/register" ? "/dashboard" : rawRedirectTo;
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
