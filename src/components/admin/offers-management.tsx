@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { CheckCircle, XCircle, Megaphone, Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { approveOffer, rejectOffer, adminCreateOffer } from "@/lib/actions/offers";
+import { approveOffer, rejectOffer, adminCreateOffer, getApprovedProfessionalsForOfferPicker } from "@/lib/actions/offers";
 
 type PickerProfessional = {
   id: string;
@@ -41,7 +41,6 @@ interface Props {
   pending: AdminOffer[];
   active: AdminOffer[];
   recent: AdminOffer[];
-  professionals: PickerProfessional[];
 }
 
 const TIER_LABELS: Record<string, { label: string; color: string }> = {
@@ -160,9 +159,11 @@ function OfferRow({ offer, showActions }: { offer: AdminOffer; showActions: bool
   );
 }
 
-function AdminCreateOfferForm({ professionals }: { professionals: PickerProfessional[] }) {
+function AdminCreateOfferForm() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fetchingPros, setFetchingPros] = useState(false);
+  const [professionals, setProfessionals] = useState<PickerProfessional[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [search, setSearch] = useState("");
@@ -174,9 +175,23 @@ function AdminCreateOfferForm({ professionals }: { professionals: PickerProfessi
     endDate: "",
   });
 
+  async function handleOpen() {
+    setOpen(true);
+    if (professionals.length > 0) return;
+    setFetchingPros(true);
+    try {
+      const list = await getApprovedProfessionalsForOfferPicker();
+      setProfessionals(list as PickerProfessional[]);
+    } catch {
+      setError("Could not load professionals list");
+    } finally {
+      setFetchingPros(false);
+    }
+  }
+
   const proLabel = (p: PickerProfessional) => {
-    const fullName = [p.user.firstName, p.user.lastName].filter(Boolean).join(" ");
-    const name = p.businessName ?? (p.user.displayName ?? (fullName || p.user.email));
+    const fullName = [p.user?.firstName, p.user?.lastName].filter(Boolean).join(" ");
+    const name = p.businessName ?? (p.user?.displayName ?? (fullName || p.user?.email ?? "Unknown"));
     const cat = p.category?.name ?? "";
     const icon = p.category?.icon ?? "";
     return `${icon} ${name} — ${cat}`.trim();
@@ -212,7 +227,7 @@ function AdminCreateOfferForm({ professionals }: { professionals: PickerProfessi
   if (!open) {
     return (
       <Button
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         className="bg-emerald-700 hover:bg-emerald-800 text-white gap-2"
       >
         <Plus className="h-4 w-4" />
@@ -232,6 +247,7 @@ function AdminCreateOfferForm({ professionals }: { professionals: PickerProfessi
         {/* Professional picker */}
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Business *</label>
+          {fetchingPros && <p className="text-xs text-gray-400 mb-2">Loading businesses…</p>}
           <div className="relative">
             <input
               type="text"
@@ -329,11 +345,11 @@ function AdminCreateOfferForm({ professionals }: { professionals: PickerProfessi
   );
 }
 
-export function OffersAdminPanel({ pending, active, recent, professionals }: Props) {
+export function OffersAdminPanel({ pending, active, recent }: Props) {
   return (
     <div className="space-y-8">
       {/* Admin create */}
-      <AdminCreateOfferForm professionals={professionals} />
+      <AdminCreateOfferForm />
 
       {/* Pending */}
       <section>

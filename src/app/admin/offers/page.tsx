@@ -1,13 +1,10 @@
-import { getOffersForAdmin, getApprovedProfessionalsForOfferPicker } from "@/lib/actions/offers";
+import { getOffersForAdmin } from "@/lib/actions/offers";
 import { OffersAdminPanel } from "@/components/admin/offers-management";
 
 export const metadata = { title: "Community Offers" };
 
 export default async function AdminOffersPage() {
-  const [raw, professionals] = await Promise.all([
-    getOffersForAdmin(),
-    getApprovedProfessionalsForOfferPicker(),
-  ]);
+  const raw = await getOffersForAdmin();
   const { pending, active, recent } = JSON.parse(JSON.stringify(raw));
 
   return (
@@ -34,7 +31,7 @@ export default async function AdminOffersPage() {
         </div>
       </div>
 
-      <OffersAdminPanel pending={pending} active={active} recent={recent} professionals={JSON.parse(JSON.stringify(professionals))} />
+      <OffersAdminPanel pending={pending} active={active} recent={recent} />
     </div>
   );
 }
