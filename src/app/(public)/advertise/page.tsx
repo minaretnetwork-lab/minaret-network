@@ -62,7 +62,7 @@ export default function AdvertisePage() {
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
-                    "Homepage placement â€" maximum visibility",
+                    "Homepage placement — maximum visibility",
                     "Your photo, category, and mosque affiliation shown",
                     "30-day listing, subject to admin approval",
                     "Free during our launch period — one placement per business",
@@ -97,7 +97,7 @@ export default function AdvertisePage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-                  Pin your listing to the top of a specific category and service area â€" shown first whenever someone searches for your profession in your area.
+                  Pin your listing to the top of a specific category and service area — shown first whenever someone searches for your profession in your area.
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
@@ -136,13 +136,13 @@ export default function AdvertisePage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-                  Post a time-limited promotion â€" a deal, discount, or special offer â€" visible to community members in your region. Great for food, services, and one-time promotions.
+                  Post a time-limited promotion — a deal, discount, or special offer — visible to community members in your region. Great for food, services, and one-time promotions.
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
                     "Standard — appears in the community events list",
                     "Featured — shown at the top of the list, first come first served, spots reset monthly",
-                    "Approved professionals only â€" admin reviewed",
+                    "Approved professionals only — admin reviewed",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
