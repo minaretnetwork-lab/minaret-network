@@ -262,6 +262,72 @@ export async function rejectOffer(offerId: string, note: string) {
   revalidatePath("/admin/offers");
 }
 
+export async function adminCreateOffer(data: {
+  professionalId: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  startDate: string; // "YYYY-MM-DD"
+  endDate: string;   // "YYYY-MM-DD"
+}) {
+  const { getCurrentUser } = await import("@/lib/actions/auth");
+  const admin = await getCurrentUser();
+  if (!admin || !["ADMIN", "SUPER_ADMIN"].includes(admin.role)) throw new Error("Unauthorized");
+
+  const professional = await prisma.professional.findUnique({
+    where: { id: data.professionalId, status: "APPROVED" },
+    include: { serviceAreas: { select: { slug: true }, take: 5 } },
+  });
+  if (!professional) throw new Error("Professional not found or not approved");
+
+  const startDate = new Date(data.startDate + "T00:00:00");
+  const endDate   = new Date(data.endDate   + "T23:59:59");
+  if (endDate <= startDate) throw new Error("End date must be after start date");
+
+  const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  if (days > 30) throw new Error("Maximum offer duration is 30 days");
+
+  const tier   = getTierFromDays(days);
+  const price  = getPriceForDays(days);
+  const region = professional.serviceAreas.map((a) => REGION_MAP[a.slug]).find(Boolean) ?? "Beyond GTA";
+
+  await prisma.communityOffer.create({
+    data: {
+      professionalId: data.professionalId,
+      title: data.title.trim(),
+      description: data.description.trim(),
+      imageUrl: data.imageUrl ?? null,
+      tier,
+      region,
+      price,
+      status: "ACTIVE",
+      startDate,
+      expiresAt: endDate,
+    },
+  });
+
+  revalidatePath("/admin/offers");
+  revalidatePath("/");
+}
+
+export async function getApprovedProfessionalsForOfferPicker() {
+  const { getCurrentUser } = await import("@/lib/actions/auth");
+  const admin = await getCurrentUser();
+  if (!admin || !["ADMIN", "SUPER_ADMIN"].includes(admin.role)) throw new Error("Unauthorized");
+
+  return prisma.professional.findMany({
+    where: { status: "APPROVED" },
+    select: {
+      id: true,
+      businessName: true,
+      user: { select: { firstName: true, lastName: true, displayName: true, email: true } },
+      category: { select: { name: true, icon: true } },
+      serviceAreas: { select: { slug: true }, take: 5 },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const offerInclude = {

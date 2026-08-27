@@ -2,9 +2,16 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { CheckCircle, XCircle, Megaphone } from "lucide-react";
+import { CheckCircle, XCircle, Megaphone, Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { approveOffer, rejectOffer } from "@/lib/actions/offers";
+import { approveOffer, rejectOffer, adminCreateOffer } from "@/lib/actions/offers";
+
+type PickerProfessional = {
+  id: string;
+  businessName: string | null;
+  user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string };
+  category: { name: string; icon: string } | null;
+};
 
 type AdminOffer = {
   id: string;
@@ -34,6 +41,7 @@ interface Props {
   pending: AdminOffer[];
   active: AdminOffer[];
   recent: AdminOffer[];
+  professionals: PickerProfessional[];
 }
 
 const TIER_LABELS: Record<string, { label: string; color: string }> = {
@@ -152,9 +160,178 @@ function OfferRow({ offer, showActions }: { offer: AdminOffer; showActions: bool
   );
 }
 
-export function OffersAdminPanel({ pending, active, recent }: Props) {
+function AdminCreateOfferForm({ professionals }: { professionals: PickerProfessional[] }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [search, setSearch] = useState("");
+  const [form, setForm] = useState({
+    professionalId: "",
+    title: "",
+    description: "",
+    startDate: "",
+    endDate: "",
+  });
+
+  const proLabel = (p: PickerProfessional) => {
+    const name = p.businessName ?? p.user.displayName ?? [p.user.firstName, p.user.lastName].filter(Boolean).join(" ") || p.user.email;
+    return `${p.category?.icon ?? ""} ${name} — ${p.category?.name ?? ""}`.trim();
+  };
+
+  const filtered = professionals.filter((p) =>
+    proLabel(p).toLowerCase().includes(search.toLowerCase())
+  );
+
+  const selected = professionals.find((p) => p.id === form.professionalId);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!form.professionalId) { setError("Select a business first"); return; }
+    if (!form.title.trim()) { setError("Title is required"); return; }
+    if (!form.description.trim()) { setError("Description is required"); return; }
+    if (!form.startDate || !form.endDate) { setError("Start and end dates are required"); return; }
+    setLoading(true);
+    try {
+      await adminCreateOffer(form);
+      setSuccess(true);
+      setForm({ professionalId: "", title: "", description: "", startDate: "", endDate: "" });
+      setSearch("");
+      setTimeout(() => { setSuccess(false); setOpen(false); }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create offer");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <Button
+        onClick={() => setOpen(true)}
+        className="bg-emerald-700 hover:bg-emerald-800 text-white gap-2"
+      >
+        <Plus className="h-4 w-4" />
+        Post offer on behalf of a business
+      </Button>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Post offer on behalf of a business</h3>
+        <button onClick={() => setOpen(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Professional picker */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Business *</label>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by name or category…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setForm((f) => ({ ...f, professionalId: "" })); }}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
+          {selected && !search && (
+            <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+              Selected: {proLabel(selected)}
+            </p>
+          )}
+          {search && filtered.length > 0 && (
+            <ul className="mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg divide-y divide-gray-100 dark:divide-gray-700">
+              {filtered.slice(0, 20).map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => { setForm((f) => ({ ...f, professionalId: p.id })); setSearch(""); }}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                  >
+                    {proLabel(p)}
+                    <span className="block text-xs text-gray-400">{p.user.email}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {search && filtered.length === 0 && (
+            <p className="mt-1 text-xs text-gray-400">No approved professionals match</p>
+          )}
+        </div>
+
+        {/* Title */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Offer title *</label>
+          <input
+            type="text"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            placeholder="e.g. 10% off home inspection this week"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Description *</label>
+          <textarea
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            rows={3}
+            placeholder="Details of the offer…"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+          />
+        </div>
+
+        {/* Dates */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start date *</label>
+            <input
+              type="date"
+              value={form.startDate}
+              onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End date * (max 30 days)</label>
+            <input
+              type="date"
+              value={form.endDate}
+              onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+        </div>
+
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        {success && <p className="text-xs text-green-600 font-medium">Offer posted and live!</p>}
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="bg-emerald-700 hover:bg-emerald-800 text-white"
+        >
+          {loading ? "Posting…" : "Post offer (goes live immediately)"}
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+export function OffersAdminPanel({ pending, active, recent, professionals }: Props) {
   return (
     <div className="space-y-8">
+      {/* Admin create */}
+      <AdminCreateOfferForm professionals={professionals} />
+
       {/* Pending */}
       <section>
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3">
