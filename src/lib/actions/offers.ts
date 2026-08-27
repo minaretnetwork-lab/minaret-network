@@ -262,6 +262,14 @@ export async function rejectOffer(offerId: string, note: string) {
   revalidatePath("/admin/offers");
 }
 
+async function requireAdminUser() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+  const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id }, select: { role: true } });
+  if (!dbUser || !["ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) throw new Error("Unauthorized");
+}
+
 export async function adminCreateOffer(data: {
   professionalId: string;
   title: string;
@@ -270,9 +278,7 @@ export async function adminCreateOffer(data: {
   startDate: string; // "YYYY-MM-DD"
   endDate: string;   // "YYYY-MM-DD"
 }) {
-  const { getCurrentUser } = await import("@/lib/actions/auth");
-  const admin = await getCurrentUser();
-  if (!admin || !["ADMIN", "SUPER_ADMIN"].includes(admin.role)) throw new Error("Unauthorized");
+  await requireAdminUser();
 
   const professional = await prisma.professional.findUnique({
     where: { id: data.professionalId, status: "APPROVED" },
@@ -311,9 +317,7 @@ export async function adminCreateOffer(data: {
 }
 
 export async function getApprovedProfessionalsForOfferPicker() {
-  const { getCurrentUser } = await import("@/lib/actions/auth");
-  const admin = await getCurrentUser();
-  if (!admin || !["ADMIN", "SUPER_ADMIN"].includes(admin.role)) throw new Error("Unauthorized");
+  await requireAdminUser();
 
   return prisma.professional.findMany({
     where: { status: "APPROVED" },
