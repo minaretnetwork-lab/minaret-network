@@ -43,6 +43,7 @@ export function Navbar({ user }: NavbarProps) {
               { href: "/events", label: "Events" },
               { href: "/offers", label: "Community Offers" },
               { href: "/request", label: "Service Request" },
+              { href: "/about", label: "About" },
             ].map((link) => (
               <Link
                 key={link.href}
