@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+mport Link from "next/link";
 import { ArrowLeft, Sparkles, Star, Tag, Megaphone } from "lucide-react";
 
 export const metadata = {
@@ -23,8 +23,8 @@ export default function AdvertisePage() {
           <div className="flex items-start gap-3">
             <Sparkles className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-200" />
             <div>
-              <p className=”font-semibold text-base”>Launch offer: currently free</p>
-              <p className=”text-sm text-emerald-100 mt-0.5”>
+              <p className="font-semibold text-base">Launch offer: currently free</p>
+              <p className="text-sm text-emerald-100 mt-0.5">
                 Featured Business and Sponsored Listings are completely free during our launch period.
                 One placement per business — claim yours now while it lasts.
               </p>
@@ -62,10 +62,10 @@ export default function AdvertisePage() {
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
-                    "Homepage placement â€” maximum visibility",
+                    "Homepage placement â€" maximum visibility",
                     "Your photo, category, and mosque affiliation shown",
                     "30-day listing, subject to admin approval",
-                    “Free during our launch period — one placement per business”,
+                    "Free during our launch period — one placement per business",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
@@ -97,14 +97,14 @@ export default function AdvertisePage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-                  Pin your listing to the top of a specific category and service area â€” shown first whenever someone searches for your profession in your area.
+                  Pin your listing to the top of a specific category and service area â€" shown first whenever someone searches for your profession in your area.
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
                     "Top-of-search placement in your category and area",
                     "Sponsored badge on your listing card",
                     "30-day listing, subject to admin approval",
-                    “Free during our launch period — one placement per business”,
+                    "Free during our launch period — one placement per business",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-500 flex-shrink-0" />
@@ -136,13 +136,13 @@ export default function AdvertisePage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-                  Post a time-limited promotion â€” a deal, discount, or special offer â€” visible to community members in your region. Great for food, services, and one-time promotions.
+                  Post a time-limited promotion â€" a deal, discount, or special offer â€" visible to community members in your region. Great for food, services, and one-time promotions.
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
-                    “Standard — appears in the community events list”,
-                    “Featured — shown at the top of the list, first come first served, spots reset monthly”,
-                    "Approved professionals only â€” admin reviewed",
+                    "Standard — appears in the community events list",
+                    "Featured — shown at the top of the list, first come first served, spots reset monthly",
+                    "Approved professionals only â€" admin reviewed",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
