@@ -9,7 +9,7 @@ import { approveOffer, rejectOffer, adminCreateOffer, getApprovedProfessionalsFo
 type PickerProfessional = {
   id: string;
   businessName: string | null;
-  user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string };
+  user: { firstName: string | null; lastName: string | null; displayName: string | null; email: string } | null;
   category: { name: string; icon: string } | null;
 };
 
@@ -273,7 +273,7 @@ function AdminCreateOfferForm() {
                     className="w-full text-left px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                   >
                     {proLabel(p)}
-                    <span className="block text-xs text-gray-400">{p.user.email}</span>
+                    {p.user?.email && <span className="block text-xs text-gray-400">{p.user.email}</span>}
                   </button>
                 </li>
               ))}
