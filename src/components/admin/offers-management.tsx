@@ -175,8 +175,11 @@ function AdminCreateOfferForm({ professionals }: { professionals: PickerProfessi
   });
 
   const proLabel = (p: PickerProfessional) => {
-    const name = p.businessName ?? p.user.displayName ?? [p.user.firstName, p.user.lastName].filter(Boolean).join(" ") || p.user.email;
-    return `${p.category?.icon ?? ""} ${name} — ${p.category?.name ?? ""}`.trim();
+    const fullName = [p.user.firstName, p.user.lastName].filter(Boolean).join(" ");
+    const name = p.businessName ?? (p.user.displayName ?? (fullName || p.user.email));
+    const cat = p.category?.name ?? "";
+    const icon = p.category?.icon ?? "";
+    return `${icon} ${name} — ${cat}`.trim();
   };
 
   const filtered = professionals.filter((p) =>
