@@ -129,7 +129,7 @@ export function AdminProfessionalTable({ professionals }: Props) {
         </div>
       )}
       {professionals.map((p) => {
-        const pAny = p as unknown as { isAdminCreated?: boolean; claimedByUserId?: string | null };
+        const pAny = p as unknown as { isAdminCreated?: boolean; claimedByUserId?: string | null; createdByAdmin?: { firstName?: string | null; displayName?: string | null } | null };
         const isUnclaimed = pAny.isAdminCreated && !pAny.claimedByUserId;
         const name = p.user
           ? (p.user.displayName ?? [p.user.firstName, p.user.lastName].filter(Boolean).join(" ") ?? p.user.email)
@@ -178,7 +178,14 @@ export function AdminProfessionalTable({ professionals }: Props) {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{p.user?.email ?? <span className="italic text-amber-600">Admin-created · unclaimed</span>}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {p.user?.email ?? <span className="italic text-amber-600">Admin-created · unclaimed</span>}
+                  {pAny.isAdminCreated && pAny.createdByAdmin && (
+                    <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                      Added by {pAny.createdByAdmin.firstName ?? pAny.createdByAdmin.displayName ?? "Admin"}
+                    </span>
+                  )}
+                </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {p.category.name} · {p.recommendations.length} recommendations
                 </p>

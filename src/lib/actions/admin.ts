@@ -723,6 +723,7 @@ export async function getProfessionalsForAdmin(_mosqueSlug: string, status?: str
       : { status: { not: "WITHDRAWN" } },
     include: {
       user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true } },
+      createdByAdmin: { select: { firstName: true, displayName: true } },
       mosque: { select: { name: true, communityChannelType: true, communityChannelName: true, communityChannelLink: true } },
       category: { select: { id: true, name: true, slug: true } },
       serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
@@ -793,6 +794,7 @@ export async function createUnclaimedProfessional(formData: FormData): Promise<{
       languages,
       status: "APPROVED",
       isAdminCreated: true,
+      createdByAdminId: user.id,
       approvedAt: new Date(),
       listingConsentAt: new Date(),
       listingConsentVersion: "admin-created",

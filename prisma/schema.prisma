@@ -62,6 +62,7 @@ model User {
   updatedAt               DateTime  @updatedAt
 
   professionals              Professional[]
+  adminCreatedListings       Professional[]         @relation("CreatedByAdmin")
   recommendations            Recommendation[]
   recommendationReports      RecommendationReport[] @relation("ReportedByUser")
   serviceRequests            ServiceRequest[]
@@ -173,6 +174,8 @@ model Professional {
   listingConsentAt              DateTime?
   listingConsentVersion         String?
   isAdminCreated                Boolean            @default(false)
+  createdByAdminId              String?
+  createdByAdmin                User?              @relation("CreatedByAdmin", fields: [createdByAdminId], references: [id])
   claimedByUserId               String?
   claimedAt                     DateTime?
   claimInviteToken              String?            @unique
