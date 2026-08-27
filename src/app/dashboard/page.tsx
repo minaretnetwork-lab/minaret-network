@@ -71,7 +71,7 @@ export default async function DashboardPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold text-white text-sm">Get Sponsored — Appear First in Search</p>
-              <p className="text-violet-200 text-xs mt-0.5 hidden sm:block">Pin your listing above all results · Free until Oct 31, 2026</p>
+              <p className="text-violet-200 text-xs mt-0.5 hidden sm:block">Pin your listing above all results · Free during our launch period</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-wider bg-white/20 text-white px-2.5 py-1 rounded-full">Free now</span>

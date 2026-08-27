@@ -3,7 +3,7 @@ import { ArrowLeft, Sparkles, Star, Tag, Megaphone } from "lucide-react";
 
 export const metadata = {
   title: "Advertise",
-  description: "Featured Business and Sponsored Listings are free until Oct 31, 2026. One spot per business.",
+  description: "Featured Business and Sponsored Listings are currently free during our launch period. One spot per business.",
 };
 
 export default function AdvertisePage() {
@@ -23,10 +23,10 @@ export default function AdvertisePage() {
           <div className="flex items-start gap-3">
             <Sparkles className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-200" />
             <div>
-              <p className="font-semibold text-base">Limited-time: free until Oct 31, 2026</p>
-              <p className="text-sm text-emerald-100 mt-0.5">
+              <p className=”font-semibold text-base”>Launch offer: currently free</p>
+              <p className=”text-sm text-emerald-100 mt-0.5”>
                 Featured Business and Sponsored Listings are completely free during our launch period.
-                One placement per business â€” businesses already listed cannot reapply for a second month until the free period ends.
+                One placement per business — claim yours now while it lasts.
               </p>
             </div>
           </div>
@@ -53,7 +53,7 @@ export default function AdvertisePage() {
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Featured Business</h2>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    Free until Oct 31
+                    Free now
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
@@ -65,7 +65,7 @@ export default function AdvertisePage() {
                     "Homepage placement â€” maximum visibility",
                     "Your photo, category, and mosque affiliation shown",
                     "30-day listing, subject to admin approval",
-                    "$29.99/month from Nov 1, 2026 â€” free during launch",
+                    “Free during our launch period — one placement per business”,
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
@@ -93,7 +93,7 @@ export default function AdvertisePage() {
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sponsored Listing</h2>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    Free until Oct 31
+                    Free now
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
@@ -104,7 +104,7 @@ export default function AdvertisePage() {
                     "Top-of-search placement in your category and area",
                     "Sponsored badge on your listing card",
                     "30-day listing, subject to admin approval",
-                    "$19.99/month from Nov 1, 2026 â€” free during launch",
+                    “Free during our launch period — one placement per business”,
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-500 flex-shrink-0" />
@@ -132,7 +132,7 @@ export default function AdvertisePage() {
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Community Offer</h2>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    Free until Oct 31
+                    Free now
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
@@ -140,9 +140,9 @@ export default function AdvertisePage() {
                 </p>
                 <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   {[
-                    "Weekend (up to 3 days) â€” $4.99, free until Oct 31",
-                    "Standard (4â€“7 days) â€” $9.99, free until Oct 31",
-                    "Featured (8â€“30 days) â€” $19.99, shown first, free until Oct 31",
+                    “Weekend (up to 3 days) — free during launch”,
+                    “Standard (4–7 days) — free during launch”,
+                    “Featured (8–30 days) — shown first, free during launch”,
                     "Approved professionals only â€” admin reviewed",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">

@@ -201,8 +201,8 @@ export default function SubmitEventPage() {
         </p>
         {isFreePromo && (
           <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-full px-4 py-1.5 mb-8">
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">🎉 Limited-time offer</span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">Posting is FREE until Oct 31, 2026</span>
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">🎉 Launch offer</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">Posting is FREE during our launch period</span>
           </div>
         )}
 
@@ -593,7 +593,8 @@ export default function SubmitEventPage() {
             <span className="text-gray-600 dark:text-gray-400">
               {effectivePrice === 0
                 ? isFreePromo && !form.isMosqueOrganized
-                  ? <><strong className="text-emerald-700 dark:text-emerald-400">Free until Oct 31, 2026</strong> — no payment required. Regular pricing resumes Nov 1.</>
+                  ? <><strong className="text-emerald-700 dark:text-emerald-400">Free during our launch period</strong> — no payment required.</>
+
                   : "Mosque-organized listings are free. No payment step."
                 : <>Total: <strong className="text-gray-900 dark:text-white">${effectivePrice.toFixed(2)} CAD</strong> — you&apos;ll complete payment via Stripe on the next screen.</>}
             </span>

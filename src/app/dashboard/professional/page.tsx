@@ -308,7 +308,7 @@ function SponsoredHistory({ listings }: { listings: SponsoredListing[] }) {
             <p className="font-bold text-white text-sm">Get Sponsored — Appear First</p>
             <p className="text-violet-200 text-xs mt-0.5">Pin your listing to the top of search results for your category</p>
           </div>
-          <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider bg-white/20 text-white px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap">Free until Oct 31</span>
+          <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider bg-white/20 text-white px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap">Free now</span>
         </div>
         {/* benefits + CTA */}
         <div className="bg-white dark:bg-gray-900 px-5 py-4 space-y-4">

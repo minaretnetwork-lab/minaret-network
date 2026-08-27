@@ -177,16 +177,16 @@ export default function TermsPage() {
             </div>
 
             <p>
-              <strong>Pricing:</strong> Free until October 31, 2026. From November 1, 2026: CAD $29.99/month, billed as a 30-day rolling term starting from the date of admin approval (not calendar-month billing). One Featured placement per business during the free period.
+              <strong>Pricing:</strong> Currently free during our launch period. One Featured placement per business. Pricing terms will be communicated in advance before any charges apply.
             </p>
             <p>
-              <strong>Waitlist:</strong> If all 6 regional slots are full, you are automatically waitlisted and notified when a slot opens — first-come, first-served. No fee is charged while waitlisted; billing begins only once a slot is assigned and the listing goes live.
+              <strong>Waitlist:</strong> If all 6 regional slots are full, you are automatically waitlisted and notified when a slot opens — first-come, first-served.
             </p>
             <p>
-              <strong>Cancellation:</strong> Cancel any time from your dashboard. Cancellation takes effect and no further charges apply after your current 30-day term.
+              <strong>Cancellation:</strong> Cancel any time from your dashboard.
             </p>
             <p>
-              <strong>Free-to-paid transition:</strong> Free placements expire on October 31, 2026 and are not automatically converted to paid subscriptions. To continue appearing as a Featured Business from November 1, 2026 onward, professionals must reapply through their dashboard and provide a payment method at that time. There is no automatic charge at the end of the free period.
+              <strong>Duration:</strong> Free placements run for 30 days and are not automatically renewed. To continue appearing as a Featured Business, professionals must reapply through their dashboard.
             </p>
           </Section>
 
@@ -195,10 +195,10 @@ export default function TermsPage() {
               Your listing is pinned to the top of directory search results for your category across your entire selected GTA region. There are 3 slots per category per region, across the same 7 regions listed in Section 11. Same APPROVED-status eligibility and admin-review requirements as Featured Business.
             </p>
             <p>
-              <strong>Pricing:</strong> Free until October 31, 2026. From November 1, 2026: CAD $19.99/month baseline, billed as a 30-day rolling term from admin approval. Pricing may vary by category and service area at our discretion; the current price for a given category/region is shown at the time of application. One Sponsored placement per business during the free period.
+              <strong>Pricing:</strong> Currently free during our launch period. One Sponsored placement per business. Pricing terms will be communicated in advance before any charges apply.
             </p>
             <p>
-              The same waitlist mechanics, cancellation terms, and free-to-paid transition policy described in Section 11 apply here — free placements expire October 31, 2026 and professionals must reapply with a payment method to continue from November 1, 2026. No automatic charges.
+              The same waitlist, cancellation, and duration terms described in Section 11 apply here. Free placements run for 30 days and are not automatically renewed; professionals must reapply to continue.
             </p>
           </Section>
 

@@ -205,7 +205,7 @@ export default async function HomePage() {
               <div className="flex items-center gap-2 mb-2">
                 <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Community events</p>
                 <span className="inline-flex items-center bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full">
-                  Free until Oct 31
+                  Free now
                 </span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-snug" style={{ fontFamily: "var(--font-lora)" }}>
@@ -213,7 +213,7 @@ export default async function HomePage() {
               </h2>
               <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6 max-w-lg">
                 Whether it&apos;s a fundraiser, bazaar, lecture, or community dinner — post it here and get it in front of thousands of GTA Muslims who are actively looking for events like yours.{" "}
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Posting is free until Oct 31, 2026.</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Posting is free during our launch period.</span>
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                 <Link href="/events/submit">

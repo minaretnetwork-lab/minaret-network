@@ -127,7 +127,7 @@ export async function applyForSponsorship(categoryId: string, serviceAreaId: str
     });
     if (previouslyApproved) {
       throw new Error(
-        "During our free launch offer (until Oct 31, 2026), each business may only use one Sponsored Listing placement. You can reapply starting November 1, 2026."
+        "During our launch period, each business may only use one Sponsored Listing placement at a time."
       );
     }
   }

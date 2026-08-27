@@ -99,13 +99,13 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
         a: (
           <ul className="space-y-2">
             <li>
-              <strong>Sponsored Listing ($19.99/month after Oct 31, 2026):</strong> Your profile is pinned to the top of search results for your category across your entire GTA region â€” shown first whenever someone in that region searches for your profession.
+              <strong>Sponsored Listing:</strong> Your profile is pinned to the top of search results for your category across your entire GTA region — shown first whenever someone in that region searches for your profession.
             </li>
             <li>
-              <strong>Featured Business ($29.99/month after Oct 31, 2026):</strong> Your business card is displayed prominently on the Minaret Network homepage. Each GTA region has 6 Featured Business slots â€” only businesses in your region compete for them.
+              <strong>Featured Business:</strong> Your business card is displayed prominently on the Minaret Network homepage. Each GTA region has 6 Featured Business slots — only businesses in your region compete for them.
             </li>
             <li>
-              <strong>Free until Oct 31, 2026:</strong> Both placements are completely free during our launch period â€” one placement per business for the duration of the offer.
+              <strong>Currently free:</strong> Both placements are completely free during our launch period — one placement per business. Claim yours now.
             </li>
           </ul>
         ),

@@ -136,7 +136,7 @@ export async function applyForFeatured(serviceAreaId: string) {
     });
     if (previouslyApproved) {
       throw new Error(
-        "During our free launch offer (until Oct 31, 2026), each business may only use one Featured Business placement. You can reapply starting November 1, 2026."
+        "During our launch period, each business may only use one Featured Business placement at a time."
       );
     }
   }
