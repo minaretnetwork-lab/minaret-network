@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Building2, ShieldCheck, ArrowRight, CalendarDays, Sparkles, MapPin,
+  Building2, ShieldCheck, Star, ArrowRight, CalendarDays, Sparkles, MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
