@@ -41,11 +41,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/auth/re-consent");
   }
   const isSuperAdmin = user.role === "SUPER_ADMIN";
-  const [stats, pendingClaimsCount] = isListingManager
-    ? [null, 0]
+  const [
+    stats,
+    pendingClaimsCount,
+    pendingEventsCount,
+    pendingOffersCount,
+    pendingSponsoredCount,
+    pendingFeaturedCount,
+    pendingCategorySuggestionsCount,
+  ] = isListingManager
+    ? [null, 0, 0, 0, 0, 0, 0]
     : await Promise.all([
         getAdminStats(DEFAULT_MOSQUE_SLUG),
         prisma.profileClaim.count({ where: { status: "PENDING" } }),
+        prisma.eventListing.count({ where: { status: "PENDING_ADMIN" } }),
+        prisma.communityOffer.count({ where: { status: "PENDING" } }),
+        prisma.sponsoredListing.count({ where: { status: "PENDING" } }),
+        prisma.featuredListing.count({ where: { status: "PENDING" } }),
+        prisma.categorySuggestion.count({ where: { status: "PENDING" } }),
       ]);
   const pendingProfessionalReviews = stats?.pendingProfessionalReviews ?? stats?.pendingProfessionals ?? 0;
   const pendingRecommendations = stats?.pendingRecommendations ?? 0;
@@ -56,6 +69,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     if (href === "/admin/claims") return pendingClaimsCount;
     if (href === "/admin/recommendations") return pendingRecommendations;
     if (href === "/admin/reports") return openReports;
+    if (href === "/admin/events") return pendingEventsCount;
+    if (href === "/admin/offers") return pendingOffersCount;
+    if (href === "/admin/sponsored") return pendingSponsoredCount;
+    if (href === "/admin/featured") return pendingFeaturedCount;
+    if (href === "/admin/category-suggestions") return pendingCategorySuggestionsCount;
     return 0;
   }
 
