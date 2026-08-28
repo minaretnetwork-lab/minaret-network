@@ -32,7 +32,7 @@ type AdminOffer = {
       lastName: string | null;
       displayName: string | null;
       email: string;
-    };
+    } | null;
     category: { name: string; slug: string; icon: string } | null;
   };
 };
@@ -55,8 +55,8 @@ function OfferRow({ offer, showActions }: { offer: AdminOffer; showActions: bool
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [done, setDone] = useState(false);
 
-  const fullName = `${offer.professional.user.firstName ?? ""} ${offer.professional.user.lastName ?? ""}`.trim();
-  const proName = offer.professional.user.displayName ?? (fullName || offer.professional.user.email);
+  const fullName = `${offer.professional.user?.firstName ?? ""} ${offer.professional.user?.lastName ?? ""}`.trim();
+  const proName = offer.professional.user?.displayName ?? (fullName || (offer.professional.user?.email ?? "Unknown"));
 
   const tierUi = TIER_LABELS[offer.tier] ?? { label: offer.tier, color: "bg-gray-100 text-gray-700" };
   const startAt = offer.startDate ? new Date(offer.startDate) : null;
