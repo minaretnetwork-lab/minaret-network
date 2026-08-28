@@ -40,6 +40,7 @@ export function Navbar({ user }: NavbarProps) {
             {[
               { href: "/professionals", label: "Find Professionals" },
               { href: "/categories", label: "Categories" },
+              { href: "/jummah", label: "Jumu'ah Finder" },
               { href: "/events", label: "Events" },
               { href: "/offers", label: "Community Offers" },
               { href: "/request", label: "Service Request" },

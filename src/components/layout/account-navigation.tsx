@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Megaphone,
   MessageCircle,
+  Moon,
   Search,
   Send,
   Shield,
@@ -45,6 +46,7 @@ export function getExploreNavigation(): NavigationGroup[] {
       items: [
         { href: "/professionals", label: "Find Professionals", icon: Search },
         { href: "/categories", label: "Categories", icon: Tags },
+        { href: "/jummah", label: "Jumu'ah Finder", icon: Moon },
         { href: "/events", label: "Community Events", icon: CalendarDays },
         { href: "/request", label: "Service Request", icon: ClipboardList },
         { href: "/advertise", label: "Advertise with Us", icon: Sparkles },

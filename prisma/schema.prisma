@@ -24,6 +24,8 @@ model Mosque {
   communityChannelName  String?
   communityChannelLink  String?
   isActive              Boolean  @default(true)
+  latitude              Float?   @map("latitude")
+  longitude             Float?   @map("longitude")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -34,6 +36,8 @@ model Mosque {
   requests             ServiceRequest[]
   categorySuggestions  CategorySuggestion[]
   mosqueSuggestions    MosqueSuggestion[]
+  jummahTimings        JummahTiming[]
+  jummahReports        JummahTimingReport[]
 
   @@map("mosques")
 }
@@ -796,4 +800,46 @@ enum CommunityOfferStatus {
   REJECTED
   EXPIRED
   CANCELLED
+}
+
+// ── Jumu'ah Timings ───────────────────────────────────────────────────────────
+
+model JummahTiming {
+  id             String   @id @default(cuid())
+  mosqueId       String   @map("mosque_id")
+  mosque         Mosque   @relation(fields: [mosqueId], references: [id], onDelete: Cascade)
+  session        String
+  khutbahTime    String?  @map("khutbah_time")
+  iqamahTime     String?  @map("iqamah_time")
+  notes          String?
+  lastReportedAt DateTime @default(now()) @map("last_reported_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([mosqueId, session], map: "jummah_timings_mosque_id_session_key")
+  @@map("jummah_timings")
+}
+
+model JummahTimingReport {
+  id                  String             @id @default(cuid())
+  mosqueId            String             @map("mosque_id")
+  mosque              Mosque             @relation(fields: [mosqueId], references: [id], onDelete: Cascade)
+  session             String?
+  proposedKhutbahTime String?            @map("proposed_khutbah_time")
+  proposedIqamahTime  String?            @map("proposed_iqamah_time")
+  submitterEmail      String?            @map("submitter_email")
+  submitterNote       String?            @map("submitter_note")
+  status              JummahReportStatus @default(PENDING)
+  adminNote           String?            @map("admin_note")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  reviewedAt          DateTime?          @map("reviewed_at")
+
+  @@index([status, createdAt])
+  @@map("jummah_timing_reports")
+}
+
+enum JummahReportStatus {
+  PENDING
+  APPLIED
+  DISMISSED
 }
