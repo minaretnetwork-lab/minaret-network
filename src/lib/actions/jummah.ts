@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 export type JummahSession = {
@@ -56,27 +57,37 @@ export async function getMosquesWithJummahTimings(): Promise<MosqueWithJummah[]>
 
 export type SubmitCorrectionInput = {
   mosqueId: string;
-  session?: string;
+  session: string;
   proposedKhutbahTime?: string;
   proposedIqamahTime?: string;
-  submitterEmail?: string;
   submitterNote?: string;
 };
 
 export async function submitJummahCorrection(data: SubmitCorrectionInput) {
   if (!data.mosqueId) throw new Error("Mosque is required.");
+  if (!data.session) throw new Error("Please select which Jumu'ah session you're correcting.");
   if (!data.proposedKhutbahTime && !data.proposedIqamahTime && !data.submitterNote) {
     throw new Error("Please provide at least one corrected time or a note.");
   }
 
-  await prisma.jummahTimingReport.create({
-    data: {
+  // Apply the correction immediately
+  await prisma.jummahTiming.upsert({
+    where: { mosqueId_session: { mosqueId: data.mosqueId, session: data.session } },
+    create: {
       mosqueId: data.mosqueId,
-      session: data.session || null,
-      proposedKhutbahTime: data.proposedKhutbahTime || null,
-      proposedIqamahTime: data.proposedIqamahTime || null,
-      submitterEmail: data.submitterEmail || null,
-      submitterNote: data.submitterNote || null,
+      session: data.session,
+      khutbahTime: data.proposedKhutbahTime || null,
+      iqamahTime: data.proposedIqamahTime || null,
+      notes: data.submitterNote || null,
+      lastReportedAt: new Date(),
+    },
+    update: {
+      ...(data.proposedKhutbahTime ? { khutbahTime: data.proposedKhutbahTime } : {}),
+      ...(data.proposedIqamahTime ? { iqamahTime: data.proposedIqamahTime } : {}),
+      ...(data.submitterNote ? { notes: data.submitterNote } : {}),
+      lastReportedAt: new Date(),
     },
   });
+
+  revalidatePath("/jummah");
 }

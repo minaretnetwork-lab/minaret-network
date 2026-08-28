@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { MapPin, Search, Navigation, Clock, AlertCircle, CheckCircle2, ChevronDown, X } from "lucide-react";
 import type { MosqueWithJummah } from "@/lib/actions/jummah";
 import { submitJummahCorrection } from "@/lib/actions/jummah";
@@ -42,6 +43,7 @@ const SESSION_LABELS: Record<string, string> = {
 };
 
 export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -109,11 +111,11 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
     );
   }
 
-  function openCorrection(mosque: MosqueWithJummah, session: string) {
+  function openCorrection(mosque: MosqueWithJummah) {
     setCorrection({
       mosqueId: mosque.id,
       mosqueName: mosque.name,
-      session,
+      session: mosque.timings[0]?.session ?? "J1",
       proposedKhutbahTime: "",
       proposedIqamahTime: "",
       submitterNote: "",
@@ -124,17 +126,22 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
 
   function submitCorrection() {
     if (!correction) return;
+    if (!correction.session) {
+      setCorrectionError("Please select which Jumu'ah session you're correcting.");
+      return;
+    }
     setCorrectionError("");
     startTransition(async () => {
       try {
         await submitJummahCorrection({
           mosqueId: correction.mosqueId,
-          session: correction.session || undefined,
+          session: correction.session,
           proposedKhutbahTime: correction.proposedKhutbahTime || undefined,
           proposedIqamahTime: correction.proposedIqamahTime || undefined,
           submitterNote: correction.submitterNote || undefined,
         });
         setCorrectionSent(true);
+        router.refresh();
       } catch (e) {
         setCorrectionError(e instanceof Error ? e.message : "Submission failed.");
       }
@@ -158,7 +165,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
           </div>
           <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
             Jumu&apos;ah prayer times for mosques across the GTA, reported by the community.
-            If you notice incorrect times, please submit a correction.
+            If you notice incorrect times, submit a correction — it updates immediately.
           </p>
         </div>
 
@@ -284,12 +291,11 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                           <th className="text-left pb-2 pr-6 font-medium">Khutbah</th>
                           <th className="text-left pb-2 pr-6 font-medium">Iqamah</th>
                           <th className="text-left pb-2 font-medium">Notes</th>
-                          <th className="pb-2" />
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                         {mosque.timings.map((t) => (
-                          <tr key={t.session} className="group">
+                          <tr key={t.session}>
                             <td className="py-2 pr-6 font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
                               {SESSION_LABELS[t.session] ?? t.session}
                             </td>
@@ -302,14 +308,6 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                             <td className="py-2 text-gray-500 dark:text-gray-400 text-xs">
                               {t.notes ?? ""}
                             </td>
-                            <td className="py-2 pl-4 text-right">
-                              <button
-                                onClick={() => openCorrection(mosque, t.session)}
-                                className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
-                              >
-                                Correct
-                              </button>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -317,7 +315,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                   </div>
 
                   <button
-                    onClick={() => openCorrection(mosque, "")}
+                    onClick={() => openCorrection(mosque)}
                     className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
                   >
                     <AlertCircle className="h-3.5 w-3.5" />
@@ -344,7 +342,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                 >
                   <span className="text-gray-700 dark:text-gray-300">{m.name}</span>
                   <button
-                    onClick={() => openCorrection(m, "")}
+                    onClick={() => openCorrection(m)}
                     className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline ml-3 shrink-0"
                   >
                     Add times
@@ -383,9 +381,9 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
             {correctionSent ? (
               <div className="px-6 py-8 text-center">
                 <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-3" />
-                <p className="font-medium text-gray-900 dark:text-white">Thank you!</p>
+                <p className="font-medium text-gray-900 dark:text-white">Updated!</p>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Your correction has been submitted and will be reviewed.
+                  The times have been updated. Thank you for keeping this accurate.
                 </p>
                 <button
                   onClick={() => setCorrection(null)}
@@ -399,7 +397,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                 {/* Session picker */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Session
+                    Session <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={correction.session}
@@ -408,7 +406,6 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                     }
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="">All / General</option>
                     <option value="J1">1st Jumu&apos;ah</option>
                     <option value="J2">2nd Jumu&apos;ah</option>
                     <option value="J3">3rd Jumu&apos;ah</option>
@@ -453,7 +450,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                   </label>
                   <textarea
                     rows={2}
-                    placeholder="Any additional context, e.g. 'These are summer timings'"
+                    placeholder="e.g. 'These are summer timings'"
                     value={correction.submitterNote}
                     onChange={(e) =>
                       setCorrection((c) => c && { ...c, submitterNote: e.target.value })
@@ -480,7 +477,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                     disabled={isPending}
                     className="flex-1 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60"
                   >
-                    {isPending ? "Submitting…" : "Submit correction"}
+                    {isPending ? "Updating…" : "Update times"}
                   </button>
                 </div>
               </div>
