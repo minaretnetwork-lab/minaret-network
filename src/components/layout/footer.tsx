@@ -44,6 +44,7 @@ export function Footer() {
                 { href: "/auth/login", label: "Member Login" },
                 { href: "/auth/signup", label: "Create Account" },
                 { href: "/events", label: "Community Events" },
+                { href: "/about", label: "About Us" },
                 { href: "/mission", label: "Our Mission" },
               ].map((link) => (
                 <li key={link.href}>

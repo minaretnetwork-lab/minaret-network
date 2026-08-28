@@ -48,6 +48,7 @@ export function getExploreNavigation(): NavigationGroup[] {
         { href: "/categories", label: "Categories", icon: Tags },
         { href: "/jummah", label: "Jumu'ah Finder", icon: Moon },
         { href: "/events", label: "Community Events", icon: CalendarDays },
+        { href: "/offers", label: "Community Offers", icon: Megaphone },
         { href: "/request", label: "Service Request", icon: ClipboardList },
         { href: "/advertise", label: "Advertise with Us", icon: Sparkles },
       ],

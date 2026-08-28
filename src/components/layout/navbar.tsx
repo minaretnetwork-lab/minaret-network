@@ -5,6 +5,7 @@ import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
 import { LogoLink } from "./logo-link";
 import { AdvertiseDropdown } from "./advertise-dropdown";
+import { CommunityDropdown } from "./community-dropdown";
 import { ThemePicker } from "@/components/theme-picker";
 
 interface NavbarProps {
@@ -41,10 +42,7 @@ export function Navbar({ user }: NavbarProps) {
               { href: "/professionals", label: "Find Professionals" },
               { href: "/categories", label: "Categories" },
               { href: "/jummah", label: "Jumu'ah Finder" },
-              { href: "/events", label: "Events" },
-              { href: "/offers", label: "Community Offers" },
               { href: "/request", label: "Service Request" },
-              { href: "/about", label: "About" },
             ].map((link) => (
               <Link
                 key={link.href}
@@ -54,6 +52,7 @@ export function Navbar({ user }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
+            <CommunityDropdown />
             <AdvertiseDropdown />
             {isAdmin && (
               <Link
