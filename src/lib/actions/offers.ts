@@ -316,6 +316,24 @@ export async function adminCreateOffer(data: {
   revalidatePath("/");
 }
 
+export async function adminUpdateOffer(offerId: string, data: {
+  title?: string;
+  description?: string;
+  imageUrl?: string | null;
+}) {
+  await requireAdminUser();
+  await prisma.communityOffer.update({
+    where: { id: offerId },
+    data: {
+      ...(data.title        !== undefined ? { title:       data.title.trim()       } : {}),
+      ...(data.description  !== undefined ? { description: data.description.trim() } : {}),
+      ...(data.imageUrl     !== undefined ? { imageUrl:    data.imageUrl           } : {}),
+    },
+  });
+  revalidatePath("/admin/offers");
+  revalidatePath("/");
+}
+
 export async function getApprovedProfessionalsForOfferPicker() {
   return prisma.professional.findMany({
     where: { status: "APPROVED" },

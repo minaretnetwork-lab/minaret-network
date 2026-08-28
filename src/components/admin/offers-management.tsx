@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { CheckCircle, XCircle, Megaphone, Plus, ChevronDown } from "lucide-react";
+import { CheckCircle, XCircle, Megaphone, Plus, ChevronDown, Pencil, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { approveOffer, rejectOffer, adminCreateOffer, getApprovedProfessionalsForOfferPicker } from "@/lib/actions/offers";
+import { approveOffer, rejectOffer, adminCreateOffer, adminUpdateOffer, uploadOfferImage, getApprovedProfessionalsForOfferPicker } from "@/lib/actions/offers";
 
 type PickerProfessional = {
   id: string;
@@ -54,6 +54,13 @@ function OfferRow({ offer, showActions }: { offer: AdminOffer; showActions: bool
   const [rejectNote, setRejectNote] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [done, setDone] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editTitle, setEditTitle] = useState(offer.title);
+  const [editDesc, setEditDesc] = useState(offer.description);
+  const [editImageUrl, setEditImageUrl] = useState(offer.imageUrl ?? "");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const fullName = `${offer.professional.user?.firstName ?? ""} ${offer.professional.user?.lastName ?? ""}`.trim();
   const proName = offer.professional.user?.displayName ?? (fullName || (offer.professional.user?.email ?? "Unknown"));
@@ -93,6 +100,82 @@ function OfferRow({ offer, showActions }: { offer: AdminOffer; showActions: bool
           {isExpiredWindow && <span className="text-red-400 font-medium">Window expired — ask for resubmission</span>}
           {offer.adminNote && offer.status !== "PENDING" && (
             <span className="text-red-400 italic">{offer.adminNote}</span>
+          )}
+        </div>
+
+        {/* Edit panel — always available */}
+        <div className="mt-3">
+          {!showEdit ? (
+            <button
+              onClick={() => setShowEdit(true)}
+              className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <Pencil className="h-3 w-3" /> Edit offer
+            </button>
+          ) : (
+            <div className="mt-2 space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Title</label>
+                <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Description</label>
+                <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2}
+                  className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Image</label>
+                {editImageUrl && (
+                  <div className="relative w-20 h-14 rounded overflow-hidden mb-2">
+                    <Image src={editImageUrl} alt="" fill className="object-cover" />
+                  </div>
+                )}
+                <label className="inline-flex items-center gap-1.5 cursor-pointer rounded border border-dashed border-gray-300 dark:border-gray-600 px-3 py-1.5 text-xs text-gray-500 hover:border-emerald-400 hover:text-emerald-600 transition-colors">
+                  <ImagePlus className="h-3.5 w-3.5" />
+                  {uploadingImage ? "Uploading…" : editImageUrl ? "Change image" : "Upload image"}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only"
+                    disabled={uploadingImage}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingImage(true);
+                      setEditError(null);
+                      try {
+                        const fd = new FormData(); fd.append("file", file);
+                        const url = await uploadOfferImage(fd);
+                        setEditImageUrl(url);
+                      } catch (err) {
+                        setEditError(err instanceof Error ? err.message : "Upload failed");
+                      } finally { setUploadingImage(false); }
+                    }} />
+                </label>
+              </div>
+              {editError && <p className="text-xs text-red-500">{editError}</p>}
+              <div className="flex gap-2">
+                <Button size="sm" disabled={savingEdit}
+                  onClick={async () => {
+                    setSavingEdit(true); setEditError(null);
+                    try {
+                      await adminUpdateOffer(offer.id, {
+                        title: editTitle,
+                        description: editDesc,
+                        imageUrl: editImageUrl || null,
+                      });
+                      setShowEdit(false);
+                    } catch (err) {
+                      setEditError(err instanceof Error ? err.message : "Save failed");
+                    } finally { setSavingEdit(false); }
+                  }}
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white h-7 text-xs"
+                >
+                  {savingEdit ? "Saving…" : "Save"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setShowEdit(false); setEditError(null); }} className="h-7 text-xs">
+                  Cancel
+                </Button>
+              </div>
+            </div>
           )}
         </div>
 
@@ -163,10 +246,12 @@ function AdminCreateOfferForm() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingPros, setFetchingPros] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [professionals, setProfessionals] = useState<PickerProfessional[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [search, setSearch] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [form, setForm] = useState({
     professionalId: "",
     title: "",
@@ -212,9 +297,10 @@ function AdminCreateOfferForm() {
     if (!form.startDate || !form.endDate) { setError("Start and end dates are required"); return; }
     setLoading(true);
     try {
-      await adminCreateOffer(form);
+      await adminCreateOffer({ ...form, imageUrl: imageUrl || undefined });
       setSuccess(true);
       setForm({ professionalId: "", title: "", description: "", startDate: "", endDate: "" });
+      setImageUrl("");
       setSearch("");
       setTimeout(() => { setSuccess(false); setOpen(false); }, 1500);
     } catch (err) {
@@ -328,6 +414,51 @@ function AdminCreateOfferForm() {
               className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
+        </div>
+
+        {/* Image upload (optional) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Image (optional)</label>
+          {imageUrl && (
+            <div className="relative mb-2 w-full aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imageUrl} alt="Offer preview" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => setImageUrl("")}
+                className="absolute top-1.5 right-1.5 rounded-full bg-black/60 text-white text-xs px-2 py-0.5 hover:bg-black/80"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+          <label className="flex items-center gap-2 cursor-pointer w-fit rounded-lg border border-dashed border-gray-300 dark:border-gray-600 px-4 py-2 text-xs text-gray-600 dark:text-gray-400 hover:border-emerald-500 hover:text-emerald-600 transition-colors">
+            <ImagePlus className="h-4 w-4" />
+            {uploadingImage ? "Uploading…" : "Upload image"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              disabled={uploadingImage}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setUploadingImage(true);
+                setError(null);
+                try {
+                  const fd = new FormData();
+                  fd.append("file", file);
+                  const url = await uploadOfferImage(fd);
+                  setImageUrl(url);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Image upload failed");
+                } finally {
+                  setUploadingImage(false);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </label>
         </div>
 
         {error && <p className="text-xs text-red-600">{error}</p>}
