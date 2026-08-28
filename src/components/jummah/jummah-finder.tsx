@@ -416,12 +416,38 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                     }}
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="J1">1st Jumu&apos;ah</option>
-                    <option value="J2">2nd Jumu&apos;ah</option>
-                    <option value="J3">3rd Jumu&apos;ah</option>
-                    <option value="J4">4th Jumu&apos;ah</option>
+                    {(["J1", "J2", "J3", "J4"] as const).map((s) => {
+                      const ex = currentMosqueTimingsRef.current.find((t) => t.session === s);
+                      const label = SESSION_LABELS[s];
+                      const suffix = ex ? ` — ${ex.khutbahTime ?? "?"}` : "";
+                      return <option key={s} value={s}>{label}{suffix}</option>;
+                    })}
                   </select>
                 </div>
+
+                {/* Current stored times for selected session */}
+                {(() => {
+                  const stored = currentMosqueTimingsRef.current.find((t) => t.session === correction.session);
+                  return (
+                    <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 px-4 py-3 text-sm">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Currently stored</p>
+                      {stored ? (
+                        <div className="flex gap-6">
+                          <span className="text-gray-700 dark:text-gray-300">
+                            <span className="text-gray-400 dark:text-gray-500 mr-1">Khutbah:</span>
+                            {stored.khutbahTime ?? <em className="text-gray-400">not set</em>}
+                          </span>
+                          <span className="text-gray-700 dark:text-gray-300">
+                            <span className="text-gray-400 dark:text-gray-500 mr-1">Iqamah:</span>
+                            {stored.iqamahTime ?? <em className="text-gray-400">not set</em>}
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="text-gray-400 dark:text-gray-500 italic">No times on record for this session — fill in below to add them.</p>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
