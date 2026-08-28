@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Search, Navigation, Clock, AlertCircle, CheckCircle2, ChevronDown, X } from "lucide-react";
 import type { MosqueWithJummah } from "@/lib/actions/jummah";
@@ -54,6 +54,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
   const [correctionSent, setCorrectionSent] = useState(false);
   const [correctionError, setCorrectionError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const currentMosqueTimingsRef = useRef<MosqueWithJummah["timings"]>([]);
 
   const cities = useMemo(() => {
     const set = new Set<string>();
@@ -112,16 +113,18 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
   }
 
   function openCorrection(mosque: MosqueWithJummah) {
+    const firstSession = mosque.timings[0];
     setCorrection({
       mosqueId: mosque.id,
       mosqueName: mosque.name,
-      session: mosque.timings[0]?.session ?? "J1",
-      proposedKhutbahTime: "",
-      proposedIqamahTime: "",
+      session: firstSession?.session ?? "J1",
+      proposedKhutbahTime: firstSession?.khutbahTime ?? "",
+      proposedIqamahTime: firstSession?.iqamahTime ?? "",
       submitterNote: "",
     });
     setCorrectionSent(false);
     setCorrectionError("");
+    currentMosqueTimingsRef.current = mosque.timings;
   }
 
   function submitCorrection() {
@@ -401,9 +404,16 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                   </label>
                   <select
                     value={correction.session}
-                    onChange={(e) =>
-                      setCorrection((c) => c && { ...c, session: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const sel = e.target.value;
+                      const existing = currentMosqueTimingsRef.current.find((t) => t.session === sel);
+                      setCorrection((c) => c && {
+                        ...c,
+                        session: sel,
+                        proposedKhutbahTime: existing?.khutbahTime ?? "",
+                        proposedIqamahTime: existing?.iqamahTime ?? "",
+                      });
+                    }}
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="J1">1st Jumu&apos;ah</option>
