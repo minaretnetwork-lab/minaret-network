@@ -26,14 +26,31 @@ function formatReportedDate(d: Date) {
   });
 }
 
+type TimePicker = { hour: string; minute: string; ampm: "AM" | "PM" };
+
 type CorrectionForm = {
   mosqueId: string;
   mosqueName: string;
   session: string;
-  proposedKhutbahTime: string;
-  proposedIqamahTime: string;
+  khutbah: TimePicker;
+  iqamah: TimePicker;
   submitterNote: string;
 };
+
+const HOURS = ["1","2","3","4","5","6","7","8","9","10","11","12"];
+const MINUTES = ["00","05","10","15","20","25","30","35","40","45","50","55"];
+
+function parseTimePicker(s: string | null | undefined): TimePicker {
+  if (!s) return { hour: "", minute: "00", ampm: "PM" };
+  const m = s.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+  if (!m) return { hour: "", minute: "00", ampm: "PM" };
+  return { hour: m[1], minute: m[2].padStart(2, "0"), ampm: m[3].toUpperCase() as "AM" | "PM" };
+}
+
+function formatTimePicker(t: TimePicker): string | undefined {
+  if (!t.hour) return undefined;
+  return `${t.hour}:${t.minute} ${t.ampm}`;
+}
 
 const SESSION_LABELS: Record<string, string> = {
   J1: "1st Jumu'ah",
@@ -118,8 +135,8 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
       mosqueId: mosque.id,
       mosqueName: mosque.name,
       session: firstSession?.session ?? "J1",
-      proposedKhutbahTime: firstSession?.khutbahTime ?? "",
-      proposedIqamahTime: firstSession?.iqamahTime ?? "",
+      khutbah: parseTimePicker(firstSession?.khutbahTime),
+      iqamah: parseTimePicker(firstSession?.iqamahTime),
       submitterNote: "",
     });
     setCorrectionSent(false);
@@ -139,8 +156,8 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
         await submitJummahCorrection({
           mosqueId: correction.mosqueId,
           session: correction.session,
-          proposedKhutbahTime: correction.proposedKhutbahTime || undefined,
-          proposedIqamahTime: correction.proposedIqamahTime || undefined,
+          proposedKhutbahTime: formatTimePicker(correction.khutbah),
+          proposedIqamahTime: formatTimePicker(correction.iqamah),
           submitterNote: correction.submitterNote || undefined,
         });
         setCorrectionSent(true);
@@ -410,8 +427,8 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                       setCorrection((c) => c && {
                         ...c,
                         session: sel,
-                        proposedKhutbahTime: existing?.khutbahTime ?? "",
-                        proposedIqamahTime: existing?.iqamahTime ?? "",
+                        khutbah: parseTimePicker(existing?.khutbahTime),
+                        iqamah: parseTimePicker(existing?.iqamahTime),
                       });
                     }}
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -449,36 +466,44 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                   );
                 })()}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Khutbah time
+                {(["khutbah", "iqamah"] as const).map((field) => (
+                  <div key={field}>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 capitalize">
+                      {field} time
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 1:30 PM"
-                      value={correction.proposedKhutbahTime}
-                      onChange={(e) =>
-                        setCorrection((c) => c && { ...c, proposedKhutbahTime: e.target.value })
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
+                    <div className="flex gap-2">
+                      <select
+                        value={correction[field].hour}
+                        onChange={(e) =>
+                          setCorrection((c) => c && { ...c, [field]: { ...c[field], hour: e.target.value } })
+                        }
+                        className="flex-1 px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="">Hour</option>
+                        {HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
+                      </select>
+                      <select
+                        value={correction[field].minute}
+                        onChange={(e) =>
+                          setCorrection((c) => c && { ...c, [field]: { ...c[field], minute: e.target.value } })
+                        }
+                        className="flex-1 px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        {MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                      <select
+                        value={correction[field].ampm}
+                        onChange={(e) =>
+                          setCorrection((c) => c && { ...c, [field]: { ...c[field], ampm: e.target.value as "AM" | "PM" } })
+                        }
+                        className="px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Iqamah time
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 2:00 PM"
-                      value={correction.proposedIqamahTime}
-                      onChange={(e) =>
-                        setCorrection((c) => c && { ...c, proposedIqamahTime: e.target.value })
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-                </div>
+                ))}
 
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
