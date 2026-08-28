@@ -281,10 +281,10 @@ export async function adminCreateOffer(data: {
   await requireAdminUser();
 
   const professional = await prisma.professional.findUnique({
-    where: { id: data.professionalId, status: "APPROVED" },
+    where: { id: data.professionalId },
     include: { serviceAreas: { select: { slug: true }, take: 5 } },
   });
-  if (!professional) throw new Error("Professional not found or not approved");
+  if (!professional || professional.status !== "APPROVED") throw new Error("Professional not found or not approved");
 
   const startDate = new Date(data.startDate + "T00:00:00");
   const endDate   = new Date(data.endDate   + "T23:59:59");
