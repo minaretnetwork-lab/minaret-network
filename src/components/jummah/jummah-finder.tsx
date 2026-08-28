@@ -31,7 +31,6 @@ type CorrectionForm = {
   session: string;
   proposedKhutbahTime: string;
   proposedIqamahTime: string;
-  submitterEmail: string;
   submitterNote: string;
 };
 
@@ -117,7 +116,6 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
       session,
       proposedKhutbahTime: "",
       proposedIqamahTime: "",
-      submitterEmail: "",
       submitterNote: "",
     });
     setCorrectionSent(false);
@@ -134,7 +132,6 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
           session: correction.session || undefined,
           proposedKhutbahTime: correction.proposedKhutbahTime || undefined,
           proposedIqamahTime: correction.proposedIqamahTime || undefined,
-          submitterEmail: correction.submitterEmail || undefined,
           submitterNote: correction.submitterNote || undefined,
         });
         setCorrectionSent(true);
@@ -308,7 +305,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                             <td className="py-2 pl-4 text-right">
                               <button
                                 onClick={() => openCorrection(mosque, t.session)}
-                                className="text-xs text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors opacity-0 group-hover:opacity-100"
+                                className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
                               >
                                 Correct
                               </button>
@@ -321,9 +318,10 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
 
                   <button
                     onClick={() => openCorrection(mosque, "")}
-                    className="mt-3 text-xs text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                    className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
                   >
-                    + Submit a correction
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    Submit a correction
                   </button>
                 </div>
               </div>
@@ -461,21 +459,6 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                       setCorrection((c) => c && { ...c, submitterNote: e.target.value })
                     }
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Your email <span className="text-gray-400 font-normal">(optional — for follow-up)</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    value={correction.submitterEmail}
-                    onChange={(e) =>
-                      setCorrection((c) => c && { ...c, submitterEmail: e.target.value })
-                    }
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
