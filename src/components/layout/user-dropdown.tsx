@@ -1,15 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { LogOut, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MESSAGE_NOTIFICATIONS_CHANGED_EVENT } from "@/lib/message-events";
-import { getAccountNavigation } from "@/components/layout/account-navigation";
 
 interface Props {
   displayName: string;
-  isAdmin: boolean;
-  isProfessional: boolean;
+  isAdmin?: boolean;
+  isProfessional?: boolean;
   unreadMessageCount?: number;
   adminNotificationCount?: number;
   totalNotificationCount?: number;
@@ -27,8 +25,6 @@ type NotificationPayload = {
 
 export function UserDropdown({
   displayName,
-  isAdmin,
-  isProfessional,
   unreadMessageCount = 0,
   adminNotificationCount = 0,
   totalNotificationCount,
@@ -44,9 +40,6 @@ export function UserDropdown({
     latestConversationId: latestUnreadConversationId,
   });
   const ref = useRef<HTMLDivElement>(null);
-  const messageHref = messageNotification.latestConversationId
-    ? `/dashboard/messages/${messageNotification.latestConversationId}`
-    : "/dashboard/messages";
   useEffect(() => {
     function handlePointerDown(e: PointerEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -88,14 +81,6 @@ export function UserDropdown({
     };
   }, []);
 
-  const accountGroups = getAccountNavigation({
-    isAdmin,
-    isProfessional,
-    messageHref,
-    messageBadge: messageNotification.messagesCount,
-    adminBadge: messageNotification.adminCount,
-  });
-
   return (
     <div ref={ref} className="relative">
       <button
@@ -127,46 +112,12 @@ export function UserDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden z-[160]">
-          {/* User info */}
+        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden z-[160]">
           <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
             <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{displayName}</p>
             <p className="text-[11px] text-gray-400 mt-0.5">Minaret Network</p>
           </div>
-
-          {/* Links */}
-          {accountGroups.map((group, index) => (
-            <div
-              key={group.id}
-              className={`${index === 0 ? "py-1" : "border-t border-gray-100 py-1 dark:border-gray-800"}`}
-            >
-              <p className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
-                {group.label}
-              </p>
-              {group.items.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <span className="text-gray-400"><Icon className="h-4 w-4" /></span>
-                    <span className="flex-1">{link.label}</span>
-                    {typeof link.badge === "number" && link.badge > 0 && (
-                      <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                        {link.badge > 9 ? "9+" : link.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-
-          {/* Sign out */}
-          <div className="border-t border-gray-100 dark:border-gray-800 py-1">
+          <div className="py-1">
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
