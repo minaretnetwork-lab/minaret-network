@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { getAccountNavigation, getExploreNavigation } from "@/components/layout/account-navigation";
 
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login?redirectTo=/dashboard");
@@ -22,7 +23,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
     messageHref: user.latestUnreadConversationId ? `/dashboard/messages/${user.latestUnreadConversationId}` : "/dashboard/messages",
     messageBadge: user.unreadMessageCount,
   });
-  const flatLinks = navGroups.flatMap((group) => group.items);
   const exploreLinks = getExploreNavigation().flatMap((g) => g.items);
 
   return (
@@ -40,33 +40,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
         }}
       />
 
-      {/* Mobile tab bar */}
+      {/* Mobile tab bar — public/explore links only (account nav is in the avatar dropdown) */}
       <div className="md:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
         <nav className="flex px-4 gap-1 min-w-max">
-          {flatLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[#14532d] whitespace-nowrap border-b-2 border-transparent hover:border-[#14532d] transition-colors"
-              >
-                <Icon className="h-4 w-4" />
-                {link.label}
-              </Link>
-            );
-          })}
-          {/* Divider + public site links */}
-          <div className="flex items-center mx-1">
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
-          </div>
           {exploreLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 whitespace-nowrap border-b-2 border-transparent hover:border-emerald-600 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[#14532d] whitespace-nowrap border-b-2 border-transparent hover:border-[#14532d] transition-colors"
               >
                 <Icon className="h-4 w-4" />
                 {link.label}
