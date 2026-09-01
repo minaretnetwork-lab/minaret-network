@@ -287,18 +287,33 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                       </p>
                     )}
                   </div>
-                  <div className="text-right shrink-0">
-                    {mosque.website && (
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <div className="flex items-center gap-3">
+                      {mosque.website && (
+                        <a
+                          href={mosque.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
+                        >
+                          Website ↗
+                        </a>
+                      )}
                       <a
-                        href={mosque.website}
+                        href={
+                          mosque.latitude != null && mosque.longitude != null
+                            ? `https://www.google.com/maps/dir/?api=1&destination=${mosque.latitude},${mosque.longitude}`
+                            : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([mosque.address, mosque.city].filter(Boolean).join(", "))}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
                       >
-                        Website ↗
+                        <Navigation className="h-3 w-3" />
+                        Directions
                       </a>
-                    )}
-                    <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                    </div>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Last reported: {formatReportedDate(latestReport)}
                     </p>
                   </div>
