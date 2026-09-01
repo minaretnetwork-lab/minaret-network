@@ -140,8 +140,30 @@ export default async function ProfessionalDashboardPage({
                   <CategoryIcon slug={professional.category.slug} className="h-7 w-7 text-emerald-700 dark:text-emerald-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 dark:text-white text-lg leading-snug">{displayName}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{professional.category.name}</p>
+                  <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+                    <div className="min-w-0">
+                      <p className="font-bold text-gray-900 dark:text-white text-lg leading-snug">{displayName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{professional.category.name}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {professional.status === "APPROVED" && (
+                        <Link href={`/professionals/${professional.id}`}>
+                          <Button variant="outline" size="sm" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30">
+                            <Eye className="h-4 w-4" />
+                            View Profile
+                          </Button>
+                        </Link>
+                      )}
+                      {canEdit && (
+                        <Link href={`/professionals/${professional.id}/edit`}>
+                          <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+                            <Pencil className="h-4 w-4" />
+                            {professional.status === "WITHDRAWN" ? "Edit & Resubmit" : "Edit Profile"}
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
                     {professional.serviceAreas.length > 0 && (
                       <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
@@ -159,24 +181,6 @@ export default async function ProfessionalDashboardPage({
                       </span>
                     )}
                   </div>
-                </div>
-                <div className="flex-shrink-0 flex items-center gap-2">
-                  {professional.status === "APPROVED" && (
-                    <Link href={`/professionals/${professional.id}`}>
-                      <Button variant="outline" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30">
-                        <Eye className="h-4 w-4" />
-                        View Profile
-                      </Button>
-                    </Link>
-                  )}
-                  {canEdit && (
-                    <Link href={`/professionals/${professional.id}/edit`}>
-                      <Button className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-                        <Pencil className="h-4 w-4" />
-                        {professional.status === "WITHDRAWN" ? "Edit & Resubmit" : "Edit Profile"}
-                      </Button>
-                    </Link>
-                  )}
                 </div>
               </div>
 
