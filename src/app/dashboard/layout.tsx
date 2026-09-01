@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { CURRENT_TOS_VERSION } from "@/lib/constants";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { getAccountNavigation } from "@/components/layout/account-navigation";
+import { getAccountNavigation, getExploreNavigation } from "@/components/layout/account-navigation";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -23,6 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     messageBadge: user.unreadMessageCount,
   });
   const flatLinks = navGroups.flatMap((group) => group.items);
+  const exploreLinks = getExploreNavigation().flatMap((g) => g.items);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
@@ -45,14 +46,31 @@ export default async function DashboardLayout({ children }: { children: React.Re
           {flatLinks.map((link) => {
             const Icon = link.icon;
             return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[#14532d] whitespace-nowrap border-b-2 border-transparent hover:border-[#14532d] transition-colors"
-            >
-              <Icon className="h-4 w-4" />
-              {link.label}
-            </Link>
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[#14532d] whitespace-nowrap border-b-2 border-transparent hover:border-[#14532d] transition-colors"
+              >
+                <Icon className="h-4 w-4" />
+                {link.label}
+              </Link>
+            );
+          })}
+          {/* Divider + public site links */}
+          <div className="flex items-center mx-1">
+            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
+          </div>
+          {exploreLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 whitespace-nowrap border-b-2 border-transparent hover:border-emerald-600 transition-colors"
+              >
+                <Icon className="h-4 w-4" />
+                {link.label}
+              </Link>
             );
           })}
         </nav>
