@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition, useRef } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Search, Navigation, Clock, AlertCircle, CheckCircle2, ChevronDown, X } from "lucide-react";
 import type { MosqueWithJummah } from "@/lib/actions/jummah";
@@ -27,16 +27,16 @@ function formatReportedDate(d: Date) {
 }
 
 type TimePicker = { hour: string; minute: string; ampm: "AM" | "PM" };
+type SessionMap = Record<string, { khutbah: TimePicker; iqamah: TimePicker }>;
 
 type CorrectionForm = {
   mosqueId: string;
   mosqueName: string;
-  session: string;
-  khutbah: TimePicker;
-  iqamah: TimePicker;
+  sessions: SessionMap;
   submitterNote: string;
 };
 
+const SESSIONS = ["J1", "J2", "J3", "J4"] as const;
 const HOURS = ["1","2","3","4","5","6","7","8","9","10","11","12"];
 const MINUTES = ["00","05","10","15","20","25","30","35","40","45","50","55"];
 
@@ -51,6 +51,7 @@ function formatTimePicker(t: TimePicker): string | undefined {
   if (!t.hour) return undefined;
   return `${t.hour}:${t.minute} ${t.ampm}`;
 }
+
 
 const SESSION_LABELS: Record<string, string> = {
   J1: "1st Jumu'ah",
@@ -71,7 +72,6 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
   const [correctionSent, setCorrectionSent] = useState(false);
   const [correctionError, setCorrectionError] = useState("");
   const [isPending, startTransition] = useTransition();
-  const currentMosqueTimingsRef = useRef<MosqueWithJummah["timings"]>([]);
 
   const cities = useMemo(() => {
     const set = new Set<string>();
@@ -130,36 +130,39 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
   }
 
   function openCorrection(mosque: MosqueWithJummah) {
-    const firstSession = mosque.timings[0];
-    setCorrection({
-      mosqueId: mosque.id,
-      mosqueName: mosque.name,
-      session: firstSession?.session ?? "J1",
-      khutbah: parseTimePicker(firstSession?.khutbahTime),
-      iqamah: parseTimePicker(firstSession?.iqamahTime),
-      submitterNote: "",
-    });
+    const sessions: SessionMap = {};
+    for (const s of SESSIONS) {
+      const existing = mosque.timings.find((t) => t.session === s);
+      sessions[s] = {
+        khutbah: parseTimePicker(existing?.khutbahTime),
+        iqamah: parseTimePicker(existing?.iqamahTime),
+      };
+    }
+    setCorrection({ mosqueId: mosque.id, mosqueName: mosque.name, sessions, submitterNote: "" });
     setCorrectionSent(false);
     setCorrectionError("");
-    currentMosqueTimingsRef.current = mosque.timings;
   }
 
   function submitCorrection() {
     if (!correction) return;
-    if (!correction.session) {
-      setCorrectionError("Please select which Jumu'ah session you're correcting.");
+    const filled = SESSIONS.filter((s) => correction.sessions[s].khutbah.hour || correction.sessions[s].iqamah.hour);
+    if (filled.length === 0) {
+      setCorrectionError("Please enter at least one session's times.");
       return;
     }
     setCorrectionError("");
     startTransition(async () => {
       try {
-        await submitJummahCorrection({
-          mosqueId: correction.mosqueId,
-          session: correction.session,
-          proposedKhutbahTime: formatTimePicker(correction.khutbah),
-          proposedIqamahTime: formatTimePicker(correction.iqamah),
-          submitterNote: correction.submitterNote || undefined,
-        });
+        for (const s of filled) {
+          const { khutbah, iqamah } = correction.sessions[s];
+          await submitJummahCorrection({
+            mosqueId: correction.mosqueId,
+            session: s,
+            proposedKhutbahTime: formatTimePicker(khutbah),
+            proposedIqamahTime: formatTimePicker(iqamah),
+            submitterNote: correction.submitterNote || undefined,
+          });
+        }
         setCorrectionSent(true);
         router.refresh();
       } catch (e) {
@@ -413,97 +416,57 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                 </button>
               </div>
             ) : (
-              <div className="px-6 py-5 space-y-4">
-                {/* Session picker */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Session <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={correction.session}
-                    onChange={(e) => {
-                      const sel = e.target.value;
-                      const existing = currentMosqueTimingsRef.current.find((t) => t.session === sel);
-                      setCorrection((c) => c && {
-                        ...c,
-                        session: sel,
-                        khutbah: parseTimePicker(existing?.khutbahTime),
-                        iqamah: parseTimePicker(existing?.iqamahTime),
-                      });
-                    }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    {(["J1", "J2", "J3", "J4"] as const).map((s) => {
-                      const ex = currentMosqueTimingsRef.current.find((t) => t.session === s);
-                      const label = SESSION_LABELS[s];
-                      const suffix = ex ? ` — ${ex.khutbahTime ?? "?"}` : "";
-                      return <option key={s} value={s}>{label}{suffix}</option>;
-                    })}
-                  </select>
-                </div>
+              <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Fill in whichever sessions this mosque holds. Leave a session blank to skip it.
+                </p>
 
-                {/* Current stored times for selected session */}
-                {(() => {
-                  const stored = currentMosqueTimingsRef.current.find((t) => t.session === correction.session);
+                {/* One row per session */}
+                {SESSIONS.map((s) => {
+                  const sess = correction.sessions[s];
+                  const updateField = (field: "khutbah" | "iqamah", patch: Partial<TimePicker>) =>
+                    setCorrection((c) => c && {
+                      ...c,
+                      sessions: { ...c.sessions, [s]: { ...c.sessions[s], [field]: { ...c.sessions[s][field], ...patch } } },
+                    });
                   return (
-                    <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 px-4 py-3 text-sm">
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Currently stored</p>
-                      {stored ? (
-                        <div className="flex gap-6">
-                          <span className="text-gray-700 dark:text-gray-300">
-                            <span className="text-gray-400 dark:text-gray-500 mr-1">Khutbah:</span>
-                            {stored.khutbahTime ?? <em className="text-gray-400">not set</em>}
-                          </span>
-                          <span className="text-gray-700 dark:text-gray-300">
-                            <span className="text-gray-400 dark:text-gray-500 mr-1">Iqamah:</span>
-                            {stored.iqamahTime ?? <em className="text-gray-400">not set</em>}
-                          </span>
+                    <div key={s} className="rounded-lg border border-gray-100 dark:border-gray-800 p-3 space-y-3">
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                        {SESSION_LABELS[s]}
+                      </p>
+                      {(["khutbah", "iqamah"] as const).map((field) => (
+                        <div key={field}>
+                          <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1 capitalize">{field}</label>
+                          <div className="flex gap-1.5">
+                            <select
+                              value={sess[field].hour}
+                              onChange={(e) => updateField(field, { hour: e.target.value })}
+                              className="flex-1 px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            >
+                              <option value="">—</option>
+                              {HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
+                            </select>
+                            <select
+                              value={sess[field].minute}
+                              onChange={(e) => updateField(field, { minute: e.target.value })}
+                              className="flex-1 px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            >
+                              {MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            <select
+                              value={sess[field].ampm}
+                              onChange={(e) => updateField(field, { ampm: e.target.value as "AM" | "PM" })}
+                              className="px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            >
+                              <option value="AM">AM</option>
+                              <option value="PM">PM</option>
+                            </select>
+                          </div>
                         </div>
-                      ) : (
-                        <p className="text-gray-400 dark:text-gray-500 italic">No times on record for this session — fill in below to add them.</p>
-                      )}
+                      ))}
                     </div>
                   );
-                })()}
-
-                {(["khutbah", "iqamah"] as const).map((field) => (
-                  <div key={field}>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 capitalize">
-                      {field} time
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={correction[field].hour}
-                        onChange={(e) =>
-                          setCorrection((c) => c && { ...c, [field]: { ...c[field], hour: e.target.value } })
-                        }
-                        className="flex-1 px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      >
-                        <option value="">Hour</option>
-                        {HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
-                      </select>
-                      <select
-                        value={correction[field].minute}
-                        onChange={(e) =>
-                          setCorrection((c) => c && { ...c, [field]: { ...c[field], minute: e.target.value } })
-                        }
-                        className="flex-1 px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      >
-                        {MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
-                      </select>
-                      <select
-                        value={correction[field].ampm}
-                        onChange={(e) =>
-                          setCorrection((c) => c && { ...c, [field]: { ...c[field], ampm: e.target.value as "AM" | "PM" } })
-                        }
-                        className="px-2 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                      </select>
-                    </div>
-                  </div>
-                ))}
+                })}
 
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -538,7 +501,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
                     disabled={isPending}
                     className="flex-1 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60"
                   >
-                    {isPending ? "Updating…" : "Update times"}
+                    {isPending ? "Updating…" : "Save times"}
                   </button>
                 </div>
               </div>
