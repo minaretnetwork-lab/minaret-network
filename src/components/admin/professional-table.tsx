@@ -177,14 +177,14 @@ export function AdminProfessionalTable({ professionals }: Props) {
                       CLAIMED
                     </span>
                   )}
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {p.user?.email ?? <span className="italic text-amber-600">Admin-created · unclaimed</span>}
                   {pAny.isAdminCreated && (
-                    <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                    <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
                       Added by {pAny.createdByAdmin?.firstName ?? pAny.createdByAdmin?.displayName ?? "admin"}
                     </span>
                   )}
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {p.user?.email ?? <span className="italic text-amber-600">Admin-created · unclaimed</span>}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {p.category.name} · {p.recommendations.length} recommendations
