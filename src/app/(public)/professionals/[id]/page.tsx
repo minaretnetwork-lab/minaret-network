@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   MapPin, Clock, Award, MessageCircle,
-  ChevronLeft, Calendar, Languages, Star,
+  ChevronLeft, Calendar, Languages, Star, Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -73,8 +73,12 @@ export default async function ProfessionalProfilePage({ params }: Props) {
     photoUrl: professional.photoUrl,
     avatarUrl: user?.avatarUrl ?? null,
   });
-  const isUnclaimed = !!(professional as { isAdminCreated?: boolean }).isAdminCreated &&
-    !(professional as { claimedByUserId?: string | null }).claimedByUserId;
+  const pExtra = professional as typeof professional & { isAdminCreated?: boolean; claimedByUserId?: string | null };
+  const isUnclaimed = !!pExtra.isAdminCreated && !pExtra.claimedByUserId;
+  const isOwner = !!currentUser && (
+    currentUser.id === professional.user?.id ||
+    currentUser.id === pExtra.claimedByUserId
+  );
   const currentUserName = currentUser
     ? (currentUser.displayName ?? [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ") ?? null)
     : null;
@@ -99,6 +103,25 @@ export default async function ProfessionalProfilePage({ params }: Props) {
           currentUserEmail={currentUser?.email ?? null}
           currentUserName={currentUserName}
         />
+      )}
+
+      {/* Owner edit banner */}
+      {isOwner && !isUnclaimed && (
+        <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+          <div className="flex items-center gap-2.5">
+            <Pencil className="h-4 w-4 text-emerald-700 dark:text-emerald-400 flex-shrink-0" />
+            <p className="text-sm font-medium text-emerald-900 dark:text-emerald-200">
+              You&apos;re viewing your own profile — this is how others see it.
+            </p>
+          </div>
+          <Link
+            href={`/professionals/${professional.id}/edit`}
+            className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3 py-1.5 transition-colors"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Edit Profile
+          </Link>
+        </div>
       )}
 
       {/* Back */}
