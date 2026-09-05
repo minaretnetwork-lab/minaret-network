@@ -14,8 +14,11 @@ export default async function AdminProfessionalsPage({ searchParams }: Props) {
   const { status, filter } = await searchParams;
   const professionals = await getProfessionalsForAdmin(DEFAULT_MOSQUE_SLUG, status);
 
+  type PAny = { isAdminCreated?: boolean; claimedByUserId?: string | null };
   const displayed = filter === "unclaimed"
-    ? professionals.filter((p) => (p as unknown as { isAdminCreated: boolean; claimedByUserId: string | null }).isAdminCreated && !(p as unknown as { claimedByUserId: string | null }).claimedByUserId)
+    ? professionals.filter((p) => (p as unknown as PAny).isAdminCreated && !(p as unknown as PAny).claimedByUserId)
+    : filter === "claimed"
+    ? professionals.filter((p) => (p as unknown as PAny).isAdminCreated && !!(p as unknown as PAny).claimedByUserId)
     : professionals;
 
   return (
@@ -43,6 +46,7 @@ export default async function AdminProfessionalsPage({ searchParams }: Props) {
           { label: "Pending", value: "PENDING", filterVal: undefined },
           { label: "Approved", value: "APPROVED", filterVal: undefined },
           { label: "Unclaimed", value: "APPROVED", filterVal: "unclaimed" },
+          { label: "Claimed", value: "APPROVED", filterVal: "claimed" },
           { label: "Rejected", value: "REJECTED", filterVal: undefined },
           { label: "Suspended", value: "SUSPENDED", filterVal: undefined },
         ].map((tab) => {
@@ -51,7 +55,7 @@ export default async function AdminProfessionalsPage({ searchParams }: Props) {
             : "/admin/professionals";
           const isActive = tab.filterVal
             ? status === tab.value && filter === tab.filterVal
-            : filter !== "unclaimed" && (status === tab.value || (!status && !tab.value));
+            : !filter && (status === tab.value || (!status && !tab.value));
           return (
             <a
               key={tab.label}
