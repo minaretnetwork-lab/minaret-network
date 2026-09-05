@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { LANGUAGES } from "@/lib/constants";
+import { ServiceAreaPicker } from "@/components/professionals/service-area-picker";
 import { createUnclaimedProfessional } from "@/lib/actions/admin";
 import { Loader2, X } from "lucide-react";
 
@@ -61,7 +62,7 @@ const selectClass = "block w-full rounded-md border border-gray-300 dark:border-
 const inputClass = "block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-gray-400";
 
 interface Category { id: string; name: string; slug: string; icon?: string | null }
-interface ServiceArea { id: string; name: string }
+interface ServiceArea { id: string; name: string; slug: string }
 
 interface Props {
   categories: Category[];
@@ -81,7 +82,6 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
 
   // Service areas
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-  const [areaSearch, setAreaSearch] = useState("");
 
   // Languages
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
@@ -208,10 +208,6 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
   const filteredCategories = catSearch
     ? categories.filter((c) => c.name.toLowerCase().includes(catSearch.toLowerCase()) && !selectedCategories.includes(c.id))
     : categories.filter((c) => !selectedCategories.includes(c.id));
-
-  const visibleServiceAreas = areaSearch.trim()
-    ? serviceAreas.filter((a) => a.name.toLowerCase().includes(areaSearch.toLowerCase()) || selectedAreas.includes(a.id))
-    : serviceAreas;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
@@ -485,48 +481,12 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
       {/* Service areas */}
       <section>
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-1">Service Areas</h2>
-        <p className="text-xs text-gray-400 mb-2">Select all areas this business serves.</p>
-        <Input
-          type="search"
-          value={areaSearch}
-          onChange={(e) => setAreaSearch(e.target.value)}
-          className="mb-2 max-w-sm"
-          placeholder="Type a city or area to filter…"
+        <p className="text-xs text-gray-400 mb-2">Select all areas this business serves — pick a region to select all cities in it at once.</p>
+        <ServiceAreaPicker
+          serviceAreas={serviceAreas}
+          value={selectedAreas}
+          onChange={setSelectedAreas}
         />
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <button type="button"
-            onClick={() => setSelectedAreas(serviceAreas.map((a) => a.id))}
-            className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-            Select all GTA areas
-          </button>
-          <button type="button"
-            onClick={() => setSelectedAreas([])}
-            className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
-            Clear all
-          </button>
-          {selectedAreas.length > 0 && (
-            <span className="text-xs text-gray-400">{selectedAreas.length} of {serviceAreas.length} selected</span>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {visibleServiceAreas.map((area) => {
-            const selected = selectedAreas.includes(area.id);
-            return (
-              <button key={area.id} type="button"
-                onClick={() => setSelectedAreas((prev) => selected ? prev.filter((id) => id !== area.id) : [...prev, area.id])}
-                className={`px-3 py-1.5 rounded-full border text-sm transition-colors ${
-                  selected
-                    ? "bg-emerald-600 text-white border-emerald-600"
-                    : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-emerald-400"
-                }`}>
-                {area.name}
-              </button>
-            );
-          })}
-        </div>
-        {visibleServiceAreas.length === 0 && (
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No service areas match that search.</p>
-        )}
       </section>
 
       {error && (

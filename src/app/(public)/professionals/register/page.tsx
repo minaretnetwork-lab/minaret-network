@@ -15,7 +15,7 @@ export default async function ProfessionalRegisterPage() {
 
   let mosques: { id: string; name: string; city: string | null }[] = [];
   let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];
-  let serviceAreas: { id: string; name: string }[] = [];
+  let serviceAreas: { id: string; name: string; slug: string }[] = [];
 
   try {
     const [mosqueList, defaultMosque] = await Promise.all([
@@ -28,7 +28,7 @@ export default async function ProfessionalRegisterPage() {
         where: { slug: DEFAULT_MOSQUE_SLUG },
         select: {
           categories: { where: { isActive: true }, select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
-          serviceAreas: { select: { id: true, name: true }, orderBy: { name: "asc" } },
+          serviceAreas: { select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } },
         },
       }),
     ]);

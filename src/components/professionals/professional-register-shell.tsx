@@ -9,7 +9,7 @@ import {
 
 type Mosque = { id: string; name: string; city: string | null };
 type Category = { id: string; name: string; slug: string; icon: string | null };
-type ServiceArea = { id: string; name: string };
+type ServiceArea = { id: string; name: string; slug: string };
 
 type Props = {
   mosques: Mosque[];

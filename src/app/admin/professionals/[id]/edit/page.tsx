@@ -65,7 +65,7 @@ export default async function AdminEditProfessionalPage({
           orderBy: { name: "asc" },
         },
         serviceAreas: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, slug: true },
           orderBy: { name: "asc" },
         },
       },

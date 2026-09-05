@@ -13,7 +13,7 @@ export default async function AdminCreateProfessionalPage() {
       orderBy: { name: "asc" },
     }),
     prisma.serviceArea.findMany({
-      select: { id: true, name: true },
+      select: { id: true, name: true, slug: true },
       orderBy: { name: "asc" },
     }),
   ]);

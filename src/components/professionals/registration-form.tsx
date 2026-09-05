@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LANGUAGES } from "@/lib/constants";
+import { ServiceAreaPicker } from "@/components/professionals/service-area-picker";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { useRouter } from "next/navigation";
 import { Camera, X, Building2, ChevronRight, ChevronLeft, Check, Lightbulb, ImagePlus } from "lucide-react";
@@ -81,7 +82,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Category { id: string; name: string; slug: string; icon?: string | null }
-interface ServiceArea { id: string; name: string }
+interface ServiceArea { id: string; name: string; slug: string }
 interface Mosque { id: string; name: string; city?: string | null }
 export interface ProfessionalFormInitialData {
   id: string;
@@ -249,7 +250,6 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   // category combobox
   const [catSearch, setCatSearch] = useState("");
   const [catOpen, setCatOpen] = useState(false);
-  const [areaSearch, setAreaSearch] = useState("");
   const catRef = useRef<HTMLDivElement>(null);
   // mosque combobox
   const [mosqueSearch, setMosqueSearch] = useState("");
@@ -312,10 +312,6 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const businessAddressValue = watch("businessAddress") ?? "";
   const bioLength = watch("bio")?.length ?? 0;
   const bioCharactersRemaining = Math.max(BIO_MIN_LENGTH - bioLength, 0);
-  const normalizedAreaSearch = areaSearch.trim().toLowerCase();
-  const visibleServiceAreas = normalizedAreaSearch
-    ? serviceAreas.filter((area) => area.name.toLowerCase().includes(normalizedAreaSearch) || selectedAreas.includes(area.id))
-    : serviceAreas;
   const invalidAvailabilityDays = getInvalidAvailabilityDays(avSchedules);
 
   useEffect(() => {
@@ -415,12 +411,6 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
       ? selectedLanguages.filter((l) => l !== lang)
       : [...selectedLanguages, lang]);
   }
-  function toggleArea(id: string) {
-    setValue("serviceAreaIds", selectedAreas.includes(id)
-      ? selectedAreas.filter((a) => a !== id)
-      : [...selectedAreas, id]);
-  }
-
   function addCategory(id: string) {
     if (!id) return;
     const next = selectedCategoryIds.includes(id) ? selectedCategoryIds : [...selectedCategoryIds, id];
@@ -433,13 +423,6 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     setValue("categoryIds", next, { shouldDirty: true, shouldValidate: true });
     setValue("categoryId", next[0] ?? "", { shouldDirty: true, shouldValidate: true });
   }
-  function selectAllServiceAreas() {
-    setValue("serviceAreaIds", serviceAreas.map((area) => area.id), { shouldDirty: true, shouldValidate: true });
-  }
-  function clearServiceAreas() {
-    setValue("serviceAreaIds", [], { shouldDirty: true, shouldValidate: true });
-  }
-
   function handlePhoneValueChange(value: string) {
     setValue("phone", value);
     if (whatsappSameAsPhone) setValue("whatsapp", value);
@@ -890,51 +873,13 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
               {/* Service areas */}
               <div>
                 <Label>Service Areas *</Label>
-                <p className="text-xs text-gray-400 mt-0.5 mb-2">Select all areas you serve</p>
-                <Input
-                  type="search"
-                  value={areaSearch}
-                  onChange={(event) => setAreaSearch(event.target.value)}
-                  className="mb-2 max-w-sm"
-                  placeholder="Type a city or area to filter..."
+                <p className="text-xs text-gray-400 mt-0.5 mb-2">Select all areas you serve — pick a region to select all cities in it at once</p>
+                <ServiceAreaPicker
+                  serviceAreas={serviceAreas}
+                  value={selectedAreas}
+                  onChange={(ids) => setValue("serviceAreaIds", ids, { shouldDirty: true, shouldValidate: true })}
+                  error={errors.serviceAreaIds?.message}
                 />
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={selectAllServiceAreas}
-                    className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
-                  >
-                    Select all GTA areas
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearServiceAreas}
-                    className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                  >
-                    Clear all
-                  </button>
-                  {selectedAreas.length > 0 && (
-                    <span className="text-xs text-gray-400">
-                      {selectedAreas.length} of {serviceAreas.length} selected
-                    </span>
-                  )}
-                </div>
-                {errors.serviceAreaIds && <p className="text-xs text-red-600 mb-1">{errors.serviceAreaIds.message}</p>}
-                <div className="flex flex-wrap gap-2">
-                  {visibleServiceAreas.map((area) => (
-                    <button key={area.id} type="button" onClick={() => toggleArea(area.id)}
-                      className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
-                        selectedAreas.includes(area.id)
-                          ? "bg-green-600 text-white border-green-600"
-                          : "border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300 hover:border-green-400"
-                      }`}>
-                      {area.name}
-                    </button>
-                  ))}
-                </div>
-                {visibleServiceAreas.length === 0 && (
-                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No service areas match that search.</p>
-                )}
               </div>
 
               <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
