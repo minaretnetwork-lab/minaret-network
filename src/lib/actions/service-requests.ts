@@ -83,7 +83,6 @@ export async function submitServiceRequest(data: {
       prisma.professional.findMany({
         where: {
           categoryId: data.categoryId,
-          tier: "BROADCAST_ELIGIBLE",
           status: "APPROVED",
           ...(data.serviceAreaId
             ? { serviceAreas: { some: { id: data.serviceAreaId } } }
@@ -515,4 +514,33 @@ export async function broadcastMyServiceRequest(id: string) {
   revalidatePath("/dashboard/requests");
   revalidatePath(`/dashboard/requests/${id}`);
   revalidatePath("/dashboard/leads");
+}
+
+export async function getNewLeadsCount(): Promise<number> {
+  try {
+    const dbUser = await getCurrentDbUserWithListings();
+    if (!dbUser || dbUser.professionals.length === 0) return 0;
+
+    const filters = buildProfessionalRequestFilters(dbUser.professionals);
+    if (filters.length === 0) return 0;
+    const professionalIds = dbUser.professionals.map((p) => p.id);
+
+    return prisma.serviceRequest.count({
+      where: {
+        userId: { not: dbUser.id },
+        status: { in: ["OPEN", "IN_PROGRESS"] },
+        AND: [
+          { OR: filters },
+          {
+            OR: [
+              { assignedToId: null },
+              { assignedToId: { in: professionalIds } },
+            ],
+          },
+        ],
+      },
+    });
+  } catch {
+    return 0;
+  }
 }

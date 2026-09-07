@@ -5,6 +5,7 @@ import { CURRENT_TOS_VERSION } from "@/lib/constants";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { getAccountNavigation, getExploreNavigation } from "@/components/layout/account-navigation";
+import { getNewLeadsCount } from "@/lib/actions/service-requests";
 
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -17,11 +18,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   const hasProfessionalListings = user.professionals.length > 0;
+  const isProfessional = user.role === "PROFESSIONAL" || hasProfessionalListings;
+  const [newLeadsCount] = await Promise.all([
+    isProfessional ? getNewLeadsCount() : Promise.resolve(0),
+  ]);
+
   const navGroups = getAccountNavigation({
     isAdmin: user.role === "ADMIN" || user.role === "SUPER_ADMIN" || user.role === "LISTING_MANAGER",
-    isProfessional: user.role === "PROFESSIONAL" || hasProfessionalListings,
+    isProfessional,
     messageHref: user.latestUnreadConversationId ? `/dashboard/messages/${user.latestUnreadConversationId}` : "/dashboard/messages",
     messageBadge: user.unreadMessageCount,
+    leadsBadge: newLeadsCount,
   });
   const exploreLinks = getExploreNavigation().flatMap((g) => g.items);
 
@@ -76,7 +83,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
                       className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:text-[#14532d] dark:hover:text-emerald-400 transition-colors"
                     >
                       <Icon className="h-4 w-4" />
-                      {link.label}
+                      <span className="flex-1">{link.label}</span>
+                      {typeof link.badge === "number" && link.badge > 0 && (
+                        <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                          {link.badge > 9 ? "9+" : link.badge}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}

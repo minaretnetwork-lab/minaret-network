@@ -36,6 +36,7 @@ type NavigationOptions = {
   messageHref?: string;
   messageBadge?: number;
   adminBadge?: number;
+  leadsBadge?: number;
 };
 
 export function getExploreNavigation(): NavigationGroup[] {
@@ -62,6 +63,7 @@ export function getAccountNavigation({
   messageHref = "/dashboard/messages",
   messageBadge = 0,
   adminBadge = 0,
+  leadsBadge = 0,
 }: NavigationOptions): NavigationGroup[] {
   const groups: NavigationGroup[] = [
     {
@@ -82,7 +84,7 @@ export function getAccountNavigation({
       label: "Professional Tools",
       items: [
         { href: "/dashboard/professional", label: "Professional Profile", icon: BriefcaseBusiness },
-        { href: "/dashboard/leads", label: "Incoming Requests", icon: Send },
+        { href: "/dashboard/leads", label: "Incoming Requests", icon: Send, badge: leadsBadge },
         { href: "/dashboard/promote", label: "Sponsored Listing", icon: Sparkles },
         { href: "/dashboard/featured", label: "Featured Business", icon: Star },
         { href: "/dashboard/offers", label: "Community Offers", icon: Tags },
