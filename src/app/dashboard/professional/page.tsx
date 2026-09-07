@@ -125,103 +125,119 @@ export default async function ProfessionalDashboardPage({
         </Link>
       </div>
 
+      {/* ── Pass 1: all profile cards ── */}
+      <div className="space-y-4">
+        {professionals.map((professional) => {
+          const statusInfo = STATUS_UI[professional.status] ?? STATUS_UI.PENDING;
+          const canEdit = professional.status !== "PENDING";
+          const displayName = professional.businessName || professional.title || professional.category.name;
+          return (
+            <div key={professional.id} className="space-y-3">
+              {/* Profile card */}
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+                <div className="flex items-start gap-4 p-5">
+                  <div className="h-14 w-14 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 flex items-center justify-center flex-shrink-0">
+                    <CategoryIcon slug={professional.category.slug} className="h-7 w-7 text-emerald-700 dark:text-emerald-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-gray-900 dark:text-white text-lg leading-snug">{displayName}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{professional.category.name}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {professional.status === "APPROVED" && (
+                          <Link href={`/professionals/${professional.id}`}>
+                            <Button variant="outline" size="sm" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30">
+                              <Eye className="h-4 w-4" />
+                              View Profile
+                            </Button>
+                          </Link>
+                        )}
+                        {canEdit && (
+                          <Link href={`/professionals/${professional.id}/edit`}>
+                            <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+                              <Pencil className="h-4 w-4" />
+                              {professional.status === "WITHDRAWN" ? "Edit & Resubmit" : "Edit Profile"}
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+                      {professional.serviceAreas.length > 0 && (
+                        <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                          <MapPin className="h-3 w-3" />{professional.serviceAreas.map(a => a.name).join(", ")}
+                        </span>
+                      )}
+                      {professional.languages.length > 0 && (
+                        <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                          <Languages className="h-3 w-3" />{professional.languages.join(", ")}
+                        </span>
+                      )}
+                      {professional.yearsOfExperience && (
+                        <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                          <Calendar className="h-3 w-3" />{professional.yearsOfExperience}+ yrs experience
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-3 flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-gray-800/20">
+                  {professional.status === "PENDING" && (
+                    <form action={withdrawProfessionalApplication.bind(null, professional.id)}>
+                      <Button type="submit" variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30 h-8 text-xs">
+                        Call back for edits
+                      </Button>
+                    </form>
+                  )}
+                  {professional.isFeatured && professional.editDrafts.length === 0 && (
+                    <p className="text-xs text-amber-700 dark:text-amber-400">Featured edits go to admin review — your live profile stays active.</p>
+                  )}
+                  {professional.editDrafts.length > 0 && (
+                    <p className="text-xs text-blue-700 dark:text-blue-400">Edits pending review — your current public profile remains live.</p>
+                  )}
+                  <div className="ml-auto">
+                    <DeleteProfessionalListingButton
+                      professionalId={professional.id}
+                      status={professional.status}
+                      label={professional.businessName ?? professional.category.name}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Status banner */}
+              <div className={`flex items-start gap-3 p-4 rounded-xl border ${statusInfo.color}`}>
+                {statusInfo.icon}
+                <div>
+                  <p className="font-semibold">{statusInfo.label}</p>
+                  <p className="text-sm mt-0.5 opacity-80">{statusInfo.desc}</p>
+                  {professional.rejectionReason && (
+                    <p className="text-sm mt-2 font-medium">Reason: {professional.rejectionReason}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Pass 2: per-listing stats, badges, and sponsored ── */}
       {professionals.map((professional) => {
-        const statusInfo = STATUS_UI[professional.status] ?? STATUS_UI.PENDING;
-        const canEdit = professional.status !== "PENDING";
         const displayName = professional.businessName || professional.title || professional.category.name;
+        const hasDetails =
+          professional.status === "APPROVED" ||
+          professional.badges.length > 0 ||
+          true; // sponsored section always shown
+        if (!hasDetails) return null;
         return (
-          <section key={professional.id} className="space-y-4 rounded-2xl border border-gray-200 bg-white/40 p-4 dark:border-gray-800 dark:bg-gray-900/30">
+          <section key={`details-${professional.id}`} className="space-y-4 rounded-2xl border border-gray-200 bg-white/40 p-4 dark:border-gray-800 dark:bg-gray-900/30">
+            {professionals.length > 1 && (
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{displayName}</p>
+            )}
 
-            {/* ── 1. Profile card ── */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-              {/* header row */}
-              <div className="flex items-start gap-4 p-5">
-                <div className="h-14 w-14 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 flex items-center justify-center flex-shrink-0">
-                  <CategoryIcon slug={professional.category.slug} className="h-7 w-7 text-emerald-700 dark:text-emerald-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-                    <div className="min-w-0">
-                      <p className="font-bold text-gray-900 dark:text-white text-lg leading-snug">{displayName}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{professional.category.name}</p>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {professional.status === "APPROVED" && (
-                        <Link href={`/professionals/${professional.id}`}>
-                          <Button variant="outline" size="sm" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30">
-                            <Eye className="h-4 w-4" />
-                            View Profile
-                          </Button>
-                        </Link>
-                      )}
-                      {canEdit && (
-                        <Link href={`/professionals/${professional.id}/edit`}>
-                          <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-                            <Pencil className="h-4 w-4" />
-                            {professional.status === "WITHDRAWN" ? "Edit & Resubmit" : "Edit Profile"}
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
-                    {professional.serviceAreas.length > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-                        <MapPin className="h-3 w-3" />{professional.serviceAreas.map(a => a.name).join(", ")}
-                      </span>
-                    )}
-                    {professional.languages.length > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-                        <Languages className="h-3 w-3" />{professional.languages.join(", ")}
-                      </span>
-                    )}
-                    {professional.yearsOfExperience && (
-                      <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-                        <Calendar className="h-3 w-3" />{professional.yearsOfExperience}+ yrs experience
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* secondary actions bar */}
-              <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-3 flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-gray-800/20">
-                {professional.status === "PENDING" && (
-                  <form action={withdrawProfessionalApplication.bind(null, professional.id)}>
-                    <Button type="submit" variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30 h-8 text-xs">
-                      Call back for edits
-                    </Button>
-                  </form>
-                )}
-                {professional.isFeatured && professional.editDrafts.length === 0 && (
-                  <p className="text-xs text-amber-700 dark:text-amber-400">Featured edits go to admin review — your live profile stays active.</p>
-                )}
-                {professional.editDrafts.length > 0 && (
-                  <p className="text-xs text-blue-700 dark:text-blue-400">Edits pending review — your current public profile remains live.</p>
-                )}
-                <div className="ml-auto">
-                  <DeleteProfessionalListingButton
-                    professionalId={professional.id}
-                    status={professional.status}
-                    label={professional.businessName ?? professional.category.name}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* ── 2. Status banner ── */}
-            <div className={`flex items-start gap-3 p-4 rounded-xl border ${statusInfo.color}`}>
-              {statusInfo.icon}
-              <div>
-                <p className="font-semibold">{statusInfo.label}</p>
-                <p className="text-sm mt-0.5 opacity-80">{statusInfo.desc}</p>
-                {professional.rejectionReason && (
-                  <p className="text-sm mt-2 font-medium">Reason: {professional.rejectionReason}</p>
-                )}
-              </div>
-            </div>
-
-            {/* ── 3. Stats ── */}
+            {/* Stats */}
             {professional.status === "APPROVED" && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 text-center">
@@ -251,7 +267,7 @@ export default async function ProfessionalDashboardPage({
               </div>
             )}
 
-            {/* ── 4. Badges ── */}
+            {/* Badges */}
             {professional.badges.length > 0 && (
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Your Verification Badges</h3>
@@ -268,9 +284,8 @@ export default async function ProfessionalDashboardPage({
               </div>
             )}
 
-            {/* ── 5. Sponsored ── */}
+            {/* Sponsored */}
             <SponsoredHistory listings={professional.sponsoredListings as SponsoredListing[]} />
-
           </section>
         );
       })}
