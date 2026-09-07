@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2, LogIn, UserPlus,
   ChevronLeft, ChevronRight,
@@ -233,6 +233,7 @@ export function ServiceRequestForm({
             : initialDraft.step,
       }
     : null;
+  const formRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(mergedDraft?.step ?? 0);
   const [authGate, setAuthGate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -272,6 +273,10 @@ export function ServiceRequestForm({
     const selectedArea = serviceAreas.find((area) => area.id === form.serviceAreaId);
     if (selectedArea) setAreaQuery(selectedArea.name);
   }, [form.serviceAreaId, serviceAreas]);
+
+  useEffect(() => {
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [step]);
 
   function selectDetectedArea(city: string) {
     const lower = city.toLowerCase();
@@ -418,7 +423,7 @@ export function ServiceRequestForm({
 
   /* ── Shell ───────────────────────────────────────────── */
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+    <div ref={formRef} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
 
       {/* Progress bar */}
       <div className="h-1 bg-gray-100 dark:bg-gray-800">
