@@ -508,9 +508,15 @@ export function ServiceRequestForm({
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
             Describe what you need
           </h2>
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="text-sm text-gray-400 mb-4">
             The more detail you give, the better. Include scope, size, timeline, and any specific requirements.
           </p>
+          <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-900/20 px-4 py-3 mb-5">
+            <span className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0 text-base leading-none">ℹ</span>
+            <p className="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
+              Your request will be sent to all mosque-affiliated {form.categoryName.toLowerCase()} professionals serving your area. You&rsquo;ll hear from multiple professionals so you can compare and choose the best fit.
+            </p>
+          </div>
           <Textarea
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
@@ -723,8 +729,9 @@ export function ServiceRequestForm({
               className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-              I understand that my request, including my name, contact information, and description, will be sent to
-              multiple mosque-affiliated professionals in this category. I may be contacted by more than one of them.
+              I understand that my request — including my name, contact details, and description — will be shared with
+              multiple mosque-affiliated {form.categoryName.toLowerCase()} professionals in my area so I can receive
+              quotes and choose the best fit. I may be contacted by more than one professional.
             </span>
           </label>
 
