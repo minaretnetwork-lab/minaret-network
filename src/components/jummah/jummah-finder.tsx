@@ -341,11 +341,7 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
 
                   <div className="mt-4 flex items-center gap-2">
                     <a
-                      href={
-                        mosque.latitude != null && mosque.longitude != null
-                          ? `https://www.google.com/maps/dir/?api=1&destination=${mosque.latitude},${mosque.longitude}`
-                          : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([mosque.address, mosque.city].filter(Boolean).join(", "))}`
-                      }
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([mosque.name, mosque.address, mosque.city].filter(Boolean).join(", "))}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-xs font-medium text-white transition-colors"
