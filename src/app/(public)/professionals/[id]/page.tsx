@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { ProfilePhotoLightbox } from "@/components/professionals/profile-photo-lightbox";
+import { GalleryLightbox } from "@/components/professionals/gallery-lightbox";
 import { ClaimProfileBanner } from "@/components/professionals/claim-profile-banner";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { RecommendationForm } from "@/components/professionals/recommendation-form";
@@ -297,17 +298,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
           {professional.galleryImages.length > 0 && (
             <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
               <h2 className="font-semibold text-gray-900 dark:text-white mb-3">Gallery</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {professional.galleryImages.map((img) => (
-                  <div key={img.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                    <img
-                      src={img.url}
-                      alt={img.caption ?? "Gallery image"}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                    />
-                  </div>
-                ))}
-              </div>
+              <GalleryLightbox images={professional.galleryImages} />
             </section>
           )}
 
