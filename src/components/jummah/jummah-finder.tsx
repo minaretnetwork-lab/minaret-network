@@ -114,6 +114,18 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
     return list;
   }, [withTimings, search, cityFilter, userLocation]);
 
+  // Mosques without timings that match the current search query (shown inline when searching)
+  const filteredWithoutTimings = useMemo(() => {
+    if (!search.trim()) return [];
+    const q = search.trim().toLowerCase();
+    return withoutTimings.filter(
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        (m.city ?? "").toLowerCase().includes(q) ||
+        (m.address ?? "").toLowerCase().includes(q)
+    );
+  }, [withoutTimings, search]);
+
   function locate() {
     setLocError("");
     setLocating(true);
@@ -362,6 +374,36 @@ export function JummahFinder({ mosques }: { mosques: MosqueWithJummah[] }) {
             );
           })}
         </div>
+
+        {/* Mosques without timings that match a search — shown inline */}
+        {filteredWithoutTimings.length > 0 && (
+          <div className="space-y-3 mt-2">
+            {filteredWithoutTimings.map((m) => (
+              <div
+                key={m.id}
+                className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-4 flex flex-wrap items-center justify-between gap-3"
+              >
+                <div>
+                  <h2 className="font-semibold text-gray-900 dark:text-white text-base">{m.name}</h2>
+                  {(m.city || m.address) && (
+                    <p className="flex items-center gap-1 mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      {[m.address, m.city].filter(Boolean).join(", ")}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">No times listed yet — be the first to submit.</p>
+                </div>
+                <button
+                  onClick={() => openCorrection(m)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-xs font-medium text-white transition-colors shrink-0"
+                >
+                  <Clock className="h-3.5 w-3.5" />
+                  Add times
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Mosques without timings */}
         {withoutTimings.length > 0 && !search && !cityFilter && (
