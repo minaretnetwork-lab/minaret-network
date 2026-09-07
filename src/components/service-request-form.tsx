@@ -514,7 +514,7 @@ export function ServiceRequestForm({
           <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-900/20 px-4 py-3 mb-5">
             <span className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0 text-base leading-none">ℹ</span>
             <p className="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
-              Your request will be sent to all mosque-affiliated {form.categoryName.toLowerCase()} professionals serving your area. You&rsquo;ll hear from multiple professionals so you can compare and choose the best fit.
+              Your request will be sent to all mosque-affiliated {form.categoryName.toLowerCase()}{" "}professionals serving your area. You&rsquo;ll hear from multiple professionals so you can compare and choose the best fit.
             </p>
           </div>
           <Textarea
