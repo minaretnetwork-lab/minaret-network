@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createMosque, updateMosque, toggleMosqueActive } from "@/lib/actions/mosques";
-import { Building2, ExternalLink, Plus, AlertTriangle } from "lucide-react";
+import { Building2, ExternalLink, Plus, AlertTriangle, Search } from "lucide-react";
 
 type Mosque = {
   id: string;
@@ -195,6 +195,7 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   async function handleCreate(data: Record<string, string>) {
     await createMosque(data as Parameters<typeof createMosque>[0]);
@@ -215,8 +216,27 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
     router.refresh();
   }
 
+  const filtered = search.trim()
+    ? initial.filter((m) =>
+        m.name.toLowerCase().includes(search.toLowerCase()) ||
+        (m.city ?? "").toLowerCase().includes(search.toLowerCase())
+      )
+    : initial;
+
   return (
     <div className="space-y-4">
+      {/* Search */}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search mosques by name or city…"
+          className="pl-9"
+        />
+      </div>
+
       {/* Add new */}
       {adding ? (
         <div className="bg-white dark:bg-gray-900 border border-green-200 dark:border-green-800 rounded-xl p-5">
@@ -232,7 +252,7 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
       )}
 
       {/* Mosque list */}
-      {initial.map((mosque) => (
+      {filtered.map((mosque) => (
         <div
           key={mosque.id}
           className={`bg-white dark:bg-gray-900 border rounded-xl p-5 ${
@@ -302,9 +322,11 @@ export function MosqueManagement({ mosques: initial }: { mosques: Mosque[] }) {
         </div>
       ))}
 
-      {initial.length === 0 && !adding && (
+      {filtered.length === 0 && !adding && (
         <div className="text-center py-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
-          <p className="text-sm text-gray-400">No mosques yet. Add one to get started.</p>
+          <p className="text-sm text-gray-400">
+            {search.trim() ? `No mosques match "${search}".` : "No mosques yet. Add one to get started."}
+          </p>
         </div>
       )}
     </div>
