@@ -210,6 +210,7 @@ export async function getMatchingServiceRequests(limit?: number) {
     where: {
       userId: { not: dbUser.id },
       status: { in: ["OPEN", "IN_PROGRESS"] },
+      leadDismissals: { none: { professionalId: { in: professionalIds } } },
       AND: [
         { OR: filters },
         {
@@ -543,4 +544,34 @@ export async function getNewLeadsCount(): Promise<number> {
   } catch {
     return 0;
   }
+}
+
+export async function dismissLead(serviceRequestId: string, data: { reason: string; note?: string }) {
+  const dbUser = await getCurrentDbUserWithListings();
+  if (!dbUser || dbUser.professionals.length === 0) throw new Error("No professional listing found.");
+
+  const reason = data.reason.trim();
+  if (!reason) throw new Error("Please choose a reason.");
+
+  // Verify the request is visible to this professional (safety check)
+  const request = await prisma.serviceRequest.findFirst({
+    where: { id: serviceRequestId, status: { in: ["OPEN", "IN_PROGRESS"] } },
+    select: { id: true },
+  });
+  if (!request) throw new Error("Request not found.");
+
+  // Dismiss for all of the professional's listings
+  const note = data.note?.trim() || null;
+  await Promise.all(
+    dbUser.professionals.map((p) =>
+      prisma.professionalLeadDismissal.upsert({
+        where: { professionalId_serviceRequestId: { professionalId: p.id, serviceRequestId } },
+        create: { professionalId: p.id, serviceRequestId, reason, note },
+        update: {},
+      })
+    )
+  );
+
+  revalidatePath("/dashboard/leads");
+  revalidatePath(`/dashboard/leads/${serviceRequestId}`);
 }

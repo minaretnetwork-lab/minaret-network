@@ -205,6 +205,7 @@ model Professional {
   broadcastLogs     BroadcastLog[]
   profileClaims     ProfileClaim[]
   reports           ProfessionalReport[]
+  leadDismissals    ProfessionalLeadDismissal[]
 
   @@map("professionals")
 }
@@ -551,10 +552,25 @@ model ServiceRequest {
   createdAt               DateTime      @default(now())
   updatedAt               DateTime      @updatedAt
 
-  conversations  Conversation[]
-  broadcastLogs  BroadcastLog[]
+  conversations    Conversation[]
+  broadcastLogs    BroadcastLog[]
+  leadDismissals   ProfessionalLeadDismissal[]
 
   @@map("service_requests")
+}
+
+model ProfessionalLeadDismissal {
+  id               String         @id @default(cuid())
+  professionalId   String
+  professional     Professional   @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  serviceRequestId String
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  reason           String
+  note             String?
+  dismissedAt      DateTime       @default(now())
+
+  @@unique([professionalId, serviceRequestId])
+  @@map("professional_lead_dismissals")
 }
 
 enum ContactMethod {

@@ -13,6 +13,7 @@ import {
 import { getMatchingServiceRequestById } from "@/lib/actions/service-requests";
 import { getConversationForMatchingServiceRequest } from "@/lib/actions/messages";
 import { ConversationThread } from "@/components/dashboard/conversation-thread";
+import { DismissLeadForm } from "@/components/dashboard/dismiss-lead-form";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { formatDate } from "@/lib/utils";
 
@@ -187,6 +188,8 @@ export default async function MatchingRequestDetailPage({ params }: Props) {
           </p>
         </div>
       )}
+
+      {!isClosed && <DismissLeadForm serviceRequestId={request.id} />}
     </div>
   );
 }
