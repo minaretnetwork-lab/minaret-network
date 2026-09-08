@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { CalendarDays, Clock, BanIcon, Mail, MapPin, MessageCircle, Phone, Send, User } from "lucide-react";
-import { getMatchingServiceRequests, getDismissedLeads } from "@/lib/actions/service-requests";
+import { CalendarDays, Clock, BanIcon, Mail, MapPin, MessageCircle, Phone, RotateCcw, Send, User } from "lucide-react";
+import { getMatchingServiceRequests, getDismissedLeads, undismissLead } from "@/lib/actions/service-requests";
 import { startConversationForServiceRequest } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -151,6 +151,12 @@ export default async function MatchingRequestsPage({ searchParams }: Props) {
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{request.dismissalNote}</p>
                       )}
                     </div>
+                    <form action={undismissLead.bind(null, request.id)} className="mt-3">
+                      <Button type="submit" variant="outline" size="sm" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30">
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Restore to inbox
+                      </Button>
+                    </form>
                   </div>
                 </div>
               </article>

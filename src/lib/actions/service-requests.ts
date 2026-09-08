@@ -584,6 +584,19 @@ export async function getDismissedLeads() {
     }));
 }
 
+export async function undismissLead(serviceRequestId: string) {
+  const dbUser = await getCurrentDbUserWithListings();
+  if (!dbUser || dbUser.professionals.length === 0) throw new Error("No professional listing found.");
+
+  const professionalIds = dbUser.professionals.map((p) => p.id);
+  await prisma.professionalLeadDismissal.deleteMany({
+    where: { serviceRequestId, professionalId: { in: professionalIds } },
+  });
+
+  revalidatePath("/dashboard/leads");
+  revalidatePath(`/dashboard/leads/${serviceRequestId}`);
+}
+
 export async function dismissLead(serviceRequestId: string, data: { reason: string; note?: string }) {
   const dbUser = await getCurrentDbUserWithListings();
   if (!dbUser || dbUser.professionals.length === 0) throw new Error("No professional listing found.");
