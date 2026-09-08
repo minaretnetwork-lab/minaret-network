@@ -530,6 +530,7 @@ export async function getNewLeadsCount(): Promise<number> {
       where: {
         userId: { not: dbUser.id },
         status: { in: ["OPEN", "IN_PROGRESS"] },
+        leadDismissals: { none: { professionalId: { in: professionalIds } } },
         AND: [
           { OR: filters },
           {
@@ -567,12 +568,20 @@ export async function getDismissedLeads() {
     orderBy: { dismissedAt: "desc" },
   });
 
-  return dismissals.map((d) => ({
-    ...d.serviceRequest,
-    dismissalReason: d.reason,
-    dismissalNote: d.note,
-    dismissedAt: d.dismissedAt,
-  }));
+  // Deduplicate: a user with multiple listings may have one dismissal row per listing
+  const seen = new Set<string>();
+  return dismissals
+    .filter((d) => {
+      if (seen.has(d.serviceRequestId)) return false;
+      seen.add(d.serviceRequestId);
+      return true;
+    })
+    .map((d) => ({
+      ...d.serviceRequest,
+      dismissalReason: d.reason,
+      dismissalNote: d.note,
+      dismissedAt: d.dismissedAt,
+    }));
 }
 
 export async function dismissLead(serviceRequestId: string, data: { reason: string; note?: string }) {
