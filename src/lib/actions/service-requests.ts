@@ -546,6 +546,35 @@ export async function getNewLeadsCount(): Promise<number> {
   }
 }
 
+export async function getDismissedLeads() {
+  const dbUser = await getCurrentDbUserWithListings();
+  if (!dbUser || dbUser.professionals.length === 0) return [];
+
+  const professionalIds = dbUser.professionals.map((p) => p.id);
+
+  const dismissals = await prisma.professionalLeadDismissal.findMany({
+    where: { professionalId: { in: professionalIds } },
+    include: {
+      serviceRequest: {
+        omit: { contactPhone: true, contactEmail: true },
+        include: {
+          category: { select: { name: true, slug: true, icon: true } },
+          serviceArea: { select: { id: true, name: true, slug: true } },
+          user: { select: { displayName: true, firstName: true, lastName: true, email: true } },
+        },
+      },
+    },
+    orderBy: { dismissedAt: "desc" },
+  });
+
+  return dismissals.map((d) => ({
+    ...d.serviceRequest,
+    dismissalReason: d.reason,
+    dismissalNote: d.note,
+    dismissedAt: d.dismissedAt,
+  }));
+}
+
 export async function dismissLead(serviceRequestId: string, data: { reason: string; note?: string }) {
   const dbUser = await getCurrentDbUserWithListings();
   if (!dbUser || dbUser.professionals.length === 0) throw new Error("No professional listing found.");

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { CalendarDays, Clock, Mail, MapPin, MessageCircle, Phone, Send, User } from "lucide-react";
-import { getMatchingServiceRequests } from "@/lib/actions/service-requests";
+import { CalendarDays, Clock, BanIcon, Mail, MapPin, MessageCircle, Phone, Send, User } from "lucide-react";
+import { getMatchingServiceRequests, getDismissedLeads } from "@/lib/actions/service-requests";
 import { startConversationForServiceRequest } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -46,12 +46,16 @@ function formatDistance(distanceKm: number | null) {
 }
 
 interface Props {
-  searchParams: Promise<{ origin?: string }>;
+  searchParams: Promise<{ origin?: string; tab?: string }>;
 }
 
 export default async function MatchingRequestsPage({ searchParams }: Props) {
-  const { origin = "" } = await searchParams;
-  const requests = await getMatchingServiceRequests();
+  const { origin = "", tab = "active" } = await searchParams;
+  const isDismissedTab = tab === "dismissed";
+  const [requests, dismissed] = await Promise.all([
+    getMatchingServiceRequests(),
+    getDismissedLeads(),
+  ]);
   const originCoordinate = findServiceAreaCoordinateByName(origin);
 
   return (
@@ -63,6 +67,98 @@ export default async function MatchingRequestsPage({ searchParams }: Props) {
         </p>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900/50 w-fit">
+        <Link
+          href="/dashboard/leads"
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            !isDismissedTab
+              ? "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          }`}
+        >
+          Active
+          {requests.length > 0 && (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${!isDismissedTab ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"}`}>
+              {requests.length}
+            </span>
+          )}
+        </Link>
+        <Link
+          href="/dashboard/leads?tab=dismissed"
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            isDismissedTab
+              ? "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          }`}
+        >
+          <BanIcon className="h-3.5 w-3.5" />
+          Dismissed
+          {dismissed.length > 0 && (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isDismissedTab ? "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400" : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-500"}`}>
+              {dismissed.length}
+            </span>
+          )}
+        </Link>
+      </div>
+
+      {/* Dismissed tab */}
+      {isDismissedTab ? (
+        dismissed.length === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-white py-16 text-center dark:border-gray-800 dark:bg-gray-900">
+            <div className="mb-4 flex justify-center">
+              <BanIcon className="h-12 w-12 text-gray-300" />
+            </div>
+            <h2 className="mb-2 font-semibold text-gray-900 dark:text-white">No dismissed leads</h2>
+            <p className="mx-auto max-w-md text-sm text-gray-500 dark:text-gray-400">
+              Leads you remove from your inbox will appear here with your reason.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {dismissed.map((request) => (
+              <article key={request.id} className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 opacity-70">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-gray-800">
+                    <CategoryIcon slug={request.category.slug} className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="font-semibold text-gray-700 dark:text-gray-300">{request.category.name}</h2>
+                      {request.serviceArea && (
+                        <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                          <MapPin className="h-3 w-3" />{request.serviceArea.name}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                      {request.description}
+                    </p>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        Created {formatDate(request.createdAt)}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <BanIcon className="h-3.5 w-3.5" />
+                        Dismissed {formatDate(request.dismissedAt)}
+                      </span>
+                    </div>
+                    <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800/50">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-0.5">Your reason</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{request.dismissalReason}</p>
+                      {request.dismissalNote && (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{request.dismissalNote}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      ) : (
+        <>
       <IncomingDistanceControl initialOrigin={origin} />
 
       {origin && !originCoordinate && (
@@ -202,6 +298,8 @@ export default async function MatchingRequestsPage({ searchParams }: Props) {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );
