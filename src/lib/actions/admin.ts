@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { sendProfileApprovedEmail, sendProfileRejectedEmail, sendClaimApprovedEmail, sendClaimRejectedEmail } from "@/lib/email";
+import { buildBaseSlug, deduplicateSlug } from "@/lib/seo/slug-utils";
 
 const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>()({
   user: { select: { firstName: true, lastName: true, displayName: true, email: true, phone: true, whatsapp: true, preferredContact: true } },
@@ -24,6 +25,28 @@ const professionalForAdminInclude = Prisma.validator<Prisma.ProfessionalInclude>
 });
 
 export type ProfessionalForAdmin = Prisma.ProfessionalGetPayload<{ include: typeof professionalForAdminInclude }>;
+
+async function generateSlugForProfessional(id: string): Promise<string | null> {
+  const pro = await prisma.professional.findUnique({
+    where: { id },
+    select: {
+      profileSlug: true,
+      businessName: true,
+      title: true,
+      user: { select: { firstName: true, lastName: true } },
+      category: { select: { slug: true } },
+      serviceAreas: { select: { slug: true } },
+    },
+  });
+  if (!pro || pro.profileSlug) return null;
+  const base = buildBaseSlug(pro);
+  const existingSlugs = await prisma.professional.findMany({
+    where: { profileSlug: { startsWith: base } },
+    select: { profileSlug: true },
+  });
+  const used = new Set(existingSlugs.map((p) => p.profileSlug).filter(Boolean) as string[]);
+  return deduplicateSlug(base, used);
+}
 
 export async function approveProfessional(id: string) {
   const pendingDraft = await prisma.professionalEditDraft.findFirst({
@@ -49,9 +72,10 @@ export async function approveProfessional(id: string) {
     return;
   }
 
+  const newSlug = await generateSlugForProfessional(id);
   await prisma.professional.update({
     where: { id },
-    data: { status: "APPROVED", approvedAt: new Date(), rejectionReason: null },
+    data: { status: "APPROVED", approvedAt: new Date(), rejectionReason: null, ...(newSlug ? { profileSlug: newSlug } : {}) },
   });
   revalidatePath("/admin/professionals");
 
@@ -800,6 +824,11 @@ export async function createUnclaimedProfessional(formData: FormData): Promise<{
       listingConsentVersion: "admin-created",
     },
   });
+
+  const newSlug = await generateSlugForProfessional(id);
+  if (newSlug) {
+    await prisma.professional.update({ where: { id }, data: { profileSlug: newSlug } });
+  }
 
   revalidatePath("/admin/professionals");
   revalidatePath("/professionals");

@@ -1,12 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   MapPin, Clock, Award, MessageCircle,
   ChevronLeft, Calendar, Languages, Star, Pencil,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { ProfilePhotoLightbox } from "@/components/professionals/profile-photo-lightbox";
@@ -18,24 +17,47 @@ import { ReportRecommendationButton } from "@/components/professionals/report-re
 import { ReportProfessionalButton } from "@/components/professionals/report-professional-button";
 import { PendingChatRedirect } from "@/components/professionals/pending-chat-redirect";
 import { ContactLinks } from "@/components/professionals/contact-links";
-import { getProfessionalById, incrementProfileView } from "@/lib/actions/professionals";
+import { getProfessionalBySlug, incrementProfileView } from "@/lib/actions/professionals";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getExistingConversationWithProfessional } from "@/lib/actions/messages";
 import { getProfessionalDisplayPhotoUrl } from "@/lib/public-asset-url";
 import { getInitials, buildWhatsAppUrl, formatDate } from "@/lib/utils";
+import { CATEGORY_BY_DB_SLUG } from "@/lib/seo/category-config";
 import type { BadgeType } from "@/types";
+import type { Metadata } from "next";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
-  const professional = await getProfessionalById(id);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const professional = await getProfessionalBySlug(slug);
   if (!professional) return { title: "Professional Not Found" };
-  const name = professional.businessName ?? professional.user?.displayName ?? ([professional.user?.firstName, professional.user?.lastName].filter(Boolean).join(" ") || "Business");
-  const display = professional.businessName ? `${name} — ${professional.businessName}` : name;
-  return { title: display };
+
+  const name =
+    professional.businessName ??
+    ([professional.user?.firstName, professional.user?.lastName].filter(Boolean).join(" ") ||
+    "Professional");
+  const category = CATEGORY_BY_DB_SLUG.get(professional.category.slug);
+  const areas = professional.serviceAreas.map((a) => a.name).slice(0, 3).join(", ");
+  const title = `${name} — ${category?.singular ?? professional.category.name}${areas ? ` in ${areas}` : ""}`;
+  const description = professional.bio
+    ? professional.bio.slice(0, 155).trimEnd() + (professional.bio.length > 155 ? "…" : "")
+    : `${category?.singular ?? professional.category.name} on the Minaret Network Muslim professional directory.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+    },
+    alternates: {
+      canonical: `/professional/${slug}`,
+    },
+  };
 }
 
 function getWebsiteLabel(website: string) {
@@ -47,25 +69,20 @@ function getWebsiteLabel(website: string) {
   }
 }
 
-export default async function ProfessionalProfilePage({ params }: Props) {
-  const { id } = await params;
-  const [professional, currentUser, existingConversation] = await Promise.all([
-    getProfessionalById(id),
+export default async function ProfessionalSlugPage({ params }: Props) {
+  const { slug } = await params;
+  const [professional, currentUser] = await Promise.all([
+    getProfessionalBySlug(slug),
     getCurrentUser().catch(() => null),
-    getExistingConversationWithProfessional(id).catch(() => null),
   ]);
 
   if (!professional || professional.status !== "APPROVED") {
     notFound();
   }
 
-  // 301 redirect to canonical slug URL
-  if (professional.profileSlug) {
-    redirect(`/professional/${professional.profileSlug}`);
-  }
+  const existingConversation = await getExistingConversationWithProfessional(professional.id).catch(() => null);
 
-  // Increment view count (fire and forget)
-  incrementProfileView(id).catch(() => {});
+  incrementProfileView(professional.id).catch(() => {});
 
   const user = professional.user;
   const name =
@@ -92,16 +109,14 @@ export default async function ProfessionalProfilePage({ params }: Props) {
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(professional.businessAddress)}`
     : null;
   const websiteLabel = professional.website ? getWebsiteLabel(professional.website) : null;
+  const approvedRecommendations = professional.recommendations.filter((r) => r.status === "APPROVED");
 
-  const approvedRecommendations = professional.recommendations.filter(
-    (r) => r.status === "APPROVED"
-  );
+  const category = CATEGORY_BY_DB_SLUG.get(professional.category.slug);
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-5xl">
       {currentUser && <PendingChatRedirect professionalId={professional.id} />}
 
-      {/* Claim banner for admin-seeded unclaimed profiles */}
       {isUnclaimed && (
         <ClaimProfileBanner
           professionalId={professional.id}
@@ -111,7 +126,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
         />
       )}
 
-      {/* Owner edit banner */}
       {isOwner && !isUnclaimed && (
         <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
           <div className="flex items-center gap-2.5">
@@ -130,19 +144,16 @@ export default async function ProfessionalProfilePage({ params }: Props) {
         </div>
       )}
 
-      {/* Back */}
       <Link
-        href="/professionals"
+        href={category ? `/${category.urlSlug}` : "/professionals"}
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-700 mb-6 transition-colors"
       >
         <ChevronLeft className="h-4 w-4" />
-        Back to Professionals
+        {category ? `Back to ${category.plural}` : "Back to Professionals"}
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Sidebar */}
         <aside className="lg:col-span-1 space-y-5">
-          {/* Profile card */}
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
             <ProfilePhotoLightbox
               photoUrl={photoUrl}
@@ -150,54 +161,54 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               initials={getInitials(name)}
             />
             <div className="p-6 text-center">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{name}</h1>
-            {professional.businessName && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">{professional.businessName}</p>
-            )}
-            <p className="text-green-700 dark:text-green-400 font-medium text-sm mt-1">
-              <CategoryIcon slug={professional.category.slug} icon={professional.category.icon} className="inline h-4 w-4 mr-1 -mt-0.5" />{professional.category.name}
-            </p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{name}</h1>
+              {professional.businessName && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">{professional.businessName}</p>
+              )}
+              <p className="text-green-700 dark:text-green-400 font-medium text-sm mt-1">
+                <CategoryIcon slug={professional.category.slug} icon={professional.category.icon} className="inline h-4 w-4 mr-1 -mt-0.5" />
+                {professional.category.name}
+              </p>
 
-            {professional.badges.length > 0 && (
-              <div className="mt-4">
-                <VerificationBadges
-                  badges={professional.badges as { id: string; type: BadgeType }[]}
-                  mosqueName={(professional as typeof professional & { mosque?: { name: string } }).mosque?.name}
-                  size="sm"
-                />
-                {professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED") && (
-                  <p className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 leading-snug text-center px-2">
-                    Mosque affiliation is self-reported and not verified or endorsed by{" "}
-                    {(professional as typeof professional & { mosque?: { name: string } }).mosque?.name ?? "the mosque"}{" "}
-                    or Minaret Network.
-                  </p>
-                )}
-              </div>
-            )}
+              {professional.badges.length > 0 && (
+                <div className="mt-4">
+                  <VerificationBadges
+                    badges={professional.badges as { id: string; type: BadgeType }[]}
+                    mosqueName={(professional as typeof professional & { mosque?: { name: string } }).mosque?.name}
+                    size="sm"
+                  />
+                  {professional.badges.some((b) => b.type === "MOSQUE_AFFILIATED") && (
+                    <p className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 leading-snug text-center px-2">
+                      Mosque affiliation is self-reported and not verified or endorsed by{" "}
+                      {(professional as typeof professional & { mosque?: { name: string } }).mosque?.name ?? "the mosque"}{" "}
+                      or Minaret Network.
+                    </p>
+                  )}
+                </div>
+              )}
 
-            <ContactLinks
-              professionalId={professional.id}
-              professionalName={name}
-              phone={professional.phone}
-              email={professional.email}
-              website={professional.website}
-              websiteLabel={websiteLabel}
-              whatsapp={professional.whatsapp}
-              whatsappHref={professional.whatsapp ? buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`) : null}
-              isLoggedIn={!!currentUser}
-              existingConversationId={existingConversation?.id}
-            />
+              <ContactLinks
+                professionalId={professional.id}
+                professionalName={name}
+                phone={professional.phone}
+                email={professional.email}
+                website={professional.website}
+                websiteLabel={websiteLabel}
+                whatsapp={professional.whatsapp}
+                whatsappHref={professional.whatsapp ? buildWhatsAppUrl(professional.whatsapp, `Hi ${name}, I found your profile on Minaret Network.`) : null}
+                isLoggedIn={!!currentUser}
+                existingConversationId={existingConversation?.id}
+              />
 
-            <p className="mt-4 text-center text-[11px] text-gray-400 dark:text-gray-500">
-              <Link href="/before-you-hire" className="underline underline-offset-2 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                Before You Hire →
-              </Link>
-            </p>
-            <ReportProfessionalButton professionalId={professional.id} />
-            </div>{/* end p-6 */}
+              <p className="mt-4 text-center text-[11px] text-gray-400 dark:text-gray-500">
+                <Link href="/before-you-hire" className="underline underline-offset-2 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                  Before You Hire →
+                </Link>
+              </p>
+              <ReportProfessionalButton professionalId={professional.id} />
+            </div>
           </div>
 
-          {/* Details */}
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-3 shadow-sm">
             {professional.yearsOfExperience && (
               <div className="flex items-start gap-2.5 text-sm">
@@ -268,9 +279,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
           </div>
         </aside>
 
-        {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Bio */}
           {professional.bio && (
             <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
               <h2 className="font-semibold text-gray-900 dark:text-white mb-3">About</h2>
@@ -280,7 +289,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
             </section>
           )}
 
-          {/* Qualifications */}
           {(professional.qualifications || professional.licenses) && (
             <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
               <h2 className="font-semibold text-gray-900 dark:text-white mb-3">Qualifications & Credentials</h2>
@@ -299,7 +307,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
             </section>
           )}
 
-          {/* Gallery */}
           {professional.galleryImages.length > 0 && (
             <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
               <h2 className="font-semibold text-gray-900 dark:text-white mb-3">Gallery</h2>
@@ -307,7 +314,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
             </section>
           )}
 
-          {/* Recommendations */}
           <section id="recommendations" className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">

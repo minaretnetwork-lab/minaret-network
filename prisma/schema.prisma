@@ -184,6 +184,7 @@ model Professional {
   claimedAt                     DateTime?
   claimInviteToken              String?            @unique
   claimInviteExpiresAt          DateTime?
+  profileSlug                   String?            @unique
   submittedAt                   DateTime           @default(now())
   approvedAt                    DateTime?
   createdAt                     DateTime           @default(now())

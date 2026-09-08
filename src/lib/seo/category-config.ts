@@ -1,0 +1,80 @@
+export type CategoryConfig = {
+  dbSlug: string;
+  urlSlug: string;
+  singular: string;
+  plural: string;
+  seoPluralLong: string;
+  description: string;
+};
+
+export const CATEGORY_CONFIG: CategoryConfig[] = [
+  { dbSlug: "accountant", urlSlug: "accountants", singular: "Accountant", plural: "Accountants", seoPluralLong: "Accounting Professionals", description: "Certified accountants for personal tax, corporate returns, and financial planning." },
+  { dbSlug: "appliance-repair", urlSlug: "appliance-repair", singular: "Appliance Repair", plural: "Appliance Repair", seoPluralLong: "Appliance Repair Technicians", description: "Technicians for washer, dryer, fridge, oven, and dishwasher repairs." },
+  { dbSlug: "barber-hair-stylist", urlSlug: "barbers", singular: "Barber / Hair Stylist", plural: "Barbers", seoPluralLong: "Barbers and Hair Stylists", description: "Barbers and hair stylists serving the community." },
+  { dbSlug: "bookkeeper", urlSlug: "bookkeepers", singular: "Bookkeeper", plural: "Bookkeepers", seoPluralLong: "Bookkeeping Professionals", description: "Bookkeepers for small businesses, payroll, and financial records." },
+  { dbSlug: "business-consultant", urlSlug: "business-consultants", singular: "Business Consultant", plural: "Business Consultants", seoPluralLong: "Business Consultants", description: "Business consultants for strategy, operations, and growth." },
+  { dbSlug: "car-detailing", urlSlug: "car-detailing", singular: "Car Detailing", plural: "Car Detailing", seoPluralLong: "Car Detailing Professionals", description: "Professional car detailing and auto wash services." },
+  { dbSlug: "car-mechanic", urlSlug: "car-mechanics", singular: "Car Mechanic", plural: "Car Mechanics", seoPluralLong: "Car Mechanics", description: "Trusted car mechanics for maintenance, diagnostics, and repair." },
+  { dbSlug: "car-rental", urlSlug: "car-rental", singular: "Car Rental", plural: "Car Rental", seoPluralLong: "Car Rental Services", description: "Car and truck rental services for short and long term needs." },
+  { dbSlug: "carpet-cleaning-services", urlSlug: "carpet-cleaning", singular: "Carpet Cleaning", plural: "Carpet Cleaning", seoPluralLong: "Carpet Cleaning Services", description: "Steam cleaning and carpet cleaning for homes and offices." },
+  { dbSlug: "childcare", urlSlug: "childcare", singular: "Childcare", plural: "Childcare", seoPluralLong: "Childcare Providers", description: "Trusted childcare and daycare providers in the community." },
+  { dbSlug: "chiropractor", urlSlug: "chiropractors", singular: "Chiropractor", plural: "Chiropractors", seoPluralLong: "Chiropractors", description: "Registered chiropractors for back, neck, and musculoskeletal care." },
+  { dbSlug: "cleaning-services", urlSlug: "cleaning-services", singular: "Cleaning Services", plural: "Cleaning Services", seoPluralLong: "Cleaning Service Professionals", description: "Residential and commercial cleaning services." },
+  { dbSlug: "clothing-apparel", urlSlug: "clothing-apparel", singular: "Clothing / Apparel", plural: "Clothing & Apparel", seoPluralLong: "Clothing and Apparel Businesses", description: "Muslim-friendly clothing, modest fashion, and apparel." },
+  { dbSlug: "contractor", urlSlug: "contractors", singular: "Contractor", plural: "Contractors", seoPluralLong: "General Contractors", description: "General contractors for renovations, builds, and construction projects." },
+  { dbSlug: "counsellor", urlSlug: "counsellors", singular: "Counsellor", plural: "Counsellors", seoPluralLong: "Counsellors and Therapists", description: "Registered counsellors for mental health, family, and personal support." },
+  { dbSlug: "dentist", urlSlug: "dentists", singular: "Dentist", plural: "Dentists", seoPluralLong: "Dental Professionals", description: "Family and general dentists accepting new patients." },
+  { dbSlug: "doctor", urlSlug: "doctors", singular: "Doctor", plural: "Doctors", seoPluralLong: "Physicians and Family Doctors", description: "Family physicians and general practitioners serving the community." },
+  { dbSlug: "driving-instructor", urlSlug: "driving-instructors", singular: "Driving Instructor", plural: "Driving Instructors", seoPluralLong: "Driving Instructors", description: "Licensed driving instructors for G1, G2, and full G licensing." },
+  { dbSlug: "electrician", urlSlug: "electricians", singular: "Electrician", plural: "Electricians", seoPluralLong: "Licensed Electricians", description: "Licensed electricians for residential, commercial, and industrial work." },
+  { dbSlug: "event-wedding-planner", urlSlug: "event-planners", singular: "Event & Wedding Planner", plural: "Event Planners", seoPluralLong: "Event and Wedding Planners", description: "Full-service event and wedding planners for your special occasion." },
+  { dbSlug: "event-organizer", urlSlug: "event-organizers", singular: "Event Organizer", plural: "Event Organizers", seoPluralLong: "Event Organizers", description: "Community event organizers for bazaars, fundraisers, and gatherings." },
+  { dbSlug: "financial-advisor", urlSlug: "financial-advisors", singular: "Financial Advisor", plural: "Financial Advisors", seoPluralLong: "Financial Advisors", description: "Financial advisors for investments, retirement, and halal finance." },
+  { dbSlug: "flooring", urlSlug: "flooring", singular: "Flooring", plural: "Flooring", seoPluralLong: "Flooring Professionals", description: "Hardwood, laminate, tile, and vinyl flooring installation and repair." },
+  { dbSlug: "garage-door-repairs", urlSlug: "garage-door-repair", singular: "Garage Door Repair", plural: "Garage Door Repair", seoPluralLong: "Garage Door Repair Specialists", description: "Garage door installation, repair, and spring replacement." },
+  { dbSlug: "graphic-designer", urlSlug: "graphic-designers", singular: "Graphic Designer", plural: "Graphic Designers", seoPluralLong: "Graphic Designers", description: "Graphic designers for branding, print, and digital design." },
+  { dbSlug: "hajj-operator", urlSlug: "hajj-operators", singular: "Hajj Operator", plural: "Hajj Operators", seoPluralLong: "Hajj and Umrah Operators", description: "Licensed Hajj and Umrah travel operators for pilgrimages." },
+  { dbSlug: "halal-meat-supplier", urlSlug: "halal-meat", singular: "Halal Meat Supplier", plural: "Halal Meat Suppliers", seoPluralLong: "Halal Meat Suppliers", description: "Certified halal meat suppliers and butchers." },
+  { dbSlug: "handyman", urlSlug: "handymen", singular: "Handyman", plural: "Handymen", seoPluralLong: "Handymen", description: "Skilled handymen for home repairs, installations, and odd jobs." },
+  { dbSlug: "hijama-practitioner", urlSlug: "hijama", singular: "Hijama Practitioner", plural: "Hijama Practitioners", seoPluralLong: "Hijama Practitioners", description: "Certified Hijama (cupping therapy) practitioners." },
+  { dbSlug: "home-inspector", urlSlug: "home-inspectors", singular: "Home Inspector", plural: "Home Inspectors", seoPluralLong: "Home Inspectors", description: "Certified home inspectors for pre-purchase and pre-sale inspections." },
+  { dbSlug: "home-renovation", urlSlug: "home-renovation", singular: "Home Renovation", plural: "Home Renovation", seoPluralLong: "Home Renovation Contractors", description: "Kitchen, bathroom, basement, and whole-home renovation specialists." },
+  { dbSlug: "hvac", urlSlug: "hvac", singular: "HVAC", plural: "HVAC", seoPluralLong: "HVAC Contractors", description: "Heating, ventilation, and air conditioning installation and service." },
+  { dbSlug: "immigration-consultant", urlSlug: "immigration-consultants", singular: "Immigration Consultant", plural: "Immigration Consultants", seoPluralLong: "Immigration Consultants", description: "Regulated immigration consultants for PR, visas, and citizenship." },
+  { dbSlug: "insurance-broker", urlSlug: "insurance-brokers", singular: "Insurance Broker", plural: "Insurance Brokers", seoPluralLong: "Insurance Brokers", description: "Insurance brokers for home, auto, life, and business coverage." },
+  { dbSlug: "islamic-school-school", urlSlug: "islamic-schools", singular: "Islamic School", plural: "Islamic Schools", seoPluralLong: "Islamic Schools and Learning Centres", description: "Islamic schools, weekend madrasas, and learning centres." },
+  { dbSlug: "it-consultant", urlSlug: "it-consultants", singular: "IT Consultant", plural: "IT Consultants", seoPluralLong: "IT Consultants", description: "IT consultants for networks, cybersecurity, and tech support." },
+  { dbSlug: "landscaper", urlSlug: "landscapers", singular: "Landscaper", plural: "Landscapers", seoPluralLong: "Landscaping Professionals", description: "Landscaping, lawn care, interlocking, and outdoor design." },
+  { dbSlug: "lawyer", urlSlug: "lawyers", singular: "Lawyer", plural: "Lawyers", seoPluralLong: "Lawyers and Legal Professionals", description: "Licensed lawyers for real estate, family, immigration, and civil matters." },
+  { dbSlug: "marriage-broker", urlSlug: "marriage-brokers", singular: "Marriage Broker", plural: "Marriage Brokers", seoPluralLong: "Marriage Brokers", description: "Community marriage brokers and matchmaking services." },
+  { dbSlug: "marriage-officiant", urlSlug: "marriage-officiants", singular: "Marriage Officiant", plural: "Marriage Officiants", seoPluralLong: "Marriage Officiants", description: "Licensed marriage officiants for Islamic and civil ceremonies." },
+  { dbSlug: "mortgage-broker", urlSlug: "mortgage-brokers", singular: "Mortgage Broker", plural: "Mortgage Brokers", seoPluralLong: "Mortgage Brokers", description: "Licensed mortgage brokers for home purchases, renewals, and refinancing." },
+  { dbSlug: "moving-services", urlSlug: "movers", singular: "Moving Services", plural: "Movers", seoPluralLong: "Moving Services", description: "Local and long-distance movers for residential and commercial moves." },
+  { dbSlug: "notary-public", urlSlug: "notaries", singular: "Notary Public", plural: "Notaries", seoPluralLong: "Notaries Public", description: "Notaries public for document certification, affidavits, and legal signing." },
+  { dbSlug: "optometrist", urlSlug: "optometrists", singular: "Optometrist", plural: "Optometrists", seoPluralLong: "Optometrists", description: "Eye exams, prescriptions, and contact lens fittings." },
+  { dbSlug: "other", urlSlug: "other-services", singular: "Other", plural: "Other Services", seoPluralLong: "Other Professionals", description: "Other professional services from the Minaret Network community." },
+  { dbSlug: "painter", urlSlug: "painters", singular: "Painter", plural: "Painters", seoPluralLong: "Painting Professionals", description: "Interior and exterior painters for homes and commercial spaces." },
+  { dbSlug: "personal-trainer", urlSlug: "personal-trainers", singular: "Personal Trainer", plural: "Personal Trainers", seoPluralLong: "Personal Trainers", description: "Certified personal trainers for fitness, weight loss, and strength." },
+  { dbSlug: "pest-control", urlSlug: "pest-control", singular: "Pest Control", plural: "Pest Control", seoPluralLong: "Pest Control Specialists", description: "Pest control for insects, rodents, and wildlife removal." },
+  { dbSlug: "pet-sitter", urlSlug: "pet-sitters", singular: "Pet Sitter", plural: "Pet Sitters", seoPluralLong: "Pet Sitters", description: "Trusted pet sitters and dog walkers in the community." },
+  { dbSlug: "pharmacist", urlSlug: "pharmacists", singular: "Pharmacist", plural: "Pharmacists", seoPluralLong: "Pharmacists", description: "Community pharmacists for prescriptions and medication advice." },
+  { dbSlug: "photographer", urlSlug: "photographers", singular: "Photographer", plural: "Photographers", seoPluralLong: "Photographers", description: "Wedding, event, portrait, and product photographers." },
+  { dbSlug: "physiotherapist", urlSlug: "physiotherapists", singular: "Physiotherapist", plural: "Physiotherapists", seoPluralLong: "Physiotherapists", description: "Registered physiotherapists for injury recovery and rehabilitation." },
+  { dbSlug: "plumber", urlSlug: "plumbers", singular: "Plumber", plural: "Plumbers", seoPluralLong: "Plumbing Professionals", description: "Licensed plumbers for installations, repairs, and emergencies." },
+  { dbSlug: "quran-tutor", urlSlug: "quran-tutors", singular: "Quran Tutor", plural: "Quran Tutors", seoPluralLong: "Quran Tutors", description: "Qualified Quran tutors for children and adults, online and in-person." },
+  { dbSlug: "realtor", urlSlug: "realtors", singular: "Realtor", plural: "Realtors", seoPluralLong: "Realtors and Real Estate Agents", description: "Licensed realtors for buying, selling, and investing in real estate." },
+  { dbSlug: "restaurant-catering", urlSlug: "restaurants", singular: "Restaurant / Catering", plural: "Restaurants & Caterers", seoPluralLong: "Halal Restaurants and Caterers", description: "Halal restaurants, home-cooked meals, and catering services." },
+  { dbSlug: "roofer", urlSlug: "roofers", singular: "Roofer", plural: "Roofers", seoPluralLong: "Roofing Professionals", description: "Roofing contractors for installation, repair, and replacement." },
+  { dbSlug: "snow-removal", urlSlug: "snow-removal", singular: "Snow Removal", plural: "Snow Removal", seoPluralLong: "Snow Removal Services", description: "Residential and commercial snow removal and salting services." },
+  { dbSlug: "stock-trading", urlSlug: "stock-trading", singular: "Stock Trading", plural: "Stock Trading", seoPluralLong: "Stock Trading and Investment Educators", description: "Stock trading education and investment guidance." },
+  { dbSlug: "tailor-alterations", urlSlug: "tailors", singular: "Tailor / Alterations", plural: "Tailors", seoPluralLong: "Tailors and Alteration Specialists", description: "Custom tailoring and clothing alterations." },
+  { dbSlug: "taxi-services", urlSlug: "taxi-services", singular: "Taxi Services", plural: "Taxi Services", seoPluralLong: "Taxi and Rideshare Services", description: "Taxi and private car services for airport, local, and long trips." },
+  { dbSlug: "travel-agent", urlSlug: "travel-agents", singular: "Travel Agent", plural: "Travel Agents", seoPluralLong: "Travel Agents", description: "Travel agents for flights, packages, and Hajj and Umrah trips." },
+  { dbSlug: "tutor", urlSlug: "tutors", singular: "Tutor", plural: "Tutors", seoPluralLong: "Tutors and Academic Support", description: "Academic tutors for math, science, English, and exam prep." },
+  { dbSlug: "videographer", urlSlug: "videographers", singular: "Videographer", plural: "Videographers", seoPluralLong: "Videographers", description: "Wedding, event, and commercial videography services." },
+  { dbSlug: "web-developer", urlSlug: "web-developers", singular: "Web Developer", plural: "Web Developers", seoPluralLong: "Web Developers", description: "Web developers for websites, apps, and digital products." },
+];
+
+export const CATEGORY_BY_URL_SLUG = new Map(CATEGORY_CONFIG.map((c) => [c.urlSlug, c]));
+export const CATEGORY_BY_DB_SLUG = new Map(CATEGORY_CONFIG.map((c) => [c.dbSlug, c]));
+export const VALID_CATEGORY_URL_SLUGS = new Set(CATEGORY_CONFIG.map((c) => c.urlSlug));

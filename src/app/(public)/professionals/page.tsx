@@ -10,9 +10,25 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import type { ProfessionalWithRelations, SearchFilters as SearchFiltersType } from "@/types";
 import { ListingDisclaimer } from "@/components/professionals/listing-disclaimer";
+import type { Metadata } from "next";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | undefined }>;
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const hasFilters = !!(params.q || params.category || params.area || params.location || params.lang || params.verified || params.mosque || params.sort);
+  if (hasFilters) {
+    return {
+      robots: { index: false, follow: true },
+    };
+  }
+  return {
+    title: "Find Muslim Professionals — Minaret Network",
+    description: "Browse trusted Muslim professionals across the GTA — realtors, plumbers, doctors, lawyers, and more on Minaret Network.",
+    alternates: { canonical: "/professionals" },
+  };
 }
 
 async function ProfessionalsGrid({ filters }: { filters: SearchFiltersType }) {

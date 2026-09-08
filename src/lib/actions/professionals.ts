@@ -197,6 +197,35 @@ export async function getProfessionalById(id: string) {
   return professional ? normalizeProfessionalAssets(professional) : null;
 }
 
+export async function getProfessionalBySlug(slug: string) {
+  const professional = await prisma.professional.findUnique({
+    where: { profileSlug: slug },
+    include: {
+      user: { select: { id: true, firstName: true, lastName: true, displayName: true, email: true, avatarUrl: true } },
+      mosque: { select: { id: true, name: true, slug: true } },
+      category: true,
+      categories: { select: { id: true, name: true, slug: true, icon: true }, orderBy: { name: "asc" } },
+      serviceAreas: true,
+      badges: true,
+      recommendations: {
+        where: { status: "APPROVED" },
+        include: { user: { select: { firstName: true, lastName: true, displayName: true } } },
+        orderBy: { approvedAt: "desc" },
+      },
+      galleryImages: { orderBy: { sortOrder: "asc" } },
+      credentials: { where: { isVerified: true } },
+    },
+  });
+  if (professional) {
+    const extra = await prisma.professional.findUnique({
+      where: { profileSlug: slug },
+      select: { isAdminCreated: true, claimedByUserId: true },
+    });
+    Object.assign(professional, extra ?? {});
+  }
+  return professional ? normalizeProfessionalAssets(professional) : null;
+}
+
 export async function getFeaturedProfessionals(_mosqueSlug: string, limit = 6) {
   const professionals = await prisma.professional.findMany({
     where: { status: "APPROVED", isFeatured: true },
