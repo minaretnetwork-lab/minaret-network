@@ -652,8 +652,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         </div>
       )}
 
-      {/* ── Step indicator ── */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
+      {/* ── Step indicator (registration only) ── */}
+      {!isEdit && <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between">
           {STEPS.map((s, i) => {
             const done = i < step;
@@ -682,12 +682,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         <p className="text-center text-xs text-gray-400 mt-3">
           Step {step + 1} of {STEPS.length} — {STEPS[step].description}
         </p>
-      </div>
+      </div>}
 
       {/* ── Step content ── */}
       <form onSubmit={(e) => {
         e.preventDefault();
-        if (step !== STEPS.length - 1) return;
+        if (!isEdit && step !== STEPS.length - 1) return;
         handleSubmit(onSubmit, () => {
           setErrorMsg("Some required fields need attention. Please go back and review your application.");
           setSubmitStatus("error");
@@ -696,7 +696,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm space-y-6">
 
           {/* ─── STEP 1: Profile ─── */}
-          {step === 0 && (
+          {(isEdit || step === 0) && (
             <>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-0.5">Your profile</h2>
@@ -817,7 +817,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           )}
 
           {/* ─── STEP 2: About ─── */}
-          {step === 1 && (
+          {isEdit && <hr className="border-gray-200 dark:border-gray-700" />}
+          {(isEdit || step === 1) && (
             <>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-0.5">About you</h2>
@@ -863,7 +864,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           )}
 
           {/* ─── STEP 3: Where & When ─── */}
-          {step === 2 && (
+          {isEdit && <hr className="border-gray-200 dark:border-gray-700" />}
+          {(isEdit || step === 2) && (
             <>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-0.5">Where & when</h2>
@@ -1049,7 +1051,8 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           )}
 
           {/* ─── STEP 4: Contact & Mosque ─── */}
-          {step === 3 && (
+          {isEdit && <hr className="border-gray-200 dark:border-gray-700" />}
+          {(isEdit || step === 3) && (
             <>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-0.5">Contact & affiliation</h2>
@@ -1350,25 +1353,40 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
         {/* ── Navigation ── */}
         <div className={`flex items-center justify-between mt-4 transition-opacity duration-200 ${transitioning ? "opacity-40 pointer-events-none" : ""}`}>
-          {step > 0 ? (
-            <Button type="button" variant="outline" onClick={goBack} disabled={transitioning} className="gap-1.5">
-              <ChevronLeft className="h-4 w-4" /> Back
-            </Button>
-          ) : <div />}
-
-          {step < STEPS.length - 1 ? (
-            <Button type="button" onClick={goNext} disabled={transitioning} className="bg-green-600 hover:bg-green-700 text-white gap-1.5 px-6">
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
+          {isEdit ? (
+            <>
+              <div />
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm disabled:opacity-50"
+              >
+                {isSubmitting ? "Saving…" : "Save Changes"}
+              </Button>
+            </>
           ) : (
-            <Button
-              type="submit"
-              disabled={isSubmitting || transitioning || !termsAccepted}
-              title={!termsAccepted ? "Please accept the terms above to submit" : undefined}
-              className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm disabled:opacity-50"
-            >
-              {isSubmitting ? "Submitting…" : isEdit ? "Save Changes" : "Submit Application"}
-            </Button>
+            <>
+              {step > 0 ? (
+                <Button type="button" variant="outline" onClick={goBack} disabled={transitioning} className="gap-1.5">
+                  <ChevronLeft className="h-4 w-4" /> Back
+                </Button>
+              ) : <div />}
+
+              {step < STEPS.length - 1 ? (
+                <Button type="button" onClick={goNext} disabled={transitioning} className="bg-green-600 hover:bg-green-700 text-white gap-1.5 px-6">
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || transitioning || !termsAccepted}
+                  title={!termsAccepted ? "Please accept the terms above to submit" : undefined}
+                  className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm disabled:opacity-50"
+                >
+                  {isSubmitting ? "Submitting…" : "Submit Application"}
+                </Button>
+              )}
+            </>
           )}
         </div>
 
