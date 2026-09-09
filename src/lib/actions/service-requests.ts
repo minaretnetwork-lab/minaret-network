@@ -421,6 +421,7 @@ export async function closeMyServiceRequest(id: string, data: { reason: string; 
   revalidatePath("/dashboard/requests");
   revalidatePath(`/dashboard/requests/${id}`);
   revalidatePath("/dashboard/leads");
+  revalidatePath("/admin/requests");
 }
 
 export async function reopenMyServiceRequest(id: string) {
@@ -455,6 +456,7 @@ export async function reopenMyServiceRequest(id: string) {
   revalidatePath(`/dashboard/requests/${id}`);
   revalidatePath("/dashboard/messages");
   revalidatePath("/dashboard/leads");
+  revalidatePath("/admin/requests");
 }
 
 export async function setMyServiceRequestArchivedState(id: string, archived: boolean) {
