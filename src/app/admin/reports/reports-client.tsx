@@ -11,7 +11,7 @@ interface Props {
   professionalId: string;
 }
 
-export function ReportActionsClient({ reportId, recommendationId, professionalId }: Props) {
+export function ReportActionsClient({ reportId, recommendationId }: Props) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

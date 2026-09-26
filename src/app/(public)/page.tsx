@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import {
   Building2, ShieldCheck, Star, ArrowRight, CalendarDays, Sparkles, MapPin,
 } from "lucide-react";
@@ -22,32 +23,7 @@ const POPULAR_TAGS = [
   { label: "Realtor", href: "/professionals?category=realtor" },
 ];
 
-export default async function HomePage() {
-  let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];
-  try {
-    const mosque = await prisma.mosque.findUnique({
-      where: { slug: DEFAULT_MOSQUE_SLUG },
-      select: {
-        categories: {
-          where: { isActive: true },
-          select: { id: true, name: true, slug: true, icon: true },
-          orderBy: { name: "asc" },
-        },
-      },
-    });
-    categories = mosque?.categories ?? [];
-  } catch {
-    // fall through with empty list
-  }
-
-  let featuredEvents: Awaited<ReturnType<typeof getPublicEventListings>> = [];
-  try {
-    const all = await getPublicEventListings();
-    featuredEvents = all.filter((e) => e.listingType === "FEATURED").slice(0, 3);
-  } catch {
-    // fall through
-  }
-
+export default function HomePage() {
   return (
     <div className="flex flex-col">
 
@@ -130,13 +106,104 @@ export default async function HomePage() {
       </section>
 
       {/* ── Featured Businesses ──────────────────────────────── */}
-      <FeaturedSection />
+      <Suspense fallback={null}><FeaturedSection /></Suspense>
 
       {/* ── Community Offers ─────────────────────────────────── */}
-      <CommunityOffersSection />
+      <Suspense fallback={null}><CommunityOffersSection /></Suspense>
 
       {/* ── Featured Events ──────────────────────────────────── */}
-      {featuredEvents.length > 0 && (
+      <Suspense fallback={null}><FeaturedEventsSection /></Suspense>
+
+      {/* ── Community Events CTA ─────────────────────────────── */}
+      <section className="bg-emerald-50 dark:bg-emerald-950/30 border-y border-emerald-100 dark:border-emerald-900/50 py-20">
+        <div className="container mx-auto px-4 lg:px-6 max-w-5xl">
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            <div className="flex-shrink-0 flex items-center justify-center h-24 w-24 rounded-3xl bg-emerald-700 shadow-lg">
+              <CalendarDays className="h-12 w-12 text-white" />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Community events</p>
+                <span className="inline-flex items-center bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full">
+                  Free now
+                </span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-snug" style={{ fontFamily: "var(--font-lora)" }}>
+                Reach GTA mosque communities with your event.
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6 max-w-lg">
+                Whether it&apos;s a fundraiser, bazaar, lecture, or community dinner — post it here and get it in front of thousands of GTA Muslims who are actively looking for events like yours.{" "}
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Posting is free during our launch period.</span>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                <Link href="/events/submit">
+                  <Button size="lg" className="bg-emerald-700 hover:bg-emerald-800 text-white h-12 px-8 shadow-sm font-semibold">
+                    Post an Event — It&apos;s Free
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/events">
+                  <Button size="lg" variant="outline" className="h-12 px-8 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:border-emerald-300 font-medium">
+                    Browse events
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Browse by Category ────────────────────────────────── */}
+      <section className="container mx-auto px-4 lg:px-6 py-14">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession or business</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5" style={{ fontFamily: "var(--font-lora)" }}>
+            Find a professional or local business
+          </h2>
+          <Suspense fallback={null}><CategoryBrowser /></Suspense>
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────────────────── */}
+      <section className="container mx-auto px-4 lg:px-6 py-24 text-center">
+        <div className="max-w-xl mx-auto">
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">For professionals</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-4" style={{ fontFamily: "var(--font-lora)" }}>
+            Are you a professional?
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+            Join our network and connect with mosque members looking for community-affiliated professionals like you.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/professionals/register">
+              <Button size="lg" className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 h-12 px-8 shadow-sm font-medium">
+                Join as a professional
+              </Button>
+            </Link>
+            <Link href="/professionals">
+              <Button size="lg" variant="outline" className="h-12 px-8 border-gray-200 hover:border-gray-300 text-gray-700 dark:text-gray-300 font-medium">
+                Browse the directory
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  );
+}
+
+async function FeaturedEventsSection() {
+  let featuredEvents: Awaited<ReturnType<typeof getPublicEventListings>> = [];
+  try {
+    const all = await getPublicEventListings();
+    featuredEvents = all.filter((event) => event.listingType === "FEATURED").slice(0, 3);
+  } catch {
+    return null;
+  }
+  if (featuredEvents.length === 0) return null;
+
+  return (
         <section className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 py-16">
           <div className="container mx-auto px-4 lg:px-6 max-w-6xl">
             <div className="flex items-center justify-between mb-8">
@@ -190,83 +257,25 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
-      )}
-
-      {/* ── Community Events CTA ─────────────────────────────── */}
-      <section className="bg-emerald-50 dark:bg-emerald-950/30 border-y border-emerald-100 dark:border-emerald-900/50 py-20">
-        <div className="container mx-auto px-4 lg:px-6 max-w-5xl">
-          <div className="flex flex-col md:flex-row items-center gap-10">
-            <div className="flex-shrink-0 flex items-center justify-center h-24 w-24 rounded-3xl bg-emerald-700 shadow-lg">
-              <CalendarDays className="h-12 w-12 text-white" />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Community events</p>
-                <span className="inline-flex items-center bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full">
-                  Free now
-                </span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-snug" style={{ fontFamily: "var(--font-lora)" }}>
-                Reach GTA mosque communities with your event.
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6 max-w-lg">
-                Whether it&apos;s a fundraiser, bazaar, lecture, or community dinner — post it here and get it in front of thousands of GTA Muslims who are actively looking for events like yours.{" "}
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Posting is free during our launch period.</span>
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                <Link href="/events/submit">
-                  <Button size="lg" className="bg-emerald-700 hover:bg-emerald-800 text-white h-12 px-8 shadow-sm font-semibold">
-                    Post an Event — It&apos;s Free
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/events">
-                  <Button size="lg" variant="outline" className="h-12 px-8 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:border-emerald-300 font-medium">
-                    Browse events
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Browse by Category ────────────────────────────────── */}
-      <section className="container mx-auto px-4 lg:px-6 py-14">
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession or business</p>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5" style={{ fontFamily: "var(--font-lora)" }}>
-            Find a professional or local business
-          </h2>
-          <CategorySearch categories={categories} />
-        </div>
-      </section>
-
-      {/* ── CTA ──────────────────────────────────────────────── */}
-      <section className="container mx-auto px-4 lg:px-6 py-24 text-center">
-        <div className="max-w-xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">For professionals</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-4" style={{ fontFamily: "var(--font-lora)" }}>
-            Are you a professional?
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-            Join our network and connect with mosque members looking for community-affiliated professionals like you.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/professionals/register">
-              <Button size="lg" className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 h-12 px-8 shadow-sm font-medium">
-                Join as a professional
-              </Button>
-            </Link>
-            <Link href="/professionals">
-              <Button size="lg" variant="outline" className="h-12 px-8 border-gray-200 hover:border-gray-300 text-gray-700 dark:text-gray-300 font-medium">
-                Browse the directory
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-    </div>
   );
+}
+
+async function CategoryBrowser() {
+  let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];
+  try {
+    const mosque = await prisma.mosque.findUnique({
+      where: { slug: DEFAULT_MOSQUE_SLUG },
+      select: {
+        categories: {
+          where: { isActive: true },
+          select: { id: true, name: true, slug: true, icon: true },
+          orderBy: { name: "asc" },
+        },
+      },
+    });
+    categories = mosque?.categories ?? [];
+  } catch {
+    // Show an empty search when the database is temporarily unavailable.
+  }
+  return <CategorySearch categories={categories} />;
 }

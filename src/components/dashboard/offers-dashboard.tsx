@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { CheckCircle, Clock, XCircle, Megaphone, Plus, X, AlertCircle, CalendarDays, Star, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitOffer, cancelMyOffer, uploadOfferImage } from "@/lib/actions/offers";
-import { TIER_PRICING, getTierFromDays, getPriceForDays } from "@/lib/offers/pricing";
+import { TIER_PRICING, getTierFromDays } from "@/lib/offers/pricing";
 
 type Offer = {
   id: string;
@@ -40,8 +40,6 @@ const STATUS_UI: Record<string, { label: string; color: string; icon: React.Reac
   CANCELLED: { label: "Cancelled",      color: "text-gray-600 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400", icon: <XCircle className="h-3.5 w-3.5" /> },
 };
 
-const FREE_PERIOD_END = new Date("2026-11-01T00:00:00.000Z");
-
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -75,14 +73,18 @@ export function OffersDashboard({ offers, professional }: Props) {
   const [startDate, setStartDate] = useState(todayStr());
   const [endDate, setEndDate] = useState("");
   const [complianceAcknowledged, setComplianceAcknowledged] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
-  const inFreePeriod = new Date() < FREE_PERIOD_END;
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const hasContact = professional.phone || professional.whatsapp;
 
   // Live price preview
   const days = daysBetween(startDate, endDate);
   const tier = days > 0 ? getTierFromDays(days) : null;
-  const price = days > 0 ? getPriceForDays(days) : null;
   const tierInfo = tier ? TIER_PRICING[tier] : null;
 
   function resetForm() {
@@ -375,7 +377,7 @@ export function OffersDashboard({ offers, professional }: Props) {
             const canCancel = ["PENDING", "ACTIVE"].includes(offer.status);
             const start = offer.startDate ? new Date(offer.startDate) : null;
             const end = offer.expiresAt ? new Date(offer.expiresAt) : null;
-            const daysLeft = end ? Math.ceil((end.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+            const daysLeft = end ? Math.ceil((end.getTime() - now) / (1000 * 60 * 60 * 24)) : null;
             const fmt = (d: Date) => d.toLocaleDateString("en-CA", { month: "short", day: "numeric" });
 
             return (

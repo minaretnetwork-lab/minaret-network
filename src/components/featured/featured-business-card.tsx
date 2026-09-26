@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Star } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { trackFeaturedCardClick } from "@/lib/actions/featured";
@@ -49,9 +50,11 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
     >
       {/* Image or placeholder */}
       {imageUrl ? (
-        <img
+        <Image
+          fill
           src={imageUrl}
           alt={name}
+          sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, 16vw"
           className={[
             "absolute inset-0 w-full h-full transition-transform duration-500 group-hover:scale-[1.04]",
             isLogo

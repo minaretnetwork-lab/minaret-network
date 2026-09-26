@@ -87,9 +87,13 @@ export default function SubmitEventPage() {
 
   useEffect(() => {
     const query = form.location.trim();
-    if (query.length < 3) { setAddressSuggestions([]); setAddressLoading(false); return; }
     let cancelled = false;
     const t = window.setTimeout(async () => {
+      if (query.length < 3) {
+        setAddressSuggestions([]);
+        setAddressLoading(false);
+        return;
+      }
       setAddressLoading(true);
       try {
         const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(query)}`);
@@ -98,7 +102,7 @@ export default function SubmitEventPage() {
         if (!cancelled) { setAddressSuggestions(data.suggestions ?? []); setAddressOpen(true); }
       } catch { if (!cancelled) setAddressSuggestions([]); }
       finally { if (!cancelled) setAddressLoading(false); }
-    }, 450);
+    }, query.length < 3 ? 0 : 450);
     return () => { cancelled = true; window.clearTimeout(t); };
   }, [form.location]);
 

@@ -1,24 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { X, Sparkles } from "lucide-react";
 
 const BANNER_KEY = "promo-banner-launch-dismissed";
+const DISMISS_EVENT = "promo-banner-dismissed";
+
+function subscribeToDismissal(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(DISMISS_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(DISMISS_EVENT, callback);
+  };
+}
+
+function isVisible() {
+  return localStorage.getItem(BANNER_KEY) !== "1";
+}
 
 export function PromoBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const dismissed = localStorage.getItem(BANNER_KEY);
-    if (!dismissed) setVisible(true);
-  }, []);
+  const visible = useSyncExternalStore(subscribeToDismissal, isVisible, () => false);
 
   if (!visible) return null;
 
   function dismiss() {
     localStorage.setItem(BANNER_KEY, "1");
-    setVisible(false);
+    window.dispatchEvent(new Event(DISMISS_EVENT));
   }
 
   return (

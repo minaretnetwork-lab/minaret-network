@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useSyncExternalStore, useCallback } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -11,6 +11,29 @@ const ThemeContext = createContext<{
 
 export function useTheme() { return useContext(ThemeContext); }
 
+const THEME_EVENT = "mn-theme-change";
+
+function getStoredTheme(): Theme {
+  const stored = localStorage.getItem("mn-theme");
+  return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+}
+
+function getServerTheme(): Theme {
+  return "system";
+}
+
+function subscribeToTheme(callback: () => void) {
+  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  window.addEventListener("storage", callback);
+  window.addEventListener(THEME_EVENT, callback);
+  mediaQuery.addEventListener("change", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(THEME_EVENT, callback);
+    mediaQuery.removeEventListener("change", callback);
+  };
+}
+
 function applyTheme(theme: Theme) {
   const dark =
     theme === "dark" ||
@@ -19,30 +42,21 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const theme = useSyncExternalStore(subscribeToTheme, getStoredTheme, getServerTheme);
 
-  // Read from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("mn-theme") as Theme | null;
-    const t = stored ?? "system";
-    setThemeState(t);
-    applyTheme(t);
-  }, []);
+    applyTheme(theme);
+    if (theme !== "system") return;
 
-  // Listen to OS preference changes (only relevant in system mode)
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    function onChange() {
-      setThemeState((current) => { applyTheme(current); return current; });
-    }
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => applyTheme("system");
+    mediaQuery.addEventListener("change", onChange);
+    return () => mediaQuery.removeEventListener("change", onChange);
+  }, [theme]);
 
   const setTheme = useCallback((t: Theme) => {
     localStorage.setItem("mn-theme", t);
-    setThemeState(t);
-    applyTheme(t);
+    window.dispatchEvent(new Event(THEME_EVENT));
   }, []);
 
   return (

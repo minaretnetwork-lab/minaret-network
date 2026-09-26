@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Cookie } from "lucide-react";
 
@@ -30,28 +30,15 @@ function subscribeToCookieConsent(callback: () => void) {
 }
 
 export function useCookieConsent() {
-  return useSyncExternalStore(subscribeToCookieConsent, getCookieConsent, () => null);
+  // Hide the banner during SSR until the browser can read the saved choice.
+  return useSyncExternalStore(subscribeToCookieConsent, getCookieConsent, () => "essential");
 }
 
 export function CookieBanner({ onConsent }: { onConsent?: (consent: CookieConsent) => void }) {
-  // Start as non-null (hidden) so nothing renders before we read localStorage.
-  // After mount we set the real value — if null, banner appears; otherwise stays hidden.
-  const [consent, setConsent] = useState<CookieConsent>("essential");
-
-  useEffect(() => {
-    setConsent(getCookieConsent());
-    const handler = () => setConsent(getCookieConsent());
-    window.addEventListener("storage", handler);
-    window.addEventListener(CONSENT_EVENT, handler);
-    return () => {
-      window.removeEventListener("storage", handler);
-      window.removeEventListener(CONSENT_EVENT, handler);
-    };
-  }, []);
+  const consent = useCookieConsent();
 
   function accept(choice: "all" | "essential") {
     try { window.localStorage.setItem(CONSENT_KEY, choice); } catch {}
-    setConsent(choice);
     window.dispatchEvent(new Event(CONSENT_EVENT));
     onConsent?.(choice);
   }

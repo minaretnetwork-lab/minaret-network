@@ -29,6 +29,10 @@ type FormData = z.infer<typeof schema>;
 
 const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
 
+function savePendingRedirect(redirectTo: string) {
+  try { localStorage.setItem("mn_oauth_next", JSON.stringify({ next: redirectTo, ts: Date.now() })); } catch {}
+}
+
 function SignUpForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -59,9 +63,9 @@ function SignUpForm() {
     if (!googleAuthEnabled) return;
 
     if (redirectTo && redirectTo !== "/dashboard") {
-      try { localStorage.setItem("mn_oauth_next", JSON.stringify({next: redirectTo, ts: Date.now()})); } catch {}
+      savePendingRedirect(redirectTo);
     }
-    window.location.href = `/auth/google?next=${encodeURIComponent(redirectTo)}`;
+    window.location.assign(`/auth/google?next=${encodeURIComponent(redirectTo)}`);
   }
 
   return (

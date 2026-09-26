@@ -19,14 +19,6 @@ function Section({ id, number, title, children }: { id: string; number: string; 
   );
 }
 
-function Warning({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20 px-4 py-3 text-sm leading-6 text-amber-900 dark:text-amber-200">
-      <span className="font-semibold">⚠ Note: </span>{children}
-    </div>
-  );
-}
-
 function Ul({ children }: { children: React.ReactNode }) {
   return <ul className="list-disc list-inside space-y-1 pl-2">{children}</ul>;
 }

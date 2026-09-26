@@ -124,7 +124,7 @@ export default async function RevenuePage({ searchParams }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {detail.sponsored.map((l: any) => (
+                  {detail.sponsored.map((l) => (
                     <tr key={l.id} className="border-b border-gray-50 dark:border-gray-800/50">
                       <td className="px-5 py-3 font-medium text-gray-900 dark:text-white">
                         {l.professional.businessName || `${l.professional.user.firstName} ${l.professional.user.lastName}`}
@@ -158,7 +158,7 @@ export default async function RevenuePage({ searchParams }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {detail.featured.map((l: any) => (
+                  {detail.featured.map((l) => (
                     <tr key={l.id} className="border-b border-gray-50 dark:border-gray-800/50">
                       <td className="px-5 py-3 font-medium text-gray-900 dark:text-white">
                         {l.professional.businessName || `${l.professional.user.firstName} ${l.professional.user.lastName}`}

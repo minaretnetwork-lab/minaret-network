@@ -128,9 +128,13 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
   // Address geocode lookup
   useEffect(() => {
     const query = businessAddress.trim();
-    if (query.length < 3) { setAddressSuggestions([]); setAddressLookupLoading(false); return; }
     let cancelled = false;
     const timeout = window.setTimeout(async () => {
+      if (query.length < 3) {
+        setAddressSuggestions([]);
+        setAddressLookupLoading(false);
+        return;
+      }
       setAddressLookupLoading(true);
       try {
         const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(query)}`);
@@ -142,7 +146,7 @@ export function CreateProfessionalForm({ categories, serviceAreas }: Props) {
       } finally {
         if (!cancelled) setAddressLookupLoading(false);
       }
-    }, 450);
+    }, query.length < 3 ? 0 : 450);
     return () => { cancelled = true; window.clearTimeout(timeout); };
   }, [businessAddress]);
 

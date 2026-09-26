@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { X, MessageCircle } from "lucide-react";
@@ -15,18 +15,18 @@ interface ContactGateModalProps {
   location?: string;
 }
 
+function subscribeToMount() {
+  return () => {};
+}
+
 export function ContactGateModal({ professionalId, professionalName, trigger, mode = "contact", location = "" }: ContactGateModalProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeToMount, () => true, () => false);
   const [issue, setIssue] = useState("");
   const [issueError, setIssueError] = useState("");
   const redirectTo = encodeURIComponent(`/professionals/${professionalId}`);
   const isMessage = mode === "message";
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;

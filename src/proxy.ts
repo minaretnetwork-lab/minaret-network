@@ -5,7 +5,6 @@ import { getRequestOrigin } from "@/lib/site-origin";
 export async function proxy(request: NextRequest) {
   const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   const normalizedHost = forwardedHost?.toLowerCase();
-  const apexHosts = new Set(["minaretnetwork.ca", "www.minaretnetwork.ca"]);
 
   if (normalizedHost === "www.staging.minaretnetwork.ca") {
     const origin = getRequestOrigin(request);

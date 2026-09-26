@@ -188,7 +188,6 @@ export function FeaturedBusinessDashboard({ listings, waitlist, professional }: 
           <h3 className="font-semibold text-gray-900 dark:text-white">Your Featured Applications</h3>
           {listings.map((l) => {
             const ui = STATUS_UI[l.status] ?? STATUS_UI.PENDING;
-            const price = Number(l.priceMonthly);
             const displayRegion = l.region ?? l.city;
             return (
               <div key={l.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">

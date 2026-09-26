@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { normalizePublicAssetUrl } from "@/lib/public-asset-url";
 
 async function getSponsoredLogos() {
@@ -101,7 +102,10 @@ function SponsorLogoTile({
       <div className="h-14 w-48 flex items-center gap-3 px-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 group-hover:border-emerald-200 dark:group-hover:border-emerald-800 transition-colors">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-emerald-50 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
           {sponsor.logoUrl ? (
-            <img
+            <Image
+              unoptimized
+              width={36}
+              height={36}
               src={sponsor.logoUrl}
               alt=""
               className="h-full w-full object-contain p-1.5 grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"

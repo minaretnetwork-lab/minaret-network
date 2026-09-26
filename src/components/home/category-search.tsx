@@ -17,8 +17,11 @@ export function CategorySearch({ categories }: { categories: Category[] }) {
   // Start with the first 4 (stable, matches SSR) then shuffle client-side after hydration
   const [sampledCategories, setSampledCategories] = useState(() => categories.slice(0, 4));
   useEffect(() => {
-    const shuffled = [...categories].sort(() => Math.random() - 0.5);
-    setSampledCategories(shuffled.slice(0, 4));
+    const timer = window.setTimeout(() => {
+      const shuffled = [...categories].sort(() => Math.random() - 0.5);
+      setSampledCategories(shuffled.slice(0, 4));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [categories]);
 
   const filtered = query.trim()

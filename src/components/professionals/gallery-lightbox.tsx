@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 
@@ -50,7 +51,9 @@ export function GalleryLightbox({ images }: Props) {
             className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
             aria-label={img.caption ? `View: ${img.caption}` : `View image ${i + 1}`}
           >
-            <img
+            <Image
+              unoptimized
+              fill
               src={img.url}
               alt={img.caption ?? `Gallery image ${i + 1}`}
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
@@ -99,6 +102,8 @@ export function GalleryLightbox({ images }: Props) {
               )}
 
               {/* Image */}
+              {/* Keep the native image size and aspect ratio in the zoomable lightbox. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 key={current.id}
                 src={current.url}

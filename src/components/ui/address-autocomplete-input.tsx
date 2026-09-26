@@ -28,8 +28,16 @@ export function AddressAutocompleteInput({ name, defaultValue = "", placeholder 
 
   useEffect(() => {
     const query = value.trim();
-    if (query.length < 3) { setSuggestions([]); setLoading(false); return; }
-    setLoading(true);
+    const stateTimer = window.setTimeout(() => {
+      if (query.length < 3) {
+        setSuggestions([]);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    }, 0);
+    if (query.length < 3) return () => window.clearTimeout(stateTimer);
+
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(query)}`);
@@ -41,7 +49,10 @@ export function AddressAutocompleteInput({ name, defaultValue = "", placeholder 
         setLoading(false);
       }
     }, 350);
-    return () => clearTimeout(timer);
+    return () => {
+      window.clearTimeout(stateTimer);
+      clearTimeout(timer);
+    };
   }, [value]);
 
   return (

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { CURRENT_TOS_VERSION } from "@/lib/constants";
 
 export async function signIn(email: string, password: string) {
@@ -234,6 +234,10 @@ export async function updateUserProfile(data: {
 }
 
 export async function getCurrentUser() {
+  const cookieStore = await cookies();
+  if (!cookieStore.getAll().some(({ name }) => name.startsWith("sb-") || name.includes("supabase"))) {
+    return null;
+  }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;

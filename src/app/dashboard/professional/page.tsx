@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { DeleteProfessionalListingButton } from "@/components/dashboard/delete-professional-listing-button";
-import { formatDate } from "@/lib/utils";
 import { Eye, Star, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, User, Plus, Megaphone, Pencil, MapPin, Languages, Calendar, Zap } from "lucide-react";
 import type { BadgeType } from "@/types";
 import { withdrawProfessionalApplication } from "@/lib/actions/professionals";

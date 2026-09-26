@@ -41,6 +41,7 @@ yarn-error.log*
 !.env.local.example
 !.env.experiment.example
 !**/.env.example
+/aftab-minaret-setup.txt
 
 # vercel
 .vercel

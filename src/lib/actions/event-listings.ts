@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { computeEventListingPriceCents, getStripeClient } from "@/lib/stripe";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 const FREE_UNTIL = new Date("2026-11-01T00:00:00.000Z");
 

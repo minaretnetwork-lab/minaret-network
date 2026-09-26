@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
@@ -35,15 +35,15 @@ export function RecommendationForm({ professionalId, isLoggedIn }: Props) {
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { highlyRecommended: false, rating: 0 },
   });
 
-  const rating = watch("rating");
-  const content = watch("content") ?? "";
+  const rating = useWatch({ control, name: "rating" });
+  const content = useWatch({ control, name: "content" }) ?? "";
 
   async function onSubmit(data: FormData) {
     try {

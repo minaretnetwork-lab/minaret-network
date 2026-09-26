@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Mail, Phone, MessageCircle, CheckCircle2, ArrowRight, ArrowLeft, MapPin, Calendar, ChevronDown, LocateFixed, Loader2, LogIn, UserPlus,
   ChevronLeft, ChevronRight,
@@ -12,7 +13,7 @@ import {
   Scissors, UtensilsCrossed, PawPrint, Briefcase, Plane, Baby, Star, Search,
   type LucideIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -241,7 +242,9 @@ export function ServiceRequestForm({
   const [error, setError] = useState("");
   const [categoryQuery, setCategoryQuery] = useState("");
   const [onlyWithProfessionals, setOnlyWithProfessionals] = useState(false);
-  const [areaQuery, setAreaQuery] = useState("");
+  const [areaQuery, setAreaQuery] = useState(() =>
+    serviceAreas.find((area) => area.id === mergedDraft?.form.serviceAreaId)?.name ?? ""
+  );
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [form, setForm] = useState<FormState>(mergedDraft?.form ?? emptyForm);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(parseDateValue(initialDraft?.form.preferredDate) ?? todayDate()));
@@ -270,11 +273,6 @@ export function ServiceRequestForm({
   const [locateError, setLocateError] = useState("");
 
   useEffect(() => {
-    const selectedArea = serviceAreas.find((area) => area.id === form.serviceAreaId);
-    if (selectedArea) setAreaQuery(selectedArea.name);
-  }, [form.serviceAreaId, serviceAreas]);
-
-  useEffect(() => {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [step]);
 
@@ -282,6 +280,7 @@ export function ServiceRequestForm({
     const lower = city.toLowerCase();
     const match = serviceAreas.find((a) => a.name.toLowerCase().includes(lower) || lower.includes(a.name.toLowerCase()));
     if (match) {
+      setAreaQuery(match.name);
       set("serviceAreaId", match.id);
       setLocateError("");
       return true;
@@ -378,16 +377,12 @@ export function ServiceRequestForm({
         </p>
         <p className="text-xs text-gray-400 mb-6">Takes less than a minute.</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a href="/auth/login?redirectTo=/request">
-            <Button className="w-full sm:w-auto bg-[#14532d] hover:bg-[#166534] text-white gap-2">
-              <LogIn className="h-4 w-4" /> Sign in
-            </Button>
-          </a>
-          <a href="/auth/signup?redirectTo=/request">
-            <Button variant="outline" className="w-full sm:w-auto gap-2 border-gray-200">
-              <UserPlus className="h-4 w-4" /> Create account
-            </Button>
-          </a>
+          <Link href="/auth/login?redirectTo=/request" className={buttonVariants({ className: "w-full sm:w-auto bg-[#14532d] hover:bg-[#166534] text-white gap-2" })}>
+            <LogIn className="h-4 w-4" /> Sign in
+          </Link>
+          <Link href="/auth/signup?redirectTo=/request" className={buttonVariants({ variant: "outline", className: "w-full sm:w-auto gap-2 border-gray-200" })}>
+            <UserPlus className="h-4 w-4" /> Create account
+          </Link>
         </div>
         <button
           onClick={() => setAuthGate(false)}
@@ -579,6 +574,7 @@ export function ServiceRequestForm({
                   }}
                   onSelect={(suggestion) => {
                     const selected = serviceAreas.find((area) => area.id === suggestion.id || area.name === suggestion.label);
+                    setAreaQuery(selected?.name ?? suggestion.label);
                     set("serviceAreaId", selected?.id ?? "");
                   }}
                   suggestions={serviceAreas.map((area) => ({ id: area.id, label: area.name }))}
@@ -589,7 +585,11 @@ export function ServiceRequestForm({
               <div className="relative">
                 <select
                   value={form.serviceAreaId}
-                  onChange={(e) => set("serviceAreaId", e.target.value)}
+                  onChange={(e) => {
+                    const selected = serviceAreas.find((area) => area.id === e.target.value);
+                    setAreaQuery(selected?.name ?? "");
+                    set("serviceAreaId", e.target.value);
+                  }}
                   className="w-full appearance-none border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-9"
                 >
                   <option value="">Select your area…</option>

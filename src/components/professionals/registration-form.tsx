@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
+import NextImage from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -273,7 +274,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   const router = useRouter();
 
-  const { register, handleSubmit, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, control, getValues, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       mosqueId: initialData?.mosqueId ?? "",
@@ -302,25 +303,22 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
     },
   });
 
-  const selectedLanguages = watch("languages") ?? [];
-  const selectedAreas = watch("serviceAreaIds") ?? [];
-  const selectedCategoryIds = watch("categoryIds") ?? [];
-  const primaryCategoryId = selectedCategoryIds[0] ?? watch("categoryId") ?? "";
-  const selectedMosqueId = watch("mosqueId");
-  const phoneValue = watch("phone") ?? "";
-  const whatsappSameAsPhone = watch("whatsappSameAsPhone") ?? false;
-  const businessAddressValue = watch("businessAddress") ?? "";
-  const bioLength = watch("bio")?.length ?? 0;
+  const formValues = useWatch({ control });
+  const selectedLanguages = formValues.languages ?? [];
+  const selectedAreas = formValues.serviceAreaIds ?? [];
+  const selectedCategoryIds = formValues.categoryIds ?? [];
+  const primaryCategoryId = selectedCategoryIds[0] ?? formValues.categoryId ?? "";
+  const selectedMosqueId = formValues.mosqueId;
+  const phoneValue = formValues.phone ?? "";
+  const whatsappSameAsPhone = formValues.whatsappSameAsPhone ?? false;
+  const businessAddressValue = formValues.businessAddress ?? "";
+  const bioLength = formValues.bio?.length ?? 0;
   const bioCharactersRemaining = Math.max(BIO_MIN_LENGTH - bioLength, 0);
   const invalidAvailabilityDays = getInvalidAvailabilityDays(avSchedules);
 
   useEffect(() => {
     const query = businessAddressValue.trim();
-    if (query.length < 3) {
-      setAddressSuggestions([]);
-      setAddressLookupLoading(false);
-      return;
-    }
+    if (query.length < 3) return;
 
     let cancelled = false;
     const timeout = window.setTimeout(async () => {
@@ -346,10 +344,10 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   const saveDraft = useCallback(() => {
     if (isEdit) return;
     try {
-      const values = watch();
+      const values = getValues();
       localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, avSchedules, avEmergency, step }));
     } catch {}
-  }, [isEdit, watch, avSchedules, avEmergency, step]);
+  }, [isEdit, getValues, avSchedules, avEmergency, step]);
 
   function clearDraft() {
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
@@ -358,10 +356,12 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
 
   useEffect(() => {
     if (isEdit) return;
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) setHasDraft(true);
-    } catch {}
+    const timeout = window.setTimeout(() => {
+      try {
+        if (localStorage.getItem(DRAFT_KEY)) setHasDraft(true);
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [isEdit]);
 
   function restoreDraft() {
@@ -631,7 +631,6 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
   }
 
   const selectClass = "border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full";
-  const businessAddressRegistration = register("businessAddress");
 
   return (
     <div className="space-y-6">
@@ -711,7 +710,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                     className="h-24 w-24 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer overflow-hidden bg-gray-50 dark:bg-gray-800 hover:border-green-400 transition-colors"
                   >
                     {photoPreview
-                      ? <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
+                      ? <NextImage unoptimized src={photoPreview} alt="Preview" width={96} height={96} className="h-full w-full object-cover" />
                       : <Camera className="h-7 w-7 text-gray-400" />}
                   </div>
                   {photoPreview && (
@@ -892,13 +891,15 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                 <div ref={addressRef} className="relative mt-2">
                   <Input
                     id="businessAddress"
-                    name={businessAddressRegistration.name}
-                    ref={businessAddressRegistration.ref}
-                    onBlur={businessAddressRegistration.onBlur}
+                    {...register("businessAddress")}
                     value={businessAddressValue}
                     onChange={(event) => {
                       setValue("businessAddress", event.target.value, { shouldDirty: true, shouldValidate: false });
                       setAddressLookupOpen(true);
+                      if (event.target.value.trim().length < 3) {
+                        setAddressSuggestions([]);
+                        setAddressLookupLoading(false);
+                      }
                     }}
                     onFocus={() => setAddressLookupOpen(true)}
                     autoComplete="street-address"
@@ -1079,7 +1080,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                     Same as phone
                   </label>
                   {!whatsappSameAsPhone && (
-                    <PhoneInput value={watch("whatsapp") ?? ""} onChange={(val) => setValue("whatsapp", val)} />
+                    <PhoneInput value={formValues.whatsapp ?? ""} onChange={(val) => setValue("whatsapp", val)} />
                   )}
                 </div>
                 <div>
@@ -1240,7 +1241,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   <div onClick={() => logoInputRef.current?.click()}
                     className="h-16 w-16 flex-shrink-0 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer overflow-hidden bg-gray-50 dark:bg-gray-800 hover:border-green-400 transition-colors">
                     {logoPreview
-                      ? <img src={logoPreview} alt="Logo" className="h-full w-full object-contain p-1" />
+                      ? <NextImage unoptimized src={logoPreview} alt="Logo" width={64} height={64} className="h-full w-full object-contain p-1" />
                       : <Building2 className="h-6 w-6 text-gray-400" />}
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -1270,7 +1271,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                   {/* Existing gallery images (edit mode) */}
                   {existingGallery.map((img) => (
                     <div key={img.id} className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
-                      <img src={img.url} alt="Gallery" className="h-full w-full object-cover" />
+                      <NextImage unoptimized src={img.url} alt="Gallery" width={80} height={80} className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => removeExistingGallery(img.id)}
@@ -1285,7 +1286,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
                     <div key={`slot-${i}`} className="relative h-20 w-20 flex-shrink-0">
                       {galleryPreviews[i] ? (
                         <div className="relative h-full w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                          <img src={galleryPreviews[i]!} alt={`Gallery ${i + 1}`} className="h-full w-full object-cover" />
+                          <NextImage unoptimized src={galleryPreviews[i]!} alt={`Gallery ${i + 1}`} width={80} height={80} className="h-full w-full object-cover" />
                           <button
                             type="button"
                             onClick={() => removeGallerySlot(i)}

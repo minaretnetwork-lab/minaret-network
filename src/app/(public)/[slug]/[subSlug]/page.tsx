@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_BY_URL_SLUG, CATEGORY_CONFIG } from "@/lib/seo/category-config";
@@ -99,7 +100,7 @@ export default async function CategoryAreaPage({ params }: Props) {
           return (
             <Link key={pro.id} href={href} className="flex items-start gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 hover:border-green-400 transition-colors shadow-sm">
               {photoUrl ? (
-                <img src={photoUrl} alt={name} className="h-14 w-14 rounded-full object-cover flex-shrink-0" />
+                <Image unoptimized src={photoUrl} alt={name} width={56} height={56} className="h-14 w-14 rounded-full object-cover flex-shrink-0" />
               ) : (
                 <div className="h-14 w-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-lg font-bold text-green-700 flex-shrink-0">
                   {getInitials(name)}

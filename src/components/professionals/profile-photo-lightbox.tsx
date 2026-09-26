@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ProfilePhotoLightboxProps {
@@ -28,7 +29,10 @@ export function ProfilePhotoLightbox({
             className="h-28 w-28 rounded-full ring-4 ring-white dark:ring-gray-900 overflow-hidden shadow-md focus-visible:outline-none focus-visible:ring-emerald-500 group flex-shrink-0"
             aria-label={`Open full size profile photo for ${name}`}
           >
-            <img
+            <Image
+              unoptimized
+              width={112}
+              height={112}
               src={photoUrl}
               alt={name}
               draggable={false}

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
-  MapPin, Clock, Award, MessageCircle,
+  MapPin, Clock, Award,
   ChevronLeft, Calendar, Languages, Star, Pencil,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";

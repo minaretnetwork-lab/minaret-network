@@ -1,7 +1,6 @@
 import { getPendingRecommendations } from "@/lib/actions/recommendations";
 import { RecommendationModerationList } from "@/components/admin/recommendation-moderation";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 
 export const metadata = { title: "Moderate Recommendations" };
 

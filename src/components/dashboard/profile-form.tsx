@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,10 @@ interface Props {
 }
 
 export function ProfileForm({ defaultValues }: Props) {
+  return <ProfileFormFields key={JSON.stringify(defaultValues)} defaultValues={defaultValues} />;
+}
+
+function ProfileFormFields({ defaultValues }: Props) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleteStatus, setDeleteStatus] = useState<"idle" | "error">("idle");
@@ -33,15 +37,6 @@ export function ProfileForm({ defaultValues }: Props) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ firstName?: string; lastName?: string }>({});
-
-  useEffect(() => {
-    setFirstName(defaultValues.firstName);
-    setLastName(defaultValues.lastName);
-    setPhone(defaultValues.phone);
-    setWhatsapp(defaultValues.whatsapp);
-    setPreferredContact(defaultValues.preferredContact);
-    setWhatsappSameAsPhone(!!defaultValues.phone && defaultValues.phone === defaultValues.whatsapp);
-  }, [defaultValues]);
 
   function handleSameToggle(checked: boolean) {
     setWhatsappSameAsPhone(checked);
@@ -83,7 +78,7 @@ export function ProfileForm({ defaultValues }: Props) {
       setDeleteStatus("idle");
       setDeleteError("");
       await deleteCurrentUserAccount(deleteConfirm);
-      window.location.href = "/?account=deleted";
+      window.location.assign("/?account=deleted");
     } catch (err) {
       setDeleteStatus("error");
       setDeleteError(err instanceof Error ? err.message : "Could not delete your account. Please try again.");

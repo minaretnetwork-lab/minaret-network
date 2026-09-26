@@ -49,10 +49,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Category+area pages — only where at least one professional exists
   const comboSet = new Set<string>();
-  for (const pro of qualifiedPros) {
-    // We need the category slug — fetch separately below
-  }
-
   const prosWithCategory = await prisma.professional.findMany({
     where: { status: "APPROVED" },
     select: {

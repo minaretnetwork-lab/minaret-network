@@ -66,12 +66,6 @@ const STATUS_UI: Record<string, { label: string; color: string; icon: React.Reac
 };
 
 export function PromoteBusiness({ listings, waitlist, professional }: Props) {
-  const availableRegions = [...new Set(
-    professional.serviceAreas
-      .map((a) => REGION_MAP[a.slug] ?? null)
-      .filter((r): r is string => r !== null)
-  )];
-
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);

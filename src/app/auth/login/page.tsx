@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { MinaretLogo } from "@/components/ui/minaret-logo";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,15 +21,23 @@ type FormData = z.infer<typeof schema>;
 
 const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
 
+function subscribeToLastGoogleEmail() {
+  return () => {};
+}
+
+function getLastGoogleEmail() {
+  const match = document.cookie.match(/(?:^|;\s*)mn_last_google_email=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function savePendingRedirect(redirectTo: string) {
+  try { localStorage.setItem("mn_oauth_next", JSON.stringify({ next: redirectTo, ts: Date.now() })); } catch {}
+}
+
 function LoginForm() {
   const [error, setError] = useState("");
   const [focusedField, setFocusedField] = useState<keyof FormData | null>(null);
-  const [lastGoogleEmail, setLastGoogleEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    const match = document.cookie.match(/(?:^|;\s*)mn_last_google_email=([^;]+)/);
-    if (match) setLastGoogleEmail(decodeURIComponent(match[1]));
-  }, []);
+  const lastGoogleEmail = useSyncExternalStore(subscribeToLastGoogleEmail, getLastGoogleEmail, () => null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
@@ -103,9 +111,9 @@ function LoginForm() {
     if (!googleAuthEnabled) return;
 
     if (redirectTo && redirectTo !== "/dashboard") {
-      try { localStorage.setItem("mn_oauth_next", JSON.stringify({next: redirectTo, ts: Date.now()})); } catch {}
+      savePendingRedirect(redirectTo);
     }
-    window.location.href = `/auth/google?next=${encodeURIComponent(redirectTo)}`;
+    window.location.assign(`/auth/google?next=${encodeURIComponent(redirectTo)}`);
   }
 
   return (

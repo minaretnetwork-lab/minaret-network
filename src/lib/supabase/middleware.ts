@@ -8,6 +8,9 @@ export async function updateSession(request: NextRequest) {
   const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
   const protectedRoutes = ["/dashboard", "/admin"];
   const isProtected = protectedRoutes.some((r) => pathname === r || pathname.startsWith(r + "/"));
+  const hasAuthCookie = request.cookies.getAll().some(
+    ({ name }) => name.startsWith("sb-") || name.includes("supabase")
+  );
 
   function clearSupabaseCookies(response: NextResponse) {
     request.cookies
@@ -29,6 +32,12 @@ export async function updateSession(request: NextRequest) {
         .some((cookie) => cookie.name.startsWith("sb-") || cookie.name.includes("supabase")),
     });
     return clearSupabaseCookies(NextResponse.redirect(url));
+  }
+
+  // Anonymous requests have no session to refresh. Avoid a remote auth call
+  // before rendering every public page.
+  if (!hasAuthCookie) {
+    return isProtected ? redirectToLogin() : supabaseResponse;
   }
 
   const supabase = createServerClient(

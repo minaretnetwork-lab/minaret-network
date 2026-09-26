@@ -3,10 +3,9 @@ export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import {
-  MapPin, Clock, Award, MessageCircle,
+  MapPin, Clock, Award,
   ChevronLeft, Calendar, Languages, Star, Pencil,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { VerificationBadges } from "@/components/professionals/verification-badges";
 import { ProfilePhotoLightbox } from "@/components/professionals/profile-photo-lightbox";

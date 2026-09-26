@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  experimental: {
+    // Keep database-backed SEO page generation below the Supabase pool limit.
+    staticGenerationMaxConcurrency: 2,
+    staticGenerationMinPagesPerWorker: 500,
+  },
   images: {
     remotePatterns: [
       {

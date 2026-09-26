@@ -33,7 +33,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
             or{" "}
             <Link href="/professionals" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:no-underline">
               browse all professionals
-            </Link>. You can filter by category, city, and service area. If you can't find what you need, submit a{" "}
+            </Link>. You can filter by category, city, and service area. If you can&apos;t find what you need, submit a{" "}
             <Link href="/request" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:no-underline">
               service request
             </Link>{" "}
@@ -49,7 +49,7 @@ const FAQS: { section: string; items: { q: string; a: React.ReactNode }[] }[] = 
         q: "What if I have a bad experience with a professional?",
         a: (
           <>
-            You can report a listing directly from the professional's profile page using the Report button. Our admin team reviews all reports. For urgent concerns, email us at{" "}
+            You can report a listing directly from the professional&apos;s profile page using the Report button. Our admin team reviews all reports. For urgent concerns, email us at{" "}
             <a href="mailto:salam@minaretnetwork.ca" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:no-underline">
               salam@minaretnetwork.ca
             </a>. Note that Minaret Network is a directory â€” we facilitate connections but are not party to any agreement between you and a professional.
@@ -229,7 +229,7 @@ export default function FAQPage() {
           Frequently Asked Questions
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mb-12 leading-relaxed">
-          Can't find an answer here? Email us at{" "}
+          Can&apos;t find an answer here? Email us at{" "}
           <a href="mailto:salam@minaretnetwork.ca" className="text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:no-underline">
             salam@minaretnetwork.ca
           </a>.
