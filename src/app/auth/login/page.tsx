@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const schema = z.object({
   email: z.string().email("Invalid email address"),
@@ -38,6 +39,9 @@ function savePendingRedirect(redirectTo: string) {
 function LoginForm() {
   const [error, setError] = useState("");
   const [focusedField, setFocusedField] = useState<keyof FormData | null>(null);
+  const [googleSignInPending, setGoogleSignInPending] = useState<"last" | "google" | null>(null);
+  const googleRedirectPendingRef = useRef(false);
+  const googleRedirectFrameRef = useRef<number | null>(null);
   const lastGoogleEmail = useSyncExternalStore(subscribeToLastGoogleEmail, getLastGoogleEmail, () => null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,6 +57,20 @@ function LoginForm() {
   });
   const emailField = register("email");
   const passwordField = register("password");
+
+  useEffect(() => {
+    function resetGoogleRedirect() {
+      googleRedirectPendingRef.current = false;
+      setGoogleSignInPending(null);
+    }
+    window.addEventListener("pageshow", resetGoogleRedirect);
+    return () => {
+      window.removeEventListener("pageshow", resetGoogleRedirect);
+      if (googleRedirectFrameRef.current !== null) {
+        window.cancelAnimationFrame(googleRedirectFrameRef.current);
+      }
+    };
+  }, []);
 
   function clearOnFirstFocus(field: keyof FormData, input: HTMLInputElement) {
     setFocusedField(field);
@@ -109,14 +127,28 @@ function LoginForm() {
   }
 
   function handleGoogleLogin(useLastAccount: boolean) {
-    if (!googleAuthEnabled) return;
+    if (!googleAuthEnabled || googleRedirectPendingRef.current) return;
+    googleRedirectPendingRef.current = true;
+    setGoogleSignInPending(useLastAccount ? "last" : "google");
 
     if (redirectTo && redirectTo !== "/dashboard") {
       savePendingRedirect(redirectTo);
     }
     const params = new URLSearchParams({ next: redirectTo });
     if (useLastAccount) params.set("last", "1");
-    window.location.assign(`/auth/google?${params}`);
+    // Let the loading state paint before starting the cross-site redirect.
+    googleRedirectFrameRef.current = window.requestAnimationFrame(() => {
+      googleRedirectFrameRef.current = window.requestAnimationFrame(() => {
+        googleRedirectFrameRef.current = null;
+        try {
+          window.location.assign(`/auth/google?${params}`);
+        } catch {
+          googleRedirectPendingRef.current = false;
+          setGoogleSignInPending(null);
+          setError("Could not start Google sign-in. Please try again.");
+        }
+      });
+    });
   }
 
   return (
@@ -150,8 +182,10 @@ function LoginForm() {
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{lastGoogleEmail}</p>
             </div>
           </div>
-          <Button type="button" size="sm" onClick={() => handleGoogleLogin(true)} className="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 h-8">
-            Continue
+          <Button type="button" size="sm" onClick={() => handleGoogleLogin(true)} disabled={googleSignInPending !== null || isSubmitting} aria-busy={googleSignInPending === "last"} className="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 h-8">
+            {googleSignInPending === "last" ? (
+              <span role="status" className="inline-flex items-center gap-1.5"><Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />Opening…</span>
+            ) : "Continue"}
           </Button>
         </div>
       )}
@@ -159,7 +193,8 @@ function LoginForm() {
         type="button"
         variant="outline"
         onClick={() => handleGoogleLogin(false)}
-        disabled={!googleAuthEnabled}
+        disabled={!googleAuthEnabled || googleSignInPending !== null || isSubmitting}
+        aria-busy={googleSignInPending === "google"}
         aria-describedby={!googleAuthEnabled ? "google-login-availability" : undefined}
         className="w-full h-11"
       >
@@ -169,7 +204,9 @@ function LoginForm() {
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        {googleAuthEnabled ? "Continue with Google" : "Google sign-in unavailable"}
+        {googleSignInPending === "google" ? (
+          <span role="status" className="inline-flex items-center gap-1.5"><Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />Opening Google…</span>
+        ) : googleAuthEnabled ? "Continue with Google" : "Google sign-in unavailable"}
       </Button>
       {!googleAuthEnabled && (
         <p id="google-login-availability" className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
@@ -222,7 +259,7 @@ function LoginForm() {
           </p>
         )}
 
-        <Button type="submit" disabled={isSubmitting} className="w-full bg-green-600 hover:bg-green-700 text-white h-11">
+        <Button type="submit" disabled={isSubmitting || googleSignInPending !== null} className="w-full bg-green-600 hover:bg-green-700 text-white h-11">
           {isSubmitting ? "Signing in…" : "Sign In"}
         </Button>
       </form>
