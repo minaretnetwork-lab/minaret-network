@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Star } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { trackFeaturedCardClick } from "@/lib/actions/featured";
 
@@ -73,14 +72,6 @@ export function FeaturedBusinessCard({ listing }: { listing: FeaturedCardData })
         <p className="text-white font-bold text-[15px] leading-tight drop-shadow-sm line-clamp-2">
           {name}
         </p>
-      </div>
-
-      {/* Featured badge */}
-      <div className="absolute top-2.5 left-2.5">
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-50/90 backdrop-blur-sm border border-amber-200 rounded-full px-2 py-0.5 shadow-sm">
-          <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
-          Featured
-        </span>
       </div>
     </Link>
   );
