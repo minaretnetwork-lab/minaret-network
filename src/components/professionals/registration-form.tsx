@@ -692,6 +692,14 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           setSubmitStatus("error");
         })(e);
       }}>
+        {isEdit && (
+          <div className="mb-4">
+            <EditFormActions isSubmitting={isSubmitting} onCancel={() => router.push(successRedirectHref)} />
+            {submitStatus === "error" && (
+              <p role="alert" className="mt-3 text-sm text-red-600">{errorMsg}</p>
+            )}
+          </div>
+        )}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm space-y-6">
 
           {/* ─── STEP 1: Profile ─── */}
@@ -1355,16 +1363,7 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
         {/* ── Navigation ── */}
         <div className={`flex items-center justify-between mt-4 transition-opacity duration-200 ${transitioning ? "opacity-40 pointer-events-none" : ""}`}>
           {isEdit ? (
-            <>
-              <div />
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white min-w-[180px] h-11 text-base font-semibold shadow-sm disabled:opacity-50"
-              >
-                {isSubmitting ? "Saving…" : "Save Changes"}
-              </Button>
-            </>
+            <EditFormActions isSubmitting={isSubmitting} onCancel={() => router.push(successRedirectHref)} />
           ) : (
             <>
               {step > 0 ? (
@@ -1403,6 +1402,29 @@ export function ProfessionalRegistrationForm({ mosques, categories, serviceAreas
           </div>
         )}
       </form>
+    </div>
+  );
+}
+
+function EditFormActions({ isSubmitting, onCancel }: { isSubmitting: boolean; onCancel: () => void }) {
+  return (
+    <div className="flex w-full items-center justify-end gap-3">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onCancel}
+        disabled={isSubmitting}
+        className="h-11 min-w-0 flex-1 sm:flex-none sm:min-w-[150px] text-base font-semibold"
+      >
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="h-11 min-w-0 flex-1 sm:flex-none sm:min-w-[180px] bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white text-base font-semibold shadow-sm"
+      >
+        {isSubmitting ? "Saving…" : "Save Changes"}
+      </Button>
     </div>
   );
 }
