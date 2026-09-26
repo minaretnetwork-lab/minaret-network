@@ -8,12 +8,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/hero-search";
-import { CategorySearch } from "@/components/home/category-search";
 import { FeaturedSection } from "@/components/featured/featured-section";
 import { MinaretLogo } from "@/components/ui/minaret-logo";
 import { CommunityOffersSection } from "@/components/offers/community-offers-section";
-import { prisma } from "@/lib/prisma";
-import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
 import { getPublicEventListings } from "@/lib/actions/event-listings";
 
 const POPULAR_TAGS = [
@@ -153,17 +150,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Browse by Category ────────────────────────────────── */}
-      <section className="container mx-auto px-4 lg:px-6 py-14">
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Browse by profession or business</p>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5" style={{ fontFamily: "var(--font-lora)" }}>
-            Find a professional or local business
-          </h2>
-          <Suspense fallback={null}><CategoryBrowser /></Suspense>
-        </div>
-      </section>
-
       {/* ── CTA ──────────────────────────────────────────────── */}
       <section className="container mx-auto px-4 lg:px-6 py-24 text-center">
         <div className="max-w-xl mx-auto">
@@ -258,24 +244,4 @@ async function FeaturedEventsSection() {
           </div>
         </section>
   );
-}
-
-async function CategoryBrowser() {
-  let categories: { id: string; name: string; slug: string; icon: string | null }[] = [];
-  try {
-    const mosque = await prisma.mosque.findUnique({
-      where: { slug: DEFAULT_MOSQUE_SLUG },
-      select: {
-        categories: {
-          where: { isActive: true },
-          select: { id: true, name: true, slug: true, icon: true },
-          orderBy: { name: "asc" },
-        },
-      },
-    });
-    categories = mosque?.categories ?? [];
-  } catch {
-    // Show an empty search when the database is temporarily unavailable.
-  }
-  return <CategorySearch categories={categories} />;
 }
