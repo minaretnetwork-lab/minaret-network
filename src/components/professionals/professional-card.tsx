@@ -146,7 +146,7 @@ export function ProfessionalCard({ professional, isLoggedIn = true }: Profession
         className="absolute inset-0 z-10 rounded-2xl"
       />
       {(isSponsored || isFeatured) && (
-        <div className="pointer-events-none absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
+        <div className="flex justify-end">
           {isSponsored && (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/50 rounded-full px-2 py-0.5">
               <Sparkles className="h-2.5 w-2.5" />
