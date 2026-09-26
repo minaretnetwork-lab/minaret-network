@@ -27,7 +27,8 @@ function subscribeToLastGoogleEmail() {
 
 function getLastGoogleEmail() {
   const match = document.cookie.match(/(?:^|;\s*)mn_last_google_email=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
+  if (!match) return null;
+  try { return decodeURIComponent(match[1]); } catch { return null; }
 }
 
 function savePendingRedirect(redirectTo: string) {
@@ -107,13 +108,15 @@ function LoginForm() {
     }
   }
 
-  async function handleGoogleLogin() {
+  function handleGoogleLogin(useLastAccount: boolean) {
     if (!googleAuthEnabled) return;
 
     if (redirectTo && redirectTo !== "/dashboard") {
       savePendingRedirect(redirectTo);
     }
-    window.location.assign(`/auth/google?next=${encodeURIComponent(redirectTo)}`);
+    const params = new URLSearchParams({ next: redirectTo });
+    if (useLastAccount) params.set("last", "1");
+    window.location.assign(`/auth/google?${params}`);
   }
 
   return (
@@ -147,7 +150,7 @@ function LoginForm() {
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{lastGoogleEmail}</p>
             </div>
           </div>
-          <Button type="button" size="sm" onClick={handleGoogleLogin} className="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 h-8">
+          <Button type="button" size="sm" onClick={() => handleGoogleLogin(true)} className="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 h-8">
             Continue
           </Button>
         </div>
@@ -155,7 +158,7 @@ function LoginForm() {
       <Button
         type="button"
         variant="outline"
-        onClick={handleGoogleLogin}
+        onClick={() => handleGoogleLogin(false)}
         disabled={!googleAuthEnabled}
         aria-describedby={!googleAuthEnabled ? "google-login-availability" : undefined}
         className="w-full h-11"

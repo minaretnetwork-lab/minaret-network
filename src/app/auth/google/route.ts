@@ -13,6 +13,12 @@ export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8);
   const requestUrl = new URL(request.url);
   const next = safeNext(requestUrl.searchParams.get("next"));
+  const lastGoogleEmail = request.cookies.get("mn_last_google_email")?.value;
+  const loginHint = requestUrl.searchParams.get("last") === "1" &&
+    lastGoogleEmail && lastGoogleEmail.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lastGoogleEmail)
+      ? lastGoogleEmail
+      : null;
   const requestHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? requestUrl.host;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || getRequestOrigin(request);
   const callbackUrl = new URL("/auth/callback", siteUrl);
@@ -50,7 +56,10 @@ export async function GET(request: NextRequest) {
   log("starting OAuth");
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: callbackUrl.toString() },
+    options: {
+      redirectTo: callbackUrl.toString(),
+      ...(loginHint ? { queryParams: { login_hint: loginHint } } : {}),
+    },
   });
 
   if (error || !data.url) {
