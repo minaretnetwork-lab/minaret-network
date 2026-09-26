@@ -41,11 +41,6 @@ export function GoogleAnalyticsWithConsent() {
               gtag('config', '${GA_ID}');
             `}
           </Script>
-          {/* Contentsquare — session replay, heatmaps, Voice of Customer feedback */}
-          <Script
-            src="https://t.contentsquare.net/uxa/8f1b36459e042.js"
-            strategy="afterInteractive"
-          />
         </>
       )}
     </>

@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { FlashToast } from "@/components/flash-toast";
 import { LazyIdleTimeout } from "@/components/lazy-idle-timeout";
-import { LazyAssistantBubble } from "@/components/ai/lazy-assistant-bubble";
 import { GoogleAnalyticsWithConsent } from "@/components/google-analytics";
 import { CookieBanner } from "@/components/cookie-banner";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -50,7 +49,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
           {children}
-          <LazyAssistantBubble />
           <LazyIdleTimeout />
           <Toaster position="bottom-right" />
           <Suspense>
