@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
 import { HeroSearch } from "@/components/home/hero-search";
-import { FeaturedSection } from "@/components/featured/featured-section";
-import { CommunityOffersSection } from "@/components/offers/community-offers-section";
 
 export const metadata: Metadata = {
   title: "Find a professional",
@@ -63,8 +60,6 @@ export default function HomeTestPage() {
         </div>
       </section>
 
-      <Suspense fallback={null}><FeaturedSection /></Suspense>
-      <Suspense fallback={null}><CommunityOffersSection /></Suspense>
     </div>
   );
 }
