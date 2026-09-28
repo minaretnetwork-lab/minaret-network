@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { PromoBanner } from "@/components/layout/promo-banner";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { Suspense } from "react";
@@ -14,7 +13,6 @@ export default async function PublicLayout({
 
   return (
     <div className="flex min-h-full flex-col">
-      <PromoBanner />
       <Navbar
         user={
           user
