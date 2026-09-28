@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
 import { ChevronDown, CalendarDays, Megaphone } from "lucide-react";
 
 const ITEMS = [
@@ -19,27 +18,21 @@ const ITEMS = [
   },
 ];
 
-export function CommunityDropdown() {
-  const [open, setOpen] = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  function handleMouseEnter() {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpen(true);
-  }
-
-  function handleMouseLeave() {
-    closeTimer.current = setTimeout(() => setOpen(false), 120);
-  }
-
+export function CommunityDropdown({ open, onOpen, onScheduleClose, onToggle, onClose }: {
+  open: boolean;
+  onOpen: () => void;
+  onScheduleClose: () => void;
+  onToggle: () => void;
+  onClose: () => void;
+}) {
   return (
     <div
       className="relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={onOpen}
+      onMouseLeave={onScheduleClose}
     >
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={onToggle}
         className="flex items-center gap-1 whitespace-nowrap px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-all"
         aria-expanded={open}
       >
@@ -53,7 +46,7 @@ export function CommunityDropdown() {
             <Link
               key={href}
               href={href}
-              onClick={() => setOpen(false)}
+              onClick={onClose}
               className="flex items-start gap-3 px-4 py-3 hover:bg-white/10 transition-colors"
             >
               <div className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">

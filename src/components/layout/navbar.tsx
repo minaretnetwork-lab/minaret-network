@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
 import { LogoLink } from "./logo-link";
-import { AdvertiseDropdown } from "./advertise-dropdown";
-import { CommunityDropdown } from "./community-dropdown";
+import { NavDropdowns } from "./nav-dropdowns";
 import { ThemePicker } from "@/components/theme-picker";
 
 interface NavbarProps {
@@ -52,8 +51,7 @@ export function Navbar({ user }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
-            <CommunityDropdown />
-            <AdvertiseDropdown />
+            <NavDropdowns />
             {isAdmin && (
               <Link
                 href="/admin"
