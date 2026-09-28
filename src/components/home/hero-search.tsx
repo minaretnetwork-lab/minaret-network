@@ -14,7 +14,15 @@ import { trackAnalyticsEvent } from "@/lib/analytics-client";
 
 type Suggestion = { label: string; type: "category" | "professional"; slug?: string };
 
-export function HeroSearch({ light = false }: { light?: boolean }) {
+export function HeroSearch({
+  light = false,
+  showLocationHint = true,
+  analyticsPath = "/",
+}: {
+  light?: boolean;
+  showLocationHint?: boolean;
+  analyticsPath?: string;
+}) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [sugOpen, setSugOpen] = useState(false);
@@ -149,7 +157,7 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
     params.set("location", location.trim());
     trackAnalyticsEvent({
       eventType: "HOME_SEARCH",
-      path: "/",
+      path: analyticsPath,
       searchTerm: query.trim() || pending?.label,
       region: location.trim(),
     });
@@ -329,7 +337,7 @@ export function HeroSearch({ light = false }: { light?: boolean }) {
       <div className="mt-1.5 min-h-[1.25rem]">
         {locateError ? (
           <p className={`text-xs ${errorClass}`}>{locateError}</p>
-        ) : !location ? (
+        ) : !location && showLocationHint ? (
           <p className={`text-xs ${hintClass}`}>
             <LocateFixed className="inline h-3 w-3 mr-1 -mt-0.5" />
             Tap the <span className={hintHighlight}>crosshair</span> in the location box to auto-detect
