@@ -170,24 +170,18 @@ export function HeroSearch({
     router.push(`/professionals?${params.toString()}`);
   }
 
-  async function applyApproximateCity(requestId: number) {
+  async function fetchApproximateCity(): Promise<string | null> {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 5000);
     try {
       const res = await fetch("/api/geocode/approximate", { cache: "no-store", signal: controller.signal });
-      if (!res.ok) throw new Error("Approximate location unavailable.");
+      if (!res.ok) return null;
       const data: { city?: unknown } = await res.json();
-      if (typeof data.city !== "string" || !data.city.trim()) throw new Error("No city found.");
-      if (locationRequestRef.current !== requestId) return;
-      setLocation(data.city);
-      setLocateError("Approximate city based on your network. Change it if needed.");
+      return typeof data.city === "string" ? data.city.trim() || null : null;
     } catch {
-      if (locationRequestRef.current === requestId) {
-        setLocateError("Couldn't detect your city. Type it to search.");
-      }
+      return null;
     } finally {
       window.clearTimeout(timeout);
-      if (locationRequestRef.current === requestId) setLocating(false);
     }
   }
 
@@ -205,9 +199,41 @@ export function HeroSearch({
     setLocateError("Finding your city…");
     setLocation("");
 
+    let approximateFinished = false;
+    let approximateCity: string | null = null;
+    let browserFinished = false;
+    let browserError = "Couldn't detect your city. Type it to search.";
+    let preciseCityFound = false;
+
+    void fetchApproximateCity().then((city) => {
+      approximateFinished = true;
+      approximateCity = city;
+      if (locationRequestRef.current !== requestId || preciseCityFound) return;
+      if (city) {
+        setLocation(city);
+        setLocateError("Approximate city based on your network. Change it if needed.");
+        setLocating(false);
+      } else if (browserFinished) {
+        setLocateError(browserError);
+        setLocating(false);
+      }
+    });
+
+    function browserLocationFailed(message: string) {
+      browserFinished = true;
+      browserError = message;
+      if (locationRequestRef.current !== requestId || preciseCityFound) return;
+      if (approximateCity) return;
+      if (approximateFinished) {
+        setLocateError(message);
+        setLocating(false);
+      } else {
+        setLocateError("Finding an approximate city…");
+      }
+    }
+
     if (!("geolocation" in navigator)) {
-      setLocateError("Finding an approximate city…");
-      void applyApproximateCity(requestId);
+      browserLocationFailed("Location is not supported by your browser. Type your city to search.");
       return;
     }
 
@@ -221,27 +247,25 @@ export function HeroSearch({
           if (!res.ok) throw new Error(data.error ?? "Location lookup failed.");
           const city = data.city ?? "";
           if (city) {
+            preciseCityFound = true;
             cacheDetectedCity(city);
             setLocation(city);
             setLocateError("");
+            setLocating(false);
           } else {
-            setLocateError("Couldn't determine your city.");
+            browserLocationFailed("Couldn't determine your city. Type it to search.");
           }
         } catch {
-          if (locationRequestRef.current === requestId) setLocateError("Lookup failed. Type your city.");
-        } finally {
-          if (locationRequestRef.current === requestId) setLocating(false);
+          browserLocationFailed("Location lookup failed. Type your city to search.");
         }
       },
       (err) => {
         if (locationRequestRef.current !== requestId) return;
         if (err.code === err.PERMISSION_DENIED) {
-          setLocating(false);
-          setLocateError("Location permission is blocked. Allow it in your browser settings or type your city.");
+          browserLocationFailed("Location permission is blocked. Type your city to search.");
           return;
         }
-        setLocateError("Finding an approximate city…");
-        void applyApproximateCity(requestId);
+        browserLocationFailed("Couldn't read your location. Type your city to search.");
       },
       { ...CITY_POSITION_OPTIONS, timeout: 9000 }
     );
