@@ -40,6 +40,7 @@ export function HeroSearch({
   const locationRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const locDropdownRef = useRef<HTMLDivElement>(null);
+  const locationRequestRef = useRef(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const locDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -92,12 +93,16 @@ export function HeroSearch({
   }
 
   function handleLocationChange(val: string) {
+    locationRequestRef.current += 1;
+    setLocating(false);
     setLocation(val);
     setLocateError("");
     fetchLocationSuggestions(val);
   }
 
   function selectLocationSuggestion(s: Suggestion) {
+    locationRequestRef.current += 1;
+    setLocating(false);
     setLocation(s.label);
     setLocSugOpen(false);
   }
@@ -165,11 +170,29 @@ export function HeroSearch({
     router.push(`/professionals?${params.toString()}`);
   }
 
-  async function detectLocation() {
-    if (!("geolocation" in navigator)) {
-      setLocateError("Not supported by your browser.");
-      return;
+  async function applyApproximateCity(requestId: number) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 5000);
+    try {
+      const res = await fetch("/api/geocode/approximate", { cache: "no-store", signal: controller.signal });
+      if (!res.ok) throw new Error("Approximate location unavailable.");
+      const data: { city?: unknown } = await res.json();
+      if (typeof data.city !== "string" || !data.city.trim()) throw new Error("No city found.");
+      if (locationRequestRef.current !== requestId) return;
+      setLocation(data.city);
+      setLocateError("Approximate city based on your network. Change it if needed.");
+    } catch {
+      if (locationRequestRef.current === requestId) {
+        setLocateError("Couldn't detect your city. Type it to search.");
+      }
+    } finally {
+      window.clearTimeout(timeout);
+      if (locationRequestRef.current === requestId) setLocating(false);
     }
+  }
+
+  function detectLocation() {
+    const requestId = ++locationRequestRef.current;
 
     const cachedCity = getCachedDetectedCity();
     if (cachedCity) {
@@ -179,8 +202,14 @@ export function HeroSearch({
     }
 
     setLocating(true);
-    setLocateError("");
+    setLocateError("Finding your city…");
     setLocation("");
+
+    if (!("geolocation" in navigator)) {
+      setLocateError("Finding an approximate city…");
+      void applyApproximateCity(requestId);
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -188,6 +217,7 @@ export function HeroSearch({
           const { latitude, longitude } = pos.coords;
           const res = await fetch(`/api/geocode/reverse?lat=${latitude}&lon=${longitude}`);
           const data = await res.json();
+          if (locationRequestRef.current !== requestId) return;
           if (!res.ok) throw new Error(data.error ?? "Location lookup failed.");
           const city = data.city ?? "";
           if (city) {
@@ -198,21 +228,22 @@ export function HeroSearch({
             setLocateError("Couldn't determine your city.");
           }
         } catch {
-          setLocateError("Lookup failed. Type your city.");
+          if (locationRequestRef.current === requestId) setLocateError("Lookup failed. Type your city.");
         } finally {
-          setLocating(false);
+          if (locationRequestRef.current === requestId) setLocating(false);
         }
       },
       (err) => {
-        setLocating(false);
-        const message = err.code === err.PERMISSION_DENIED
-          ? "Location permission is blocked. Allow it in your browser settings."
-          : err.code === err.TIMEOUT
-            ? "Location timed out. Try again or type your city."
-            : "Couldn't read your location. Type your city.";
-        setLocateError(message);
+        if (locationRequestRef.current !== requestId) return;
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocating(false);
+          setLocateError("Location permission is blocked. Allow it in your browser settings or type your city.");
+          return;
+        }
+        setLocateError("Finding an approximate city…");
+        void applyApproximateCity(requestId);
       },
-      CITY_POSITION_OPTIONS
+      { ...CITY_POSITION_OPTIONS, timeout: 9000 }
     );
   }
 
@@ -290,7 +321,7 @@ export function HeroSearch({
           />
           <button
             type="button"
-            onClick={location ? () => { clearCachedDetectedCity(); setLocation(""); setLocateError(""); setLocationSugs([]); setLocSugOpen(false); } : detectLocation}
+            onClick={location ? () => { locationRequestRef.current += 1; setLocating(false); clearCachedDetectedCity(); setLocation(""); setLocateError(""); setLocationSugs([]); setLocSugOpen(false); } : detectLocation}
             disabled={locating}
             title={location ? "Clear" : "Use my location"}
             aria-label={location ? "Clear location" : "Use my location"}
@@ -334,7 +365,7 @@ export function HeroSearch({
         </Button>
       </form>
 
-      <div className="mt-1.5 min-h-[1.25rem]">
+      <div className="mt-1.5 min-h-[1.25rem]" aria-live="polite">
         {locateError ? (
           <p className={`text-xs ${errorClass}`}>{locateError}</p>
         ) : !location && showLocationHint ? (
