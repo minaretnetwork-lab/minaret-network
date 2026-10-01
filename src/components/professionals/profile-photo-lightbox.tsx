@@ -19,7 +19,7 @@ export function ProfilePhotoLightbox({
 
   return (
     <>
-      {/* Keep the full portrait, logo, or landscape photo visible in a roomy frame. */}
+      {/* Fill the profile frame; the lightbox preserves the complete image. */}
       <div className="p-4 pb-0">
         {photoUrl ? (
           <button
@@ -36,7 +36,7 @@ export function ProfilePhotoLightbox({
               alt={name}
               draggable={false}
               onContextMenu={(e) => e.preventDefault()}
-              className="object-contain object-center p-2 select-none pointer-events-none"
+              className="object-cover object-center select-none pointer-events-none"
             />
           </button>
         ) : (
