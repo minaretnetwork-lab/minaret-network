@@ -147,6 +147,9 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               photoUrl={photoUrl}
               name={name}
               initials={getInitials(name)}
+              professionalId={professional.id}
+              isOwner={isOwner && !isUnclaimed}
+              photoFraming={professional.photoFraming}
             />
             <div className="p-6 text-center">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{name}</h1>

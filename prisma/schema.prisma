@@ -159,6 +159,7 @@ model Professional {
   businessAddress   String?
   acceptsWalkIns    Boolean            @default(false)
   photoUrl          String?
+  photoFraming      Json?
   logoUrl           String?
   status            ProfessionalStatus @default(PENDING)
   tier              ListingTier        @default(STANDARD)
