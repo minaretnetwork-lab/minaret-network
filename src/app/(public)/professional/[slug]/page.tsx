@@ -21,6 +21,7 @@ import { getProfessionalBySlug, incrementProfileView } from "@/lib/actions/profe
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getExistingConversationWithProfessional } from "@/lib/actions/messages";
 import { getProfessionalDisplayPhotoUrl } from "@/lib/public-asset-url";
+import { isProfileAdmin } from "@/lib/profile-permissions";
 import { getInitials, buildWhatsAppUrl, formatDate } from "@/lib/utils";
 import { CATEGORY_BY_DB_SLUG } from "@/lib/seo/category-config";
 import type { BadgeType } from "@/types";
@@ -102,6 +103,8 @@ export default async function ProfessionalSlugPage({ params }: Props) {
     currentUser.id === professional.user?.id ||
     currentUser.id === pExtra.claimedByUserId
   );
+  const isAdmin = isProfileAdmin(currentUser);
+  const canEdit = isAdmin || (!!currentUser?.isActive && isOwner && !isUnclaimed);
   const currentUserName = currentUser
     ? (currentUser.displayName ?? [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ") ?? null)
     : null;
@@ -126,16 +129,16 @@ export default async function ProfessionalSlugPage({ params }: Props) {
         />
       )}
 
-      {isOwner && !isUnclaimed && (
+      {canEdit && (
         <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
           <div className="flex items-center gap-2.5">
             <Pencil className="h-4 w-4 text-emerald-700 dark:text-emerald-400 flex-shrink-0" />
             <p className="text-sm font-medium text-emerald-900 dark:text-emerald-200">
-              You&apos;re viewing your own profile — this is how others see it.
+              {isAdmin ? "You can edit this profile as an administrator." : "You're viewing your own profile — this is how others see it."}
             </p>
           </div>
           <Link
-            href={`/professionals/${professional.id}/edit`}
+            href={isAdmin ? `/admin/professionals/${professional.id}/edit` : `/professionals/${professional.id}/edit`}
             className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3 py-1.5 transition-colors"
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -160,7 +163,7 @@ export default async function ProfessionalSlugPage({ params }: Props) {
               name={name}
               initials={getInitials(name)}
               professionalId={professional.id}
-              isOwner={isOwner && !isUnclaimed}
+              canEdit={canEdit}
               photoFraming={professional.photoFraming}
             />
             <div className="p-6 text-center">

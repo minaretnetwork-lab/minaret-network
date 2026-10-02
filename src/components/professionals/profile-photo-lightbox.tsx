@@ -13,7 +13,7 @@ interface ProfilePhotoLightboxProps {
   name: string;
   initials: string;
   professionalId: string;
-  isOwner?: boolean;
+  canEdit?: boolean;
   photoFraming?: unknown;
 }
 
@@ -22,7 +22,7 @@ export function ProfilePhotoLightbox({
   name,
   initials,
   professionalId,
-  isOwner = false,
+  canEdit = false,
   photoFraming,
 }: ProfilePhotoLightboxProps) {
   const [open, setOpen] = useState(false);
@@ -40,7 +40,7 @@ export function ProfilePhotoLightbox({
   });
 
   function openPhoto() {
-    if (isOwner) {
+    if (canEdit) {
       setDraft(saved);
       setError(null);
       setEditing(true);
@@ -70,7 +70,7 @@ export function ProfilePhotoLightbox({
             type="button"
             onClick={openPhoto}
             className="relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
-            aria-label={isOwner ? `Edit profile photo framing for ${name}` : `Open full size profile photo for ${name}`}
+            aria-label={canEdit ? `Edit profile photo framing for ${name}` : `Open full size profile photo for ${name}`}
           >
             <Image
               unoptimized
@@ -83,7 +83,7 @@ export function ProfilePhotoLightbox({
               className="object-cover object-center select-none pointer-events-none"
               style={imageStyle(saved)}
             />
-            {isOwner && (
+            {canEdit && (
               <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-900 shadow-md ring-1 ring-black/10">
                 <Pencil className="h-4 w-4" aria-hidden="true" />
               </span>
@@ -96,7 +96,7 @@ export function ProfilePhotoLightbox({
         )}
       </div>
 
-      {photoUrl && isOwner && (
+      {photoUrl && canEdit && (
         <Dialog open={editing} onOpenChange={(value) => { if (!pending) setEditing(value); }}>
           <DialogContent className="sm:max-w-xl max-h-[90dvh] overflow-y-auto">
             <DialogTitle>Adjust profile photo</DialogTitle>

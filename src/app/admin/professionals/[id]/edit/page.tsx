@@ -10,6 +10,10 @@ import {
 } from "@/components/professionals/registration-form";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
+import { ProfilePhotoLightbox } from "@/components/professionals/profile-photo-lightbox";
+import { getProfessionalDisplayPhotoUrl } from "@/lib/public-asset-url";
+import { getInitials } from "@/lib/utils";
+import { isProfileAdmin } from "@/lib/profile-permissions";
 
 export const metadata = { title: "Edit Listing — Admin" };
 
@@ -21,7 +25,7 @@ export default async function AdminEditProfessionalPage({
   const { id } = await params;
   const user = await getCurrentUser();
   const allowedRoles = ["ADMIN", "SUPER_ADMIN", "LISTING_MANAGER"];
-  if (!user || !allowedRoles.includes(user.role)) redirect("/dashboard");
+  if (!user?.isActive || !allowedRoles.includes(user.role)) redirect("/dashboard");
 
   const [professional, mosqueList, defaultMosque] = await Promise.all([
     prisma.professional.findUnique({
@@ -45,6 +49,8 @@ export default async function AdminEditProfessionalPage({
         acceptsWalkIns: true,
         availability: true,
         photoUrl: true,
+        photoFraming: true,
+        user: { select: { avatarUrl: true } },
         logoUrl: true,
         categories: { select: { id: true } },
         serviceAreas: { select: { id: true } },
@@ -90,6 +96,17 @@ export default async function AdminEditProfessionalPage({
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Changes are applied immediately without an approval step.
         </p>
+      </div>
+
+      <div className="max-w-sm rounded-2xl border bg-card pb-4">
+        <ProfilePhotoLightbox
+          professionalId={id}
+          photoUrl={getProfessionalDisplayPhotoUrl({ photoUrl: professional.photoUrl, avatarUrl: professional.user?.avatarUrl })}
+          photoFraming={professional.photoFraming}
+          name={professional.businessName ?? professional.title ?? "Professional"}
+          initials={getInitials(professional.businessName ?? professional.title ?? "Professional")}
+          canEdit={isProfileAdmin(user)}
+        />
       </div>
 
       <ProfessionalRegistrationForm

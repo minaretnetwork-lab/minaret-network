@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
-    if (!dbUser || !["ADMIN", "SUPER_ADMIN", "LISTING_MANAGER"].includes(dbUser.role)) {
+    if (!dbUser?.isActive || !["ADMIN", "SUPER_ADMIN", "LISTING_MANAGER"].includes(dbUser.role)) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 
     const existing = await prisma.professional.findUnique({
       where: { id: professionalId },
-      select: { id: true, userId: true, status: true },
+      select: { id: true, userId: true, status: true, profileSlug: true },
     });
     if (!existing) return NextResponse.json({ ok: false, error: "Listing not found." }, { status: 404 });
 
@@ -158,6 +158,7 @@ export async function POST(request: Request) {
     revalidatePath("/admin/professionals");
     revalidatePath(`/admin/professionals/${professionalId}`);
     revalidatePath(`/professionals/${professionalId}`);
+    if (existing.profileSlug) revalidatePath(`/professional/${existing.profileSlug}`);
     revalidatePath("/professionals");
     console.info("POST /api/admin/professionals/update success", {
       adminId: dbUser.id,

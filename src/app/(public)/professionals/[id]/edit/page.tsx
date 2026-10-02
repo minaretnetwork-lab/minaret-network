@@ -8,6 +8,7 @@ import {
 } from "@/components/professionals/registration-form";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_MOSQUE_SLUG } from "@/lib/constants";
+import { isProfileAdmin } from "@/lib/profile-permissions";
 
 export const metadata = { title: "Edit Professional Listing" };
 
@@ -19,6 +20,7 @@ export default async function EditProfessionalPage({
   const user = await getCurrentUser();
   const { id } = await params;
   if (!user) redirect(`/auth/login?redirectTo=/professionals/${id}/edit`);
+  if (isProfileAdmin(user)) redirect(`/admin/professionals/${id}/edit`);
 
   const [professional, mosqueList, defaultMosque] = await Promise.all([
     prisma.professional.findFirst({
