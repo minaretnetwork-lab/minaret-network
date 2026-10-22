@@ -42,7 +42,7 @@ export default async function AdminClaimsPage({ searchParams }: Props) {
         ))}
       </div>
 
-      <AdminClaimsClient claims={claims as never} />
+      <AdminClaimsClient claims={claims} />
     </div>
   );
 }

@@ -77,7 +77,8 @@ model User {
   eventListings              EventListing[]
   eventListingReports        EventListingReport[] @relation("EventListingReportedBy")
   professionalReports        ProfessionalReport[] @relation("ProfessionalReportedBy")
-  profileClaims              ProfileClaim[]
+  profileClaims              ProfileClaim[] @relation("Claimant")
+  approvedProfileClaims      ProfileClaim[] @relation("ClaimApprover")
 
   @@map("users")
 }
@@ -241,7 +242,7 @@ model ProfileClaim {
   professionalId String
   professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
   userId         String
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation("Claimant", fields: [userId], references: [id])
   claimantName   String
   claimantEmail  String
   claimantPhone  String?
@@ -250,6 +251,8 @@ model ProfileClaim {
   adminNote      String?
   createdAt      DateTime     @default(now())
   reviewedAt     DateTime?
+  approvedById   String?
+  approvedBy     User?        @relation("ClaimApprover", fields: [approvedById], references: [id], onDelete: SetNull)
 
   @@unique([professionalId, userId])
   @@index([status, createdAt])

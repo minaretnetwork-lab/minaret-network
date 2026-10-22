@@ -5,7 +5,20 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { approveProfileClaim, rejectProfileClaim } from "@/lib/actions/admin";
 import { Loader2, ExternalLink, CheckCircle, XCircle, Clock } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+
+function formatClaimTimestamp(date: Date | string): string {
+  return new Date(date).toLocaleString("en-CA", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    timeZone: "America/Toronto",
+    timeZoneName: "short",
+  });
+}
 
 interface Claim {
   id: string;
@@ -17,6 +30,7 @@ interface Claim {
   adminNote: string | null;
   createdAt: Date;
   reviewedAt: Date | null;
+  approvedBy: { displayName: string | null; firstName: string | null; lastName: string | null; email: string } | null;
   user: { id: string; displayName: string | null; firstName: string | null; lastName: string | null; email: string };
   professional: {
     id: string;
@@ -54,6 +68,10 @@ function ClaimCard({ claim }: { claim: Claim }) {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const bizName = claim.professional.businessName ?? claim.professional.title ?? "Unnamed";
+  const approver = claim.approvedBy;
+  const approverName = approver
+    ? approver.displayName?.trim() || [approver.firstName, approver.lastName].filter(Boolean).join(" ").trim() || approver.email
+    : "Not recorded";
 
   function handleApprove() {
     setActionError(null);
@@ -106,9 +124,10 @@ function ClaimCard({ claim }: { claim: Claim }) {
           </Link>
           <p className="text-xs text-gray-400">{claim.professional.category.name}</p>
         </div>
-        <div className="text-xs text-gray-400 text-right shrink-0">
-          Submitted {formatDate(claim.createdAt)}
-          {claim.reviewedAt && <><br />Reviewed {formatDate(claim.reviewedAt)}</>}
+        <div className="text-xs text-gray-400 text-right shrink-0 max-w-full">
+          Submitted {formatClaimTimestamp(claim.createdAt)}
+          {claim.reviewedAt && <><br />Reviewed {formatClaimTimestamp(claim.reviewedAt)}</>}
+          {claim.status === "APPROVED" && <p className="mt-1 break-words">Approved by: {approverName}</p>}
         </div>
       </div>
 

@@ -914,6 +914,7 @@ export async function getProfileClaims(status?: "PENDING" | "APPROVED" | "REJECT
     where: status ? { status } : undefined,
     include: {
       user: { select: { id: true, displayName: true, firstName: true, lastName: true, email: true } },
+      approvedBy: { select: { displayName: true, firstName: true, lastName: true, email: true } },
       professional: {
         select: {
           id: true,
@@ -950,7 +951,7 @@ export async function approveProfileClaim(claimId: string): Promise<{ ok: boolea
   await prisma.$transaction([
     prisma.profileClaim.update({
       where: { id: claimId },
-      data: { status: "APPROVED", reviewedAt: new Date() },
+      data: { status: "APPROVED", reviewedAt: new Date(), approvedById: admin.id },
     }),
     prisma.professional.update({
       where: { id: claim.professionalId },
