@@ -1,12 +1,15 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { saveProfilePhotoFraming } from "@/lib/actions/profile-photo-framing";
 import { DEFAULT_PHOTO_FRAMING, getPhotoFraming, photoOverflow, type PhotoFraming } from "@/lib/profile-photo-framing";
+import { prepareProfilePhoto } from "@/lib/prepare-profile-photo";
+import { ACCEPTED_IMAGE_TYPES } from "@/lib/upload-image-config";
 
 interface ProfilePhotoLightboxProps {
   photoUrl: string | null;
@@ -25,12 +28,22 @@ export function ProfilePhotoLightbox({
   canEdit = false,
   photoFraming,
 }: ProfilePhotoLightboxProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<PhotoFraming>(DEFAULT_PHOTO_FRAMING);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [imageRatio, setImageRatio] = useState(4 / 3);
+  const [replacement, setReplacement] = useState<{ file: File; url: string } | null>(null);
+  const [preparing, setPreparing] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const busy = pending || preparing;
+  const previewUrl = replacement?.url;
+  const draftPhotoUrl = previewUrl ?? photoUrl;
+  useEffect(() => {
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+  }, [previewUrl]);
   const drag = useRef<{ pointerId: number; x: number; y: number; frame: PhotoFraming } | null>(null);
   const saved = getPhotoFraming(photoFraming, photoUrl);
   const imageStyle = (frame: PhotoFraming) => ({
@@ -41,22 +54,46 @@ export function ProfilePhotoLightbox({
 
   function openPhoto() {
     if (canEdit) {
+      setReplacement(null);
       setDraft(saved);
       setError(null);
       setEditing(true);
     } else setOpen(true);
   }
 
+  async function choosePhoto(file: File) {
+    setPreparing(true);
+    setError(null);
+    try {
+      const prepared = await prepareProfilePhoto(file);
+      setReplacement({ file: prepared, url: URL.createObjectURL(prepared) });
+      setDraft({ ...DEFAULT_PHOTO_FRAMING });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not prepare this photo.");
+    } finally { setPreparing(false); }
+  }
+
   function save() {
-    if (!photoUrl) return;
+    if (!photoUrl && !replacement) return;
     setError(null);
     startTransition(async () => {
       try {
-        const result = await saveProfilePhotoFraming(professionalId, photoUrl, draft);
+        let result: { ok: boolean; error?: string };
+        if (replacement) {
+          const form = new FormData();
+          form.set("photo", replacement.file);
+          form.set("sourceUrl", photoUrl ?? "");
+          form.set("framing", JSON.stringify(draft));
+          const response = await fetch(`/api/professionals/${professionalId}/photo`, { method: "POST", body: form });
+          result = await response.json();
+          if (!response.ok) result.ok = false;
+        } else {
+          result = await saveProfilePhotoFraming(professionalId, photoUrl!, draft);
+        }
         if (!result.ok) setError(result.error ?? "Could not save the photo framing.");
-        else setEditing(false);
+        else { setEditing(false); setReplacement(null); router.refresh(); }
       } catch {
-        setError("Could not save the photo framing. Please try again.");
+        setError("Could not save the photo. Please try again.");
       }
     });
   }
@@ -70,7 +107,7 @@ export function ProfilePhotoLightbox({
             type="button"
             onClick={openPhoto}
             className="relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
-            aria-label={canEdit ? `Edit profile photo framing for ${name}` : `Open full size profile photo for ${name}`}
+            aria-label={canEdit ? `Edit profile photo for ${name}` : `Open full size profile photo for ${name}`}
           >
             <Image
               unoptimized
@@ -91,26 +128,39 @@ export function ProfilePhotoLightbox({
           </button>
         ) : (
           <div className="aspect-[4/3] w-full rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
-            <span className="text-white font-bold text-4xl select-none">{initials}</span>
+            {canEdit ? (
+              <Button variant="secondary" onClick={openPhoto}>Upload profile photo</Button>
+            ) : <span className="text-white font-bold text-4xl select-none">{initials}</span>}
           </div>
         )}
       </div>
 
-      {photoUrl && canEdit && (
-        <Dialog open={editing} onOpenChange={(value) => { if (!pending) setEditing(value); }}>
+      {canEdit && (
+        <Dialog open={editing} onOpenChange={(value) => { if (!busy) { setEditing(value); if (!value) setReplacement(null); } }}>
           <DialogContent className="sm:max-w-xl max-h-[90dvh] overflow-y-auto">
             <DialogTitle>Adjust profile photo</DialogTitle>
-            <DialogDescription>Drag the photo to reposition it, or use the controls below. This preview is what visitors will see.</DialogDescription>
+            <DialogDescription>Upload a new picture or adjust the current photo. Drag to reposition it, or use the controls below. Changes appear on your profile when you save.</DialogDescription>
+            <input ref={fileInput} type="file" accept={ACCEPTED_IMAGE_TYPES.join(",")} className="hidden"
+              aria-label="Choose a new profile photo" disabled={busy}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void choosePhoto(file);
+              }} />
+            <Button variant="outline" disabled={busy} onClick={() => fileInput.current?.click()}>
+              {preparing ? "Preparing photo…" : "Upload new picture"}
+            </Button>
+            {draftPhotoUrl ? <>
             <div
               className="relative aspect-[4/3] w-full touch-none overflow-hidden rounded-xl bg-gray-950 cursor-grab active:cursor-grabbing"
               onPointerDown={(event) => {
-                if (pending || event.button !== 0) return;
+                if (busy || event.button !== 0) return;
                 event.currentTarget.setPointerCapture(event.pointerId);
                 drag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, frame: { ...draft } };
               }}
               onPointerMove={(event) => {
                 const start = drag.current;
-                if (!start || start.pointerId !== event.pointerId || pending) return;
+                if (!start || start.pointerId !== event.pointerId || busy) return;
                 const bounds = event.currentTarget.getBoundingClientRect();
                 const overflow = photoOverflow(bounds.width, bounds.height, imageRatio, start.frame.zoom);
                 const clamp = (value: number) => Math.max(0, Math.min(100, value));
@@ -123,7 +173,7 @@ export function ProfilePhotoLightbox({
               onPointerCancel={() => { drag.current = null; }}
               onLostPointerCapture={() => { drag.current = null; }}
             >
-              <Image unoptimized fill src={photoUrl} alt={`Framing preview for ${name}`} sizes="560px"
+              <Image key={draftPhotoUrl} unoptimized fill src={draftPhotoUrl} alt={`Framing preview for ${name}`} sizes="560px"
                 draggable={false} className="object-cover pointer-events-none select-none" style={imageStyle(draft)}
                 onLoad={(event) => {
                   const image = event.currentTarget;
@@ -137,15 +187,16 @@ export function ProfilePhotoLightbox({
             ] as const).map(({ key, label, min, max, step }) => (
               <label key={key} className="grid gap-2 text-sm font-medium">
                 <span className="flex justify-between"><span>{label}</span><span>{key === "zoom" ? `${draft[key].toFixed(2)}×` : `${Math.round(draft[key])}%`}</span></span>
-                <input type="range" min={min} max={max} step={step} value={draft[key]} disabled={pending}
+                <input type="range" min={min} max={max} step={step} value={draft[key]} disabled={busy}
                   className="w-full accent-emerald-600" onChange={(event) => setDraft((frame) => ({ ...frame, [key]: Number(event.target.value) }))} />
               </label>
             ))}
+            </> : <p className="text-sm text-gray-500">Choose a picture to preview and adjust it.</p>}
             {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}
             <div className="flex flex-wrap justify-end gap-2">
-              <Button variant="ghost" disabled={pending} onClick={() => setDraft({ ...DEFAULT_PHOTO_FRAMING })}>Reset</Button>
-              <Button variant="outline" disabled={pending} onClick={() => setEditing(false)}>Cancel</Button>
-              <Button disabled={pending} onClick={save}>{pending ? "Saving…" : "Save framing"}</Button>
+              <Button variant="ghost" disabled={busy || !draftPhotoUrl} onClick={() => setDraft({ ...DEFAULT_PHOTO_FRAMING })}>Reset</Button>
+              <Button variant="outline" disabled={busy} onClick={() => { setEditing(false); setReplacement(null); }}>Cancel</Button>
+              <Button disabled={busy || !draftPhotoUrl} onClick={save}>{pending ? "Saving…" : replacement ? "Save photo" : "Save framing"}</Button>
             </div>
           </DialogContent>
         </Dialog>
